@@ -1,7 +1,7 @@
 {
   "name": "quowoter",
-  "description": "Plugin Description",
-  "author": "Plugin Author",
-  "license": "Plugin License",
-  "version": "0.0.1"
+  "description": "A replaces message links with the actual message.",
+  "author": "AAGaming#9395",
+  "license": "MIT",
+  "version": "0.1.0"
 }

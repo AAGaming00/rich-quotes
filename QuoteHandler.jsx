@@ -22,33 +22,33 @@ module.exports = class QuoteHandler extends React.Component {
   }
   async componentDidMount () {
     const content = [...this.state.content]
-    await content.forEach(async (e, i) => {
-        if (e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
-          const linkArray = e.props.href.split('/')
-          const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6])
-          if (!messageData) {
-            return
-          }
-           if (messageData.embeds) {
-             messageData.embeds.forEach((e, i) => {
-               console.log(e)
-              if (typeof e.color !== 'string') {
-                messageData.embeds[i].color = '#00000000'
-              }
-             })
-           }
-          //msg.message.content = msg.message.content.replace(e.props.href, '')
-          content[i] = React.createElement(ChannelMessage, {
-              className: `${message} ${cozyMessage} ${groupStart}`,
-              groupId: messageData.id,
-              message: new MessageC({
-                  ...messageData,
-              }),
-              channel: getChannel(messageData.channel_id),
-              onClick: () => {transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, ''))},
-              style: { cursor: "pointer" }
-          })
+    content.forEach(async (e, i) => {
+      if (e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
+        const linkArray = e.props.href.split('/');
+        const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6]);
+        if (!messageData) {
+          return;
         }
+        if (messageData.embeds) {
+          messageData.embeds.forEach((e, i) => {
+            console.log(e);
+            if (typeof e.color !== 'string') {
+              messageData.embeds[i].color = '#00000000';
+            }
+          });
+        }
+        //msg.message.content = msg.message.content.replace(e.props.href, '')
+        content[i] = React.createElement(ChannelMessage, {
+          className: `${message} ${cozyMessage} ${groupStart}`,
+          groupId: messageData.id,
+          message: new MessageC({
+            ...messageData,
+          }),
+          channel: getChannel(messageData.channel_id),
+          onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
+          style: { cursor: "pointer" }
+        });
+      }
     });
     this.setState({ content, new: true });
     setTimeout(() => {
