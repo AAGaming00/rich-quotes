@@ -22,7 +22,7 @@ module.exports = class QuoteHandler extends React.Component {
   }
   async componentDidMount () {
     const content = [...this.state.content]
-    content.forEach(async (e, i) => {
+    await content.forEach(async (e, i) => {
         if (e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
           const linkArray = e.props.href.split('/')
           const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6])
