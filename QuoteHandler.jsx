@@ -31,6 +31,7 @@ module.exports = class QuoteHandler extends React.Component {
           }
            if (messageData.embeds) {
              messageData.embeds.forEach((e, i) => {
+               console.log(e)
               if (!e.color) {
                 messageData.embeds[i].color = '#00000000'
               }
@@ -52,7 +53,7 @@ module.exports = class QuoteHandler extends React.Component {
     this.setState({ content, new: true });
     setTimeout(() => {
       this.forceUpdate()
-    }, 100);
+    }, 500);
   }
 
       // queue based on https://stackoverflow.com/questions/53540348/js-async-await-tasks-queue
