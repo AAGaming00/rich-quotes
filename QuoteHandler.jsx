@@ -32,7 +32,7 @@ module.exports = class QuoteHandler extends React.Component {
            if (messageData.embeds) {
              messageData.embeds.forEach((e, i) => {
                console.log(e)
-              if (!e.color) {
+              if (typeof e.color !== 'string') {
                 messageData.embeds[i].color = '#00000000'
               }
              })
