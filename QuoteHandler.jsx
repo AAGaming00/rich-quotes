@@ -30,7 +30,11 @@ module.exports = class QuoteHandler extends React.Component {
             return
           }
            if (messageData.embeds) {
-             messageData.embeds = []
+             messageData.embeds.forEach((e, i) => {
+              if (!e.color) {
+                messageData.embeds[i].color = '#00000000'
+              }
+             })
            }
           //msg.message.content = msg.message.content.replace(e.props.href, '')
           content[i] = React.createElement(ChannelMessage, {
