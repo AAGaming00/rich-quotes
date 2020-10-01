@@ -13,10 +13,8 @@ module.exports = class QuoteHandler extends React.Component {
   constructor (props) {
     super(props);
     this.state = { };
-    console.log(this.props)
   }
   static getDerivedStateFromProps(props, state) {
-     console.log(props)
      if (!state.new) {
      return { ...Object.assign({}, props) };
      }
@@ -28,7 +26,12 @@ module.exports = class QuoteHandler extends React.Component {
         if (e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
           const linkArray = e.props.href.split('/')
           const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6])
-          console.log(messageData)
+          if (!messageData) {
+            return
+          }
+           if (messageData.embeds) {
+             messageData.embeds = []
+           }
           //msg.message.content = msg.message.content.replace(e.props.href, '')
           content[i] = React.createElement(ChannelMessage, {
               className: `${message} ${cozyMessage} ${groupStart}`,
@@ -41,9 +44,7 @@ module.exports = class QuoteHandler extends React.Component {
               style: { cursor: "pointer" }
           })
         }
-        console.log(content[i])
     });
-    console.log(content)
     this.setState({ content, new: true });
     setTimeout(() => {
       this.forceUpdate()
@@ -91,7 +92,6 @@ module.exports = class QuoteHandler extends React.Component {
   }
 
   render () {
-    console.log(this.state)
     return (
         <div key={this.state.content}>{this.state.content}</div>
     )

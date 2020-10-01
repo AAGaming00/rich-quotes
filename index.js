@@ -6,9 +6,7 @@ const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageC
 const renderer = require('./QuoteHandler');
 module.exports = class Quowoter extends Plugin {
   startPlugin () {
-    console.log(MessageContent);
     inject('quowoter-Message', MessageContent, 'type', (args, res) => {
-      console.log(args, res);
       if ((/(https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19})+/g).test(args[0].message.content)) {
         res.props.children = React.createElement(renderer, {
           content: args[0].content
