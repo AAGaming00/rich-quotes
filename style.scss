@@ -3,6 +3,7 @@
     border-radius: 10px;
     max-width: 400px;
     overflow: hidden;
+    margin-top: 2px;
 }
 
 .qo-avatar {
@@ -28,8 +29,8 @@
 
 .qo-content {
     position: relative;
-    margin-left: 38px;
-    margin-top: 0px;
+    margin-left: 35px;
+    top: -6px;
     overflow-wrap: break-word;
     word-wrap: break-word;
     hyphens: auto;

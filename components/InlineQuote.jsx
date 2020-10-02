@@ -8,7 +8,7 @@ module.exports = class InlineQuote extends React.Component {
   render () {
     return (
       <>
-        <div className='qo-inline'>
+        <div key={this.props.content} className='qo-inline'>
           <div className='qo-header header-23xsNx threads-header-hack'>
             <img src={this.props.author.avatarURL} aria-hidden="true" class={`qo-avatar threads-avatar-hack avatar-1BDn8e clickable-1bVtEA`} alt=" "></img>
             <div className='qo-username username-1A8OIy clickable-1bVtEA'>{this.props.author.username}</div>
