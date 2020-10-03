@@ -36,3 +36,20 @@
     word-wrap: break-word;
     hyphens: auto;
 }
+
+.qo-button-container {
+    display:flex;
+    overflow:hidden;
+    float: left;
+    padding-left: 8px;
+    &>div {
+        border-radius: 10px;
+        height: 20px;
+        width: 20px;
+        background-color: var(--background-primary-alt);
+        &>svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}

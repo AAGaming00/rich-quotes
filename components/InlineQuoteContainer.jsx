@@ -1,12 +1,9 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
 const MessageC = getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM, false)
-const { AsyncComponent } = require('powercord/components');
-const ChannelMessage = AsyncComponent.from(getModule(m => m.type && m.type.displayName === 'ChannelMessage', false));
 const User = getModule(m => m.prototype && m.prototype.tag, false)
 const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false)
 const { message, cozyMessage, groupStart } = getModule([ 'cozyMessage' ], false)
 const { blockquoteContainer } = getModule([ 'blockquoteContainer' ], false)
-const { transitionTo } = getModule(["transitionTo"], false);
 const { getMessage } = getModule(['getMessages'], false)
 const { getUser } = getModule([ 'getCurrentUser' ], false)
 const { getChannel } = getModule(['getChannel'], false)
@@ -53,10 +50,9 @@ module.exports = class InlineQuoteContainer extends React.Component {
           message: new MessageC({ ...messageData }),
           channel: getChannel(messageData.channel_id),
           author: messageData.author,
-          content: parser(messageData.content, true, { channelId: this.props.message.channel_id }),
-          onClick: () => transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')),
+          content: parser(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
           style: { cursor: "pointer" },
-          link: true
+          link: e.props.href
         });
       }
 

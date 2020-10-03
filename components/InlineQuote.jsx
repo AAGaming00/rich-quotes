@@ -1,11 +1,12 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
-const { Icon } = require('powercord/components')
+const { Icon } = require('powercord/components');
 const { avatar, clickable, username, header } = getModule([ 'systemMessageAccessories' ], false);
 const UserPopout = getModuleByDisplayName('UserPopout', false);
 const PopoutDispatcher = getModule([ 'openPopout' ], false);
 const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
 const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
 const userStore = getModule([ 'getCurrentUser' ], false);
+const { transitionTo } = getModule([ 'transitionTo' ], false);
 
 module.exports = class InlineQuote extends React.Component {
   openPopout (event) {
@@ -62,7 +63,13 @@ module.exports = class InlineQuote extends React.Component {
             this.openUserContextMenu(e);
           }} className={`qo-username ${username} ${clickable}`}>{this.props.author.username}</div>
         </div>
-        {this.props.link ? <div className='qo-button-container'><Icon className='qo-jump' name="Reply"/></div> : null}
+        {this.props.link
+          ? <div className='qo-button-container'>
+            <div style= {{ cursor: 'pointer' }} onClick= {() => {
+              transitionTo(this.props.link.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, ''));
+            }}>
+              <Icon className='qo-jump' name="Reply"/></div></div>
+          : null}
         <div className='qo-content'>
           {this.props.content}
         </div>
