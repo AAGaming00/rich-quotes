@@ -1,4 +1,5 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
+const { Icon } = require('powercord/components')
 const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 const UserPopout = getModuleByDisplayName('UserPopout', false);
 const PopoutDispatcher = getModule([ 'openPopout' ], false);
@@ -55,6 +56,7 @@ module.exports = class InlineQuote extends React.Component {
             }} onContextMenu={(e) => {
               this.openUserContextMenu(e);
             }} aria-hidden="true" class={`qo-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`} alt=" "></img>
+            {this.props.link ? <div className='qo-jump-container'><Icon name="Reply"/></div> : null}
             <div onClick={(e) => {
               this.openPopout(e);
             }} onContextMenu={(e) => {

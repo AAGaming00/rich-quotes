@@ -51,6 +51,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
           message: new MessageC({
             ...messageData,
           }),
+          link: true,
           channel: getChannel(messageData.channel_id),
           author: messageData.author,
           content: parser(messageData.content, true, { channelId: this.props.message.channel_id }),
