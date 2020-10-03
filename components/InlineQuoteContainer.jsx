@@ -29,7 +29,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
     const content = [...this.state.content]
     //console.log(content)
     content.forEach(async (e, i) => {
-      if (e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
+      if (e && e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
         const linkArray = e.props.href.split('/');
         const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6]);
         if (!messageData) {
@@ -66,7 +66,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
         content[i] = React.createElement(quote, {
           //className: `${message} ${cozyMessage} ${groupStart}`,
           author: getUser(messageData[3]),
-          content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''), true, { channelId: this.props.message.channel_id }),
+          content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
           channel: getChannel(this.props.message.channel_id)
           //onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
           //style: { cursor: "pointer" }
