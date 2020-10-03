@@ -53,7 +53,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
           }),
           channel: getChannel(messageData.channel_id),
           author: messageData.author,
-          content: parser(messageData.content.replace(/\n> /g, '\n'), true, { channelId: this.props.message.channel_id }),
+          content: parser(messageData.content, true, { channelId: this.props.message.channel_id }),
           onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
           style: { cursor: "pointer" }
         });
@@ -61,12 +61,12 @@ module.exports = class InlineQuoteContainer extends React.Component {
       if (e && e.props && e.props.className && e.props.className === blockquoteContainer && (content[i + 1] && content[i + 1].props && content[i + 1].props.children && content[i + 1].props.children.props && content[i + 1].props.children.props.className && content[i + 1].props.children.props.className.includes('mention'))) {
         //msg.message.content = msg.message.content.replace(e.props.href, '')
         const messageData = /(?:> )([\s\S]+)(<@!?(\d+)>)/g.exec(this.props.message.content)
-        console.log(messageData, messageData[1].replace('> ', ''))
+        console.log(messageData, messageData[1].replace(/\n> /g, ''))
         content[i+1] = null
         content[i] = React.createElement(quote, {
           //className: `${message} ${cozyMessage} ${groupStart}`,
           author: getUser(messageData[3]),
-          content: parser(messageData[1].replace(/\n> /g, '\n'), true, { channelId: this.props.message.channel_id }),
+          content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''), true, { channelId: this.props.message.channel_id }),
           channel: getChannel(this.props.message.channel_id)
           //onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
           //style: { cursor: "pointer" }
