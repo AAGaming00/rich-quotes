@@ -55,7 +55,8 @@ module.exports = class InlineQuoteContainer extends React.Component {
           author: messageData.author,
           content: parser(messageData.content, true, { channelId: this.props.message.channel_id }),
           onClick: () => transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')),
-          style: { cursor: "pointer" }
+          style: { cursor: "pointer" },
+          link: true
         });
       }
 
