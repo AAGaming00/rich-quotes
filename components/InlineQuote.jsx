@@ -9,6 +9,23 @@ const userStore = getModule([ 'getCurrentUser' ], false);
 const { transitionTo } = getModule([ 'transitionTo' ], false);
 
 module.exports = class InlineQuote extends React.Component {
+  // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
+  search (content, author_id, id, dm, asc) {
+    return new Promise((resolve, reject) => {
+      const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
+      const opts = { author_id,
+        content,
+        include_nsfw: true };
+      const s = new Search(id, dm ? 'DM' : 'GUILD', asc
+        ? { offset: 0,
+          sort_by: 'timestamp',
+          sort_order: 'asc',
+          ...opts }
+        : opts);
+      s.fetch(res => resolve(res.body), () => void 0, reject);
+    });
+  }
+
   openPopout (event) {
     const guildId = this.props.channel.guild_id;
     const userId = this.props.author.id;
@@ -69,7 +86,13 @@ module.exports = class InlineQuote extends React.Component {
               transitionTo(this.props.link.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, ''));
             }}>
               <Icon className='qo-jump' name="Reply"/></div></div>
-          : null}
+          : <div className='qo-button-container'>
+            <div style= {{ cursor: 'pointer' }} onClick= {async () => {
+              const result = await this.search(this.props.raw, this.props.author.id, this.props.channel.guild_id, !this.props.channel.guild_id);
+              const message = result.messages[0].filter((e) => e.content && e.content === this.props.raw);
+              console.log(result, message);
+            }}>
+              <Icon className='qo-jump' name="Search"/></div></div>}
         <div className='qo-content'>
           {this.props.content}
         </div>

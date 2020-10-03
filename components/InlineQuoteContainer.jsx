@@ -65,6 +65,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
         content[i] = React.createElement(quote, {
           className: `${message} ${cozyMessage} ${groupStart}`,
           author: getUser(messageData[3]),
+          raw: messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''),
           content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
           channel: getChannel(this.props.message.channel_id)
           //onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
