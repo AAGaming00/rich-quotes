@@ -15,7 +15,7 @@ module.exports = class Quowoter extends Plugin {
           message: args[0].message
         });
       } else if ((/(https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19})+/g).test(args[0].message.content)) {
-        res.props.children = React.createElement(link, {
+        res.props.children = React.createElement(renderer, {
           content: args[0].content,
           message: args[0].message
         });
