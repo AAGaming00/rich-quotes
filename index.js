@@ -1,10 +1,8 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
-const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
+const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);require('powercord/components');
 const renderer = require('./components/InlineQuoteContainer');
-const link = require('./components/LinkHandler');
-
 module.exports = class Quowoter extends Plugin {
   startPlugin () {
     this.loadStylesheet('./style.scss');

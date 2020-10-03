@@ -1,6 +1,6 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
-const { Icon } = require('powercord/components');
-const { avatar, clickable, username, header } = getModule([ 'systemMessageAccessories' ], false);
+const { Icon, Spinner } = require('powercord/components');
+const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 const UserPopout = getModuleByDisplayName('UserPopout', false);
 const PopoutDispatcher = getModule([ 'openPopout' ], false);
 const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
@@ -9,11 +9,17 @@ const userStore = getModule([ 'getCurrentUser' ], false);
 const { transitionTo } = getModule([ 'transitionTo' ], false);
 
 module.exports = class InlineQuote extends React.Component {
+  constructor (props) {
+    super(props);
+    this.state = {};
+  }
+
   // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
-  search (content, author_id, id, dm, asc) {
+  search (content, author_id, max_id, id, dm, asc) {
     return new Promise((resolve, reject) => {
       const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
       const opts = { author_id,
+        max_id,
         content,
         include_nsfw: true };
       const s = new Search(id, dm ? 'DM' : 'GUILD', asc
@@ -68,7 +74,7 @@ module.exports = class InlineQuote extends React.Component {
   render () {
     return (
       <><div key={this.props.content} className='qo-inline'>
-        <div className={`qo-header threads-header-hack ${header}`}>
+        <div className='qo-header threads-header-hack'>
           <img src={this.props.author.avatarURL} onClick={(e) => {
             this.openPopout(e);
           }} onContextMenu={(e) => {
@@ -87,12 +93,24 @@ module.exports = class InlineQuote extends React.Component {
             }}>
               <Icon className='qo-jump' name="Reply"/></div></div>
           : <div className='qo-button-container'>
-            <div style= {{ cursor: 'pointer' }} onClick= {async () => {
-              const result = await this.search(this.props.raw, this.props.author.id, this.props.channel.guild_id, !this.props.channel.guild_id);
-              const message = result.messages[0].filter((e) => e.content && e.content === this.props.raw);
-              console.log(result, message);
+            <div key={this.state.searchStatus} style= {{ cursor: 'pointer' }} onClick= {async () => {
+              this.setState({ ...this.state,
+                searchStatus: 'loading' });
+              const result = await this.search(this.props.raw, this.props.author.id, this.props.timestamp, this.props.channel.guild_id || this.props.channel.id, !this.props.channel.guild_id);
+              const message = result.messages[0].filter((e) => e?.content === this.props.raw);
+              if (!message) {
+                this.setState({ ...this.state,
+                  searchStatus: 'error' });
+                return;
+              }
+              this.setState({ ...this.state,
+                searchStatus: 'done' });
+              console.log(result, message[0]);
+              transitionTo(`/channels/${this.props.channel.guild_id || '@me'}/${this.props.channel.id}/${message[0].id}`);
             }}>
-              <Icon className='qo-jump' name="Search"/></div></div>}
+              {this.state?.searchStatus === 'loading'
+                ? <Spinner className='qo-jump qo-loading' type='pulsingEllipsis'/>
+                : <Icon className='qo-jump' name="Search"/>}</div></div>}
         <div className='qo-content'>
           {this.props.content}
         </div>
