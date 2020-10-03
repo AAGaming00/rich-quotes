@@ -8,7 +8,7 @@ module.exports = class Quowoter extends Plugin {
   startPlugin () {
     this.loadStylesheet('./style.scss');
     inject('quowoter-Message', MessageContent, 'type', (args, res) => {
-      console.log(res);
+      //console.log(res);
       if ((/(> .+\n)+(<@!?(\d+)>)/g).test(args[0].message.content)) {
         res.props.children = React.createElement(renderer, {
           content: args[0].content,

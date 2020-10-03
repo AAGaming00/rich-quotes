@@ -12,7 +12,7 @@ const { getUser } = getModule([ 'getCurrentUser' ], false)
 const { getChannel } = getModule(['getChannel'], false)
 const parser = getModule(["parse", "parseTopic"], false).parse;
 const quote = require('./InlineQuote')
-console.log(blockquoteContainer)
+//console.log(blockquoteContainer)
 let lastFetch;
 module.exports = class InlineQuoteContainer extends React.Component {
   constructor (props) {
@@ -27,7 +27,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
   }
   async componentDidMount () {
     const content = [...this.state.content]
-    console.log(content)
+    //console.log(content)
     content.forEach(async (e, i) => {
       if (e.props && e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
         const linkArray = e.props.href.split('/');
@@ -35,10 +35,10 @@ module.exports = class InlineQuoteContainer extends React.Component {
         if (!messageData) {
           return;
         }
-        console.log(messageData)
+        //console.log(messageData)
         if (messageData.embeds) {
           messageData.embeds.forEach((e, i) => {
-            console.log(e);
+            //console.log(e);
             if (typeof e.color !== 'string') {
               messageData.embeds[i].color = '#00000000';
             }

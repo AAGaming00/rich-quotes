@@ -2,7 +2,7 @@ const { React, getModule } = require('powercord/webpack');
 const avatar = getModule([ 'avatar' ], false);
 module.exports = class InlineQuote extends React.Component {
   componentDidMount () {
-    console.log(this.props.author, avatar);
+    //console.log(this.props.author, avatar);
   }
 
   render () {
