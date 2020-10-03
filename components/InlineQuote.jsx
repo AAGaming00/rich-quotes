@@ -1,11 +1,12 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
 const { Icon } = require('powercord/components')
-const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
+const { avatar, clickable, username, header } = getModule([ 'systemMessageAccessories' ], false);
 const UserPopout = getModuleByDisplayName('UserPopout', false);
 const PopoutDispatcher = getModule([ 'openPopout' ], false);
 const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
 const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
 const userStore = getModule([ 'getCurrentUser' ], false);
+
 module.exports = class InlineQuote extends React.Component {
   openPopout (event) {
     const guildId = this.props.channel.guild_id;
@@ -48,26 +49,24 @@ module.exports = class InlineQuote extends React.Component {
 
   render () {
     return (
-      <>
-        <div key={this.props.content} className='qo-inline'>
-          <div className='qo-header header-23xsNx threads-header-hack'>
-            <img src={this.props.author.avatarURL} onClick={(e) => {
-              this.openPopout(e);
-            }} onContextMenu={(e) => {
-              this.openUserContextMenu(e);
-            }} aria-hidden="true" class={`qo-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`} alt=" "></img>
-            {this.props.link ? <div className='qo-jump-container'><Icon name="Reply"/></div> : null}
-            <div onClick={(e) => {
-              this.openPopout(e);
-            }} onContextMenu={(e) => {
-              this.openUserContextMenu(e);
-            }} className={`qo-username ${username} ${clickable}`}>{this.props.author.username}</div>
-          </div>
-          <div className='qo-content'>
-            {this.props.content}
-          </div>
+      <><div key={this.props.content} className='qo-inline'>
+        <div className={`qo-header threads-header-hack ${header}`}>
+          <img src={this.props.author.avatarURL} onClick={(e) => {
+            this.openPopout(e);
+          }} onContextMenu={(e) => {
+            this.openUserContextMenu(e);
+          }} aria-hidden="true" className={`qo-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`} alt=" "></img>
+          <div onClick={(e) => {
+            this.openPopout(e);
+          }} onContextMenu={(e) => {
+            this.openUserContextMenu(e);
+          }} className={`qo-username ${username} ${clickable}`}>{this.props.author.username}</div>
         </div>
-      </>
+        {this.props.link ? <div className='qo-button-container'><Icon className='qo-jump' name="Reply"/></div> : null}
+        <div className='qo-content'>
+          {this.props.content}
+        </div>
+      </div></>
     );
   }
 };

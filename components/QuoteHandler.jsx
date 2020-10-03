@@ -9,6 +9,7 @@ const { transitionTo } = getModule(["transitionTo"], false);
 const { getMessage } = getModule(['getMessages'], false)
 const { getChannel } = getModule(['getChannel'], false)
 let lastFetch;
+
 module.exports = class QuoteHandler extends React.Component {
   constructor (props) {
     super(props);
@@ -97,8 +98,6 @@ module.exports = class QuoteHandler extends React.Component {
   }
 
   render () {
-    return (
-        <div key={this.state.content}>{this.state.content}</div>
-    )
-    }
+    return ( <div key={this.state.content}>{this.state.content}</div> )
+  }
 };
