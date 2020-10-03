@@ -97,7 +97,7 @@ module.exports = class InlineQuote extends React.Component {
               this.setState({ ...this.state,
                 searchStatus: 'loading' });
               const result = await this.search(this.props.raw, this.props.author.id, this.props.timestamp, this.props.channel.guild_id || this.props.channel.id, !this.props.channel.guild_id);
-              const message = result.messages[0].filter((e) => e?.content === this.props.raw);
+              const message = result.messages[0].filter((e) => e?.content.includes(this.props.raw));
               if (!message) {
                 this.setState({ ...this.state,
                   searchStatus: 'error' });
