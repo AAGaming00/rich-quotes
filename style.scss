@@ -48,8 +48,7 @@
     padding-left: 8px;
     padding-bottom: 8px;
     &>div {
-    display:flex;
-
+        display:flex;
         justify-content: center;
         align-items: center;
         border-radius: 10px;
@@ -59,6 +58,9 @@
         &>svg {
             width: 20px;
             height: 20px;
+            &.qo_jump {
+                transform: scaleX(-1);
+            }
         }
     }
 }
