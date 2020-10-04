@@ -73,26 +73,26 @@ module.exports = class InlineQuote extends React.Component {
 
   render () {
     return (
-      <><div key={this.props.content} className='qo-inline'>
-        <div className='qo-header threads-header-hack'>
+      <><div key={this.props.content} className='re-inline'>
+        <div className='re-header threads-header-hack'>
           <img src={this.props.author.avatarURL} onClick={(e) => {
             this.openPopout(e);
           }} onContextMenu={(e) => {
             this.openUserContextMenu(e);
-          }} aria-hidden="true" className={`qo-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`} alt=" "></img>
+          }} aria-hidden="true" className={`re-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`} alt=" "></img>
           <div onClick={(e) => {
             this.openPopout(e);
           }} onContextMenu={(e) => {
             this.openUserContextMenu(e);
-          }} className={`qo-username ${username} ${clickable}`}>{this.props.author.username}</div>
+          }} className={`re-username ${username} ${clickable}`}>{this.props.author.username}</div>
         </div>
         {this.props.link
-          ? <div className='qo-button-container'>
+          ? <div className='re-button-container'>
             <div style= {{ cursor: 'pointer' }} onClick= {() => {
               transitionTo(this.props.link.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, ''));
             }}>
-              <Icon className='qo-jump qo-180-flip' name="Reply"/></div></div>
-          : <div className='qo-button-container'>
+              <Icon className='re-jump re-180-flip' name="Reply"/></div></div>
+          : <div className='re-button-container'>
             <div key={this.state.searchStatus} style= {{ cursor: 'pointer' }} onClick= {async () => {
               this.setState({ ...this.state,
                 searchStatus: 'loading' });
@@ -109,9 +109,9 @@ module.exports = class InlineQuote extends React.Component {
               transitionTo(`/channels/${this.props.channel.guild_id || '@me'}/${this.props.channel.id}/${message[0].id}`);
             }}>
               {this.state?.searchStatus === 'loading'
-                ? <Spinner className='qo-jump qo-loading' type='pulsingEllipsis'/>
-                : <Icon className='qo-jump' name="Search"/>}</div></div>}
-        <div className='qo-content'>
+                ? <Spinner className='re-jump re-loading' type='pulsingEllipsis'/>
+                : <Icon className='re-jump' name="Search"/>}</div></div>}
+        <div className='re-content'>
           {this.props.content}
         </div>
       </div></>

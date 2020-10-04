@@ -1,4 +1,4 @@
-.qo-inline {
+.re-inline {
     background: var(--background-secondary);
     border-radius: 10px;
     max-width: 400px;
@@ -6,7 +6,7 @@
     margin-top: 2px;
 }
 
-.qo-avatar {
+.re-avatar {
     left: 0px;
     position: relative;
     width: 20px;
@@ -15,20 +15,20 @@
     margin-bottom: 0px;
 }
 
-.qo-header {
+.re-header {
     height: auto;
     padding-top: 8px;
     padding-left: 8px;
     min-height: 0px !important;
 }
 
-.qo-username {
+.re-username {
     position: relative;
     padding-left: 8px;
     bottom: 5px;
 }
 
-.qo-content {
+.re-content {
     position: relative;
     margin-left: 35px;
     top: -6px;
@@ -37,11 +37,11 @@
     hyphens: auto;
 }
 
-.qo-180-flip {
+.re-180-flip {
     transform: rotateY(180deg);
 }
 
-.qo-button-container {
+.re-button-container {
     display:flex;
     overflow:hidden;
     float: left;
