@@ -3,7 +3,7 @@ const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
 const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);require('powercord/components');
 const renderer = require('./components/InlineQuoteContainer');
-module.exports = class Quowoter extends Plugin {
+module.exports = class RichQuotes extends Plugin {
   startPlugin () {
     this.loadStylesheet('./style.scss');
     inject('quowoter-Message', MessageContent, 'type', (args, res) => {
