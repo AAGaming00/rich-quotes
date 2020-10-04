@@ -6,7 +6,7 @@ const renderer = require('./components/InlineQuoteContainer');
 module.exports = class RichQuotes extends Plugin {
   startPlugin () {
     this.loadStylesheet('./style.scss');
-    inject('quowoter-Message', MessageContent, 'type', (args, res) => {
+    inject('rich-quotes-Message', MessageContent, 'type', (args, res) => {
       // console.log(res);
       if ((/(> .+\n)+(<@!?(\d+)>)/g).test(args[0].message.content)) {
         res.props.children = React.createElement(renderer, {
@@ -26,6 +26,6 @@ module.exports = class RichQuotes extends Plugin {
 
 
   pluginWillUnload () {
-    uninject('quowoter-Message');
+    uninject('rich-quotes-Message');
   }
 };
