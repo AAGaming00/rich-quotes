@@ -37,6 +37,10 @@
     hyphens: auto;
 }
 
+.qo-180-flip {
+    transform: rotateY(180deg);
+}
+
 .qo-button-container {
     display:flex;
     overflow:hidden;

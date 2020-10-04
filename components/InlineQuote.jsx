@@ -91,7 +91,7 @@ module.exports = class InlineQuote extends React.Component {
             <div style= {{ cursor: 'pointer' }} onClick= {() => {
               transitionTo(this.props.link.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, ''));
             }}>
-              <Icon className='qo-jump' name="Reply"/></div></div>
+              <Icon className='qo-jump qo-180-flip' name="Reply"/></div></div>
           : <div className='qo-button-container'>
             <div key={this.state.searchStatus} style= {{ cursor: 'pointer' }} onClick= {async () => {
               this.setState({ ...this.state,
