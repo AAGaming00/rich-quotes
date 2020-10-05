@@ -1,12 +1,10 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
 const { Icon, Spinner } = require('powercord/components');
-const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 const UserPopout = getModuleByDisplayName('UserPopout', false);
 const PopoutDispatcher = getModule([ 'openPopout' ], false);
 const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
 const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
 const userStore = getModule([ 'getCurrentUser' ], false);
-const { transitionTo } = getModule([ 'transitionTo' ], false);
 
 module.exports = class InlineQuote extends React.Component {
   constructor (props) {
@@ -72,8 +70,10 @@ module.exports = class InlineQuote extends React.Component {
   }
 
   render () {
+    const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
+    const { transitionTo } = getModule([ 'transitionTo' ], false);
     return (
-      <><div key={this.props.content} className='re-inline'>
+      <div className="a11y-hack"><div key={this.props.content} className='re-inline'>
         <div className='re-header threads-header-hack'>
           <img src={this.props.author.avatarURL} onClick={(e) => {
             this.openPopout(e);
@@ -114,7 +114,7 @@ module.exports = class InlineQuote extends React.Component {
         <div className='re-content'>
           {this.props.content}
         </div>
-      </div></>
+      </div></div>
     );
   }
 };

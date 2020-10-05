@@ -37,8 +37,7 @@ module.exports = class QuoteHandler extends React.Component {
               messageData.embeds[i].color = '#00000000';
             }
           });
-        }
-        //msg.message.content = msg.message.content.replace(e.props.href, '')
+        }        //msg.message.content = msg.message.content.replace(e.props.href, '')
         content[i] = React.createElement(ChannelMessage, {
           className: `${message} ${cozyMessage} ${groupStart}`,
           groupId: messageData.id,
