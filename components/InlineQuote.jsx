@@ -105,7 +105,7 @@ module.exports = class InlineQuote extends React.Component {
               }
               this.setState({ ...this.state,
                 searchStatus: 'done' });
-              console.log(result, message[0]);
+              //console.log(result, message[0]);
               transitionTo(`/channels/${this.props.channel.guild_id || '@me'}/${this.props.channel.id}/${message[0].id}`);
             }}>
               {this.state?.searchStatus === 'loading'

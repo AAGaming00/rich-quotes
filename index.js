@@ -7,13 +7,8 @@ module.exports = class RichQuotes extends Plugin {
   startPlugin () {
     this.loadStylesheet('./style.scss');
     inject('rich-quotes-Message', MessageContent, 'type', (args, res) => {
-      // console.log(res);
-      if ((/(> .+\n)+(<@!?(\d+)>)/g).test(args[0].message.content)) {
-        res.props.children = React.createElement(renderer, {
-          content: args[0].content,
-          message: args[0].message
-        });
-      } else if ((/(https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19})+/g).test(args[0].message.content)) {
+      //console.log(res, args[0]);
+      if ((/(> .+\n)+(<@!?(\d+)>)/g).test(args[0].message.content) || (/(https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19})+/g).test(args[0].message.content)) {
         res.props.children = React.createElement(renderer, {
           content: args[0].content,
           message: args[0].message

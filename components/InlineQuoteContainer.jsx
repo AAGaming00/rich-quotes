@@ -23,63 +23,73 @@ module.exports = class InlineQuoteContainer extends React.Component {
      }
      return state
   }
-  async componentDidMount () {
-    const content = [...this.state.content];
-    //console.log(content)
-    content.forEach(async (e, i) => { if (e && e.props) {
-      if (e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
-        const linkArray = e.props.href.split('/');
-        const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6]);
-
-        if (!messageData) return;
-
-        //console.log(messageData)
-        if (messageData.embeds) {
-          messageData.embeds.forEach((e, i) => {
-            //console.log(e);
-            if (typeof e.color !== 'string') {
-              messageData.embeds[i].color = '#00000000';
-            }
-          });
-        }
-
-        //msg.message.content = msg.message.content.replace(e.props.href, '')
-        content[i] = React.createElement(quote, {
-          className: `${message} ${cozyMessage} ${groupStart}`,
-          groupId: messageData.id,
-          message: new MessageC({ ...messageData }),
-          channel: getChannel(messageData.channel_id),
-          author: messageData.author,
-          content: parser(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
-          style: { cursor: "pointer" },
-          link: e.props.href
-        });
-      }
-
-      if (e.props?.className === blockquoteContainer && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
-        //msg.message.content = msg.message.content.replace(e.props.href, '')
-        const messageData = /(?:> )([\s\S]+)(<@!?(\d+)>)/g.exec(this.props.message.content);
-        //console.log(messageData, messageData[1].replace(/\n> /g, ''))
-        content[i + 1] = null;
-        
-        content[i] = React.createElement(quote, {
-          className: `${message} ${cozyMessage} ${groupStart}`,
-          author: getUser(messageData[3]),
-          timestamp: this.props.message.id,
-          raw: messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''),
-          content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
-          channel: getChannel(this.props.message.channel_id)
-          //onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
-          //style: { cursor: "pointer" }
-        });
-      }
-    }});
-    this.setState({ content, new: true });
-    setTimeout(() => {
-      this.forceUpdate()
-    }, 500);
+  async componentDidUpdate () {
+    //console.log(this.props)
+    if (!_.isEqual(this.props.message.content, this.state.message.content)) {
+      //console.log('reloading')
+      await this.buildQuote()
+    }
   }
+  async componentDidMount () {
+    await this.buildQuote()
+  }
+  async buildQuote () {
 
+  const content = [...this.props.content];
+  //console.log('building quote')
+  content.forEach(async (e, i) => { if (e && e.props) {
+    if (e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
+      const linkArray = e.props.href.split('/');
+      const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6]);
+
+      if (!messageData) return;
+
+      //console.log(messageData)
+      if (messageData.embeds) {
+        messageData.embeds.forEach((e, i) => {
+          //console.log(e);
+          if (typeof e.color !== 'string') {
+            messageData.embeds[i].color = '#00000000';
+          }
+        });
+      }
+
+      //msg.message.content = msg.message.content.replace(e.props.href, '')
+      content[i] = React.createElement(quote, {
+        className: `${message} ${cozyMessage} ${groupStart}`,
+        groupId: messageData.id,
+        message: new MessageC({ ...messageData }),
+        channel: getChannel(messageData.channel_id),
+        author: messageData.author,
+        content: parser(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
+        style: { cursor: "pointer" },
+        link: e.props.href
+      });
+    }
+
+    if (e.props?.className === blockquoteContainer && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
+      //msg.message.content = msg.message.content.replace(e.props.href, '')
+      const messageData = /(?:> )([\s\S]+)(<@!?(\d+)>)/g.exec(this.props.message.content);
+      //console.log(messageData, messageData[1].replace(/\n> /g, ''))
+      content[i + 1] = null;
+      
+      content[i] = React.createElement(quote, {
+        className: `${message} ${cozyMessage} ${groupStart}`,
+        author: getUser(messageData[3]),
+        timestamp: this.props.message.id,
+        raw: messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''),
+        content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
+        channel: getChannel(this.props.message.channel_id)
+        //onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
+        //style: { cursor: "pointer" }
+      });
+    }
+  }});
+  this.setState({...this.props, content, oldContent: this.props.content, new: true });
+  setTimeout(() => {
+    this.forceUpdate()
+  }, 500);
+}
     // queue based on https://stackoverflow.com/questions/53540348/js-async-await-tasks-queue
     getMsgWithQueue = (() => {
       let pending = Promise.resolve()
@@ -121,6 +131,6 @@ module.exports = class InlineQuoteContainer extends React.Component {
   }
 
   render () {
-    return ( <div key={this.state.content}>{this.state.content}</div> )
+    return ( <div key={this.props.content}>{this.state.content}</div> )
   }
 };
