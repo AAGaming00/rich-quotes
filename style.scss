@@ -35,6 +35,9 @@
     overflow-wrap: break-word;
     word-wrap: break-word;
     hyphens: auto;
+    &>pre>code {
+        max-height: 10rem;
+    }
 }
 
 .re-180-flip {
