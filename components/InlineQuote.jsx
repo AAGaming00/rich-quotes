@@ -73,7 +73,7 @@ module.exports = class InlineQuote extends React.Component {
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
     const { transitionTo } = getModule([ 'transitionTo' ], false);
     return (
-      <div className="a11y-hack"><div key={this.props.content} className='re-inline'>
+      <div id="a11y-hack"><div key={this.props.content} className='re-inline'>
         <div className='re-header threads-header-hack'>
           <img src={this.props.author.avatarURL} onClick={(e) => {
             this.openPopout(e);
