@@ -1,14 +1,6 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
-const MessageC = getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM, false)
-const User = getModule(m => m.prototype && m.prototype.tag, false)
-const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false)
-const { message, cozyMessage, groupStart } = getModule([ 'cozyMessage' ], false)
-const { blockquoteContainer } = getModule([ 'blockquoteContainer' ], false)
-const { getMessage } = getModule(['getMessages'], false)
-const { getUser } = getModule([ 'getCurrentUser' ], false)
-const { getChannel } = getModule(['getChannel'], false)
-const parser = getModule(["parse", "parseTopic"], false).parse;
 const quote = require('./InlineQuote')
+const parser = getModule(["parse", "parseTopic"], false);
 //console.log(blockquoteContainer)
 let lastFetch;
 
@@ -34,10 +26,15 @@ module.exports = class InlineQuoteContainer extends React.Component {
     await this.buildQuote()
   }
   async buildQuote () {
-
+  const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM)
+  const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ])
+  const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ])
+  const { getUser } = await getModule([ 'getCurrentUser' ])
+  const { getChannel } = await getModule(['getChannel'])
   const content = [...this.props.content];
   //console.log('building quote')
-  content.forEach(async (e, i) => { if (e && e.props) {
+  content.forEach(async (e, i) => { 
+    if (e && e.props) {
     if (e.props.href && (/https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g).test(e.props.href)) {
       const linkArray = e.props.href.split('/');
       const messageData = await this.getMsgWithQueue(linkArray[5], linkArray[6]);
@@ -61,7 +58,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
         message: new MessageC({ ...messageData }),
         channel: getChannel(messageData.channel_id),
         author: messageData.author,
-        content: parser(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
+        content: parser.parse(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
         style: { cursor: "pointer" },
         link: e.props.href
       });
@@ -78,7 +75,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
         author: getUser(messageData[3]),
         timestamp: this.props.message.id,
         raw: messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''),
-        content: parser(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
+        content: parser.parse(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
         channel: getChannel(this.props.message.channel_id)
         //onClick: () => { transitionTo(e.props.href.replace(/https?:\/\/((canary|ptb)\.)?discord(app)?\.com/g, '')); },
         //style: { cursor: "pointer" }
@@ -106,6 +103,9 @@ module.exports = class InlineQuoteContainer extends React.Component {
     })()
 
   async getMsg (channelId, messageId) {
+    const User = await getModule(m => m.prototype && m.prototype.tag)
+    const Timestamp = await getModule(m => m.prototype && m.prototype.toDate && m.prototype.month)
+    const { getMessage } = await getModule(['getMessages'])
     let message = getMessage(channelId, messageId);
 
     if (!message) {

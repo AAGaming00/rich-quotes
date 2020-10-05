@@ -1,13 +1,6 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
-const MessageC = getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM, false)
 const { AsyncComponent } = require('powercord/components');
-const ChannelMessage = AsyncComponent.from(getModule(m => m.type && m.type.displayName === 'ChannelMessage', false));
-const User = getModule(m => m.prototype && m.prototype.tag, false)
-const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false)
-const { message, cozyMessage, groupStart } = getModule([ 'cozyMessage' ], false)
-const { transitionTo } = getModule(["transitionTo"], false);
-const { getMessage } = getModule(['getMessages'], false)
-const { getChannel } = getModule(['getChannel'], false)
+
 let lastFetch;
 
 module.exports = class QuoteHandler extends React.Component {
@@ -22,6 +15,14 @@ module.exports = class QuoteHandler extends React.Component {
   }
 
   async componentDidMount () {
+  const MessageC = getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM, false)
+  const User = getModule(m => m.prototype && m.prototype.tag, false)
+  const ChannelMessage = AsyncComponent.from(getModule(m => m.type && m.type.displayName === 'ChannelMessage', false));
+  const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false)
+  const { message, cozyMessage, groupStart } = getModule([ 'cozyMessage' ], false)
+  const { transitionTo } = getModule(["transitionTo"], false);
+  const { getMessage } = getModule(['getMessages'], false)
+  const { getChannel } = getModule(['getChannel'], false)
     const content = [...this.state.content]
 
     content.forEach(async (e, i) => {

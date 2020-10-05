@@ -1,10 +1,10 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
-const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);require('powercord/components');
 const renderer = require('./components/InlineQuoteContainer');
 module.exports = class RichQuotes extends Plugin {
   startPlugin () {
+    const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false)
     this.loadStylesheet('./style.scss');
     inject('rich-quotes-Message', MessageContent, 'type', (args, res) => {
       //console.log(res, args[0]);
