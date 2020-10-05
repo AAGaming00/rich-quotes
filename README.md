@@ -12,4 +12,4 @@ Discord client plugin for Powercord that makes quotes and message links more wea
 
 
 
-(recorded with [Dark Discord](https://github.com/Snapperito/Dark-Discord/) & [Revert Discord](https://github.com/fluffingtons/revert-discord))
+(recorded with [Dark Discord](https://github.com/Snapperito/Dark-Discord/))
