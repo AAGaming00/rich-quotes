@@ -39,6 +39,12 @@
     &>pre>code {
         max-height: 10rem;
     }
+    &>.re-extras {
+        width: 50%;
+        &>.re-video,.re-image {
+            width: 100%;
+        }
+    }
 }
 
 .re-180-flip {

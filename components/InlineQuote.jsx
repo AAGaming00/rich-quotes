@@ -6,6 +6,16 @@ const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', 
 const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
 const userStore = getModule([ 'getCurrentUser' ], false);
 
+function renderExtras(extras) {
+  let parsed_extras = [];
+  if (extras.raw_content.length != 0) extras.raw_content.forEach((e) => {
+    if (e.type == "image") parsed_extras.push(<img src={e.src} className="re-image"></img>)
+    else if (e.type == "video") parsed_extras.push(<video poster={e.preview_image} src={e.src} className="re-video" loop preload="none" autoPlay></video>)
+  });
+
+  return parsed_extras
+}
+
 module.exports = class InlineQuote extends React.Component {
   constructor (props) {
     super(props);
@@ -68,7 +78,6 @@ module.exports = class InlineQuote extends React.Component {
       popoutPosition: 'top'
     }));
   }
-
   render () {
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
     const { transitionTo } = getModule([ 'transitionTo' ], false);
@@ -113,6 +122,8 @@ module.exports = class InlineQuote extends React.Component {
                 : <Icon className='re-jump' name="Search"/>}</div></div>}
         <div className='re-content'>
           {this.props.content}
+          <br></br>
+          <div className='re-extras'>{ renderExtras(this.props.extras) }</div>
         </div>
       </div></div>
     );

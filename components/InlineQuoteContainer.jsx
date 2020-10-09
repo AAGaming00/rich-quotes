@@ -32,6 +32,14 @@ module.exports = class InlineQuoteContainer extends React.Component {
   const { getUser } = await getModule([ 'getCurrentUser' ])
   const { getChannel } = await getModule(['getChannel'])
   const content = [...this.props.content];
+  const video_ext = ["avi","flv","m4v","mkv","mov","mp4","mpeg","mpv","webm","wmv","yuv"];
+  const image_ext = ['jpg','jpeg','jfif','png','webp'];
+  function ext_check (ext, exts) {
+    let is_ext = false;
+    exts.forEach((ext_) => { if (ext_ == ext) is_ext = true; })
+    return is_ext;
+  }
+
   //console.log('building quote')
   content.forEach(async (e, i) => { 
     if (e && e.props) {
@@ -41,15 +49,49 @@ module.exports = class InlineQuoteContainer extends React.Component {
 
       if (!messageData) return;
 
-      //console.log(messageData)
-      if (messageData.embeds) {
-        messageData.embeds.forEach((e, i) => {
-          //console.log(e);
-          if (typeof e.color !== 'string') {
-            messageData.embeds[i].color = '#00000000';
-          }
+      let extras = { raw_content: [], complex_content: [] };
+
+      messageData?.attachments.forEach((e, i) => {
+        const split_dot = e.proxy_url.split('.')
+        const ext = split_dot[split_dot.length - 1];
+
+        if (ext_check(ext,image_ext)) extras.raw_content.push({
+          type: 'image',
+          src: e.proxy_url
         });
-      }
+        else if (ext_check(ext,video_ext)) extras.raw_content.push({
+          type: 'video',
+          src: e.proxy_url
+        }); 
+        else extras.complex_content.push(e);
+      })
+
+      messageData?.embeds.forEach((e, i) => {
+        if (typeof e.color !== 'string') messageData.embeds[i].color = '#00000000';
+
+        if (e.image) {
+          if (e.image.proxyURL) {
+            extras.raw_content.push({
+              type: 'image',
+              src: e.image.proxyURL,
+              original: e.image.url
+            })
+          }
+        } else if (e.video) {
+          if (e.video.proxyURL) {
+            extras.raw_content.push({
+              type: 'video',
+              src: e.video.proxyURL,
+              preview_image: e.thumbnail.proxyURL,
+              original: e.video.url
+            })
+          } else {
+            extras.complex_content.push(e)
+          }
+        } else {
+          extras.complex_content.push(e)
+        }
+      });
 
       //msg.message.content = msg.message.content.replace(e.props.href, '')
       content[i] = React.createElement(quote, {
@@ -59,6 +101,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
         channel: getChannel(messageData.channel_id),
         author: messageData.author,
         content: parser.parse(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
+        extras: extras,
         style: { cursor: "pointer" },
         link: e.props.href
       });
