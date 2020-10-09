@@ -51,47 +51,49 @@ module.exports = class InlineQuoteContainer extends React.Component {
 
       let extras = { raw_content: [], complex_content: [] };
 
-      messageData?.attachments.forEach((e, i) => {
-        const split_dot = e.proxy_url.split('.')
-        const ext = split_dot[split_dot.length - 1];
+      try {
+        messageData?.attachments.forEach((e, i) => {
+          const split_dot = e.proxy_url.split('.')
+          const ext = split_dot[split_dot.length - 1];
 
-        if (ext_check(ext,image_ext)) extras.raw_content.push({
-          type: 'image',
-          src: e.proxy_url
-        });
-        else if (ext_check(ext,video_ext)) extras.raw_content.push({
-          type: 'video',
-          src: e.proxy_url
-        }); 
-        else extras.complex_content.push(e);
-      })
+          if (ext_check(ext,image_ext)) extras.raw_content.push({
+            type: 'image',
+            src: e.proxy_url
+          });
+          else if (ext_check(ext,video_ext)) extras.raw_content.push({
+            type: 'video',
+            src: e.proxy_url
+          }); 
+          else extras.complex_content.push(e);
+        })
 
-      messageData?.embeds.forEach((e, i) => {
-        if (typeof e.color !== 'string') messageData.embeds[i].color = '#00000000';
+        messageData?.embeds.forEach((e, i) => {
+          if (typeof e.color !== 'string') messageData.embeds[i].color = '#00000000';
 
-        if (e.image) {
-          if (e.image.proxyURL) {
-            extras.raw_content.push({
-              type: 'image',
-              src: e.image.proxyURL,
-              original: e.image.url
-            })
-          }
-        } else if (e.video) {
-          if (e.video.proxyURL) {
-            extras.raw_content.push({
-              type: 'video',
-              src: e.video.proxyURL,
-              preview_image: e.thumbnail.proxyURL,
-              original: e.video.url
-            })
+          if (e.image) {
+            if (e.image.proxyURL) {
+              extras.raw_content.push({
+                type: 'image',
+                src: e.image.proxyURL,
+                original: e.image.url
+              })
+            }
+          } else if (e.video) {
+            if (e.video.proxyURL) {
+              extras.raw_content.push({
+                type: 'video',
+                src: e.video.proxyURL,
+                preview_image: e.thumbnail.proxyURL,
+                original: e.video.url
+              })
+            } else {
+              extras.complex_content.push(e)
+            }
           } else {
             extras.complex_content.push(e)
           }
-        } else {
-          extras.complex_content.push(e)
-        }
-      });
+        });
+      } catch (e) {}
 
       //msg.message.content = msg.message.content.replace(e.props.href, '')
       content[i] = React.createElement(quote, {
