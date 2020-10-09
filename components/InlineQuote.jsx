@@ -123,7 +123,7 @@ module.exports = class InlineQuote extends React.Component {
         <div className='re-content'>
           {this.props.content}
           <br></br>
-          <div className='re-extras'>{ renderExtras(this.props.extras) }</div>
+          <div className='re-extras'>{ this.props.extras && renderExtras(this.props.extras) }</div>
         </div>
       </div></div>
     );
