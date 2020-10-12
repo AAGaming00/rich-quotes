@@ -77,7 +77,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
 
     if (e.props?.className === blockquoteContainer && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
       //msg.message.content = msg.message.content.replace(e.props.href, '')
-      const messageData = /(?:> )([\s\S]+)(<@!?(\d+)>)/g.exec(this.props.message.content);
+      const messageData = /(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g.exec(this.props.message.content);
       const author = getUser(messageData[3]);
       const currentUser = await getCurrentUser.getCurrentUser();
       const mentionSelf = currentUser.id === author.id;
