@@ -113,6 +113,7 @@ module.exports = class InlineQuote extends React.Component {
                 : <Icon className='re-jump' name="Search"/>}</div></div>}
         <div className='re-content'>
           {this.props.content}
+          {this.props.foo}
         </div>
       </div></div>
     );

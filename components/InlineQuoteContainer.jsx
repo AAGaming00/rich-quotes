@@ -28,9 +28,11 @@ module.exports = class InlineQuoteContainer extends React.Component {
   async buildQuote () {
   const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM)
   const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ])
+  
   const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ])
   const { getUser } = await getModule([ 'getCurrentUser' ])
   const { getChannel } = await getModule(['getChannel'])
+  const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
   const content = [...this.props.content];
   //console.log('building quote')
   content.forEach(async (e, i) => { 
@@ -41,6 +43,12 @@ module.exports = class InlineQuoteContainer extends React.Component {
 
       if (!messageData) return;
 
+      // const accessories = React.createElement(renderSimpleAccessories, {
+      //   message: messageData,
+      //   channel: getChannel(messageData.channel_id),
+      //   hasSpoilerEmbeds: false
+      // })
+      // console.log(accessories)
       //console.log(messageData)
       if (messageData.embeds) {
         messageData.embeds.forEach((e, i) => {
@@ -53,6 +61,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
 
       //msg.message.content = msg.message.content.replace(e.props.href, '')
       content[i] = React.createElement(quote, {
+        // foo: accessories,
         className: `${message} ${cozyMessage} ${groupStart}`,
         groupId: messageData.id,
         message: new MessageC({ ...messageData }),
