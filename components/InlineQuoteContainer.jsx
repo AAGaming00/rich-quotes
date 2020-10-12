@@ -28,18 +28,13 @@ module.exports = class InlineQuoteContainer extends React.Component {
   async buildQuote () {
   const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM)
   const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ])
+  
   const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ])
-  const { getUser } = await getModule([ 'getCurrentUser' ])
+  const getCurrentUser = await getModule([ 'getCurrentUser' ]);
+  const { getUser } = getCurrentUser;
   const { getChannel } = await getModule(['getChannel'])
+  const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
   const content = [...this.props.content];
-  const video_ext = ["avi","flv","m4v","mkv","mov","mp4","mpeg","mpv","webm","wmv","yuv"];
-  const image_ext = ['jpg','jpeg','jfif','png','webp'];
-  function ext_check (ext, exts) {
-    let is_ext = false;
-    exts.forEach((ext_) => { if (ext_ == ext) is_ext = true; })
-    return is_ext;
-  }
-
   //console.log('building quote')
   content.forEach(async (e, i) => { 
     if (e && e.props) {
@@ -49,61 +44,32 @@ module.exports = class InlineQuoteContainer extends React.Component {
 
       if (!messageData) return;
 
-      let extras = { raw_content: [], complex_content: [] };
-
-      try {
-        messageData?.attachments.forEach((e, i) => {
-          const split_dot = e.proxy_url.split('.')
-          const ext = split_dot[split_dot.length - 1];
-
-          if (ext_check(ext,image_ext)) extras.raw_content.push({
-            type: 'image',
-            src: e.proxy_url
-          });
-          else if (ext_check(ext,video_ext)) extras.raw_content.push({
-            type: 'video',
-            src: e.proxy_url
-          }); 
-          else extras.complex_content.push(e);
-        })
-
-        messageData?.embeds.forEach((e, i) => {
-          if (typeof e.color !== 'string') messageData.embeds[i].color = '#00000000';
-
-          if (e.image) {
-            if (e.image.proxyURL) {
-              extras.raw_content.push({
-                type: 'image',
-                src: e.image.proxyURL,
-                original: e.image.url
-              })
-            }
-          } else if (e.video) {
-            if (e.video.proxyURL) {
-              extras.raw_content.push({
-                type: 'video',
-                src: e.video.proxyURL,
-                preview_image: e.thumbnail.proxyURL,
-                original: e.video.url
-              })
-            } else {
-              extras.complex_content.push(e)
-            }
-          } else {
-            extras.complex_content.push(e)
+      // const accessories = React.createElement(renderSimpleAccessories, {
+      //   message: messageData,
+      //   channel: getChannel(messageData.channel_id),
+      //   hasSpoilerEmbeds: false
+      // })
+      // console.log(accessories)
+      //console.log(messageData)
+      if (messageData.embeds) {
+        messageData.embeds.forEach((e, i) => {
+          //console.log(e);
+          if (typeof e.color !== 'string') {
+            messageData.embeds[i].color = '#00000000';
           }
         });
-      } catch (e) {}
+      }
 
       //msg.message.content = msg.message.content.replace(e.props.href, '')
       content[i] = React.createElement(quote, {
+        // foo: accessories,
         className: `${message} ${cozyMessage} ${groupStart}`,
         groupId: messageData.id,
         message: new MessageC({ ...messageData }),
         channel: getChannel(messageData.channel_id),
         author: messageData.author,
+        mentionType: 0,
         content: parser.parse(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
-        extras: extras,
         style: { cursor: "pointer" },
         link: e.props.href
       });
@@ -112,12 +78,16 @@ module.exports = class InlineQuoteContainer extends React.Component {
     if (e.props?.className === blockquoteContainer && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
       //msg.message.content = msg.message.content.replace(e.props.href, '')
       const messageData = /(?:> )([\s\S]+)(<@!?(\d+)>)/g.exec(this.props.message.content);
+      const author = getUser(messageData[3]);
+      const currentUser = await getCurrentUser.getCurrentUser();
+      const mentionSelf = currentUser.id === author.id;
       //console.log(messageData, messageData[1].replace(/\n> /g, ''))
       content[i + 1] = null;
       
       content[i] = React.createElement(quote, {
         className: `${message} ${cozyMessage} ${groupStart}`,
-        author: getUser(messageData[3]),
+        author: author,
+        mentionType: mentionSelf ? 2 : 1,
         timestamp: this.props.message.id,
         raw: messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''),
         content: parser.parse(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),

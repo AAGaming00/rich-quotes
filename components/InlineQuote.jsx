@@ -6,16 +6,6 @@ const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', 
 const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
 const userStore = getModule([ 'getCurrentUser' ], false);
 
-function renderExtras(extras) {
-  let parsed_extras = [];
-  if (extras.raw_content.length != 0) extras.raw_content.forEach((e) => {
-    if (e.type == "image") parsed_extras.push(<img src={e.src} className="re-image"></img>)
-    else if (e.type == "video") parsed_extras.push(<video poster={e.preview_image} src={e.src} className="re-video" loop preload="none" autoPlay></video>)
-  });
-
-  return parsed_extras
-}
-
 module.exports = class InlineQuote extends React.Component {
   constructor (props) {
     super(props);
@@ -78,11 +68,12 @@ module.exports = class InlineQuote extends React.Component {
       popoutPosition: 'top'
     }));
   }
+
   render () {
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
     const { transitionTo } = getModule([ 'transitionTo' ], false);
     return (
-      <div id="a11y-hack"><div key={this.props.content} className='re-inline'>
+      <div id="a11y-hack"><div key={this.props.content} className='re-inline'><div className={`${this.props.mentionType === 2 ? 're-mention-highlight' : ''}`}>
         <div className='re-header threads-header-hack'>
           <img src={this.props.author.avatarURL} onClick={(e) => {
             this.openPopout(e);
@@ -93,7 +84,7 @@ module.exports = class InlineQuote extends React.Component {
             this.openPopout(e);
           }} onContextMenu={(e) => {
             this.openUserContextMenu(e);
-          }} className={`re-username ${username} ${clickable}`}>{this.props.author.username}</div>
+          }} className={`re-username ${'re-mention-' + this.props.mentionType} ${username} ${clickable}`}>{(this.props.mentionType !== 0 ? '@' : '') + this.props.author.username}</div>
         </div>
         {this.props.link
           ? <div className='re-button-container'>
@@ -122,10 +113,9 @@ module.exports = class InlineQuote extends React.Component {
                 : <Icon className='re-jump' name="Search"/>}</div></div>}
         <div className='re-content'>
           {this.props.content}
-          <br></br>
-          <div className='re-extras'>{ this.props.extras && renderExtras(this.props.extras) }</div>
+          {/*this.props.foo*/}
         </div>
-      </div></div>
+      </div></div></div>
     );
   }
 };
