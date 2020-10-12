@@ -73,7 +73,7 @@ module.exports = class InlineQuote extends React.Component {
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
     const { transitionTo } = getModule([ 'transitionTo' ], false);
     return (
-      <div id="a11y-hack"><div key={this.props.content} className='re-inline'>
+      <div id="a11y-hack"><div key={this.props.content} className='re-inline'><div className={`${this.props.mentionType === 2 ? 're-mention-highlight' : ''}`}>
         <div className='re-header threads-header-hack'>
           <img src={this.props.author.avatarURL} onClick={(e) => {
             this.openPopout(e);
@@ -84,7 +84,7 @@ module.exports = class InlineQuote extends React.Component {
             this.openPopout(e);
           }} onContextMenu={(e) => {
             this.openUserContextMenu(e);
-          }} className={`re-username ${username} ${clickable}`}>{this.props.author.username}</div>
+          }} className={`re-username ${'re-mention-' + this.props.mentionType} ${username} ${clickable}`}>{(this.props.mentionType !== 0 ? '@' : '') + this.props.author.username}</div>
         </div>
         {this.props.link
           ? <div className='re-button-container'>
@@ -115,7 +115,7 @@ module.exports = class InlineQuote extends React.Component {
           {this.props.content}
           {/*this.props.foo*/}
         </div>
-      </div></div>
+      </div></div></div>
     );
   }
 };

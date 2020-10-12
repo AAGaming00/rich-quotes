@@ -30,7 +30,8 @@ module.exports = class InlineQuoteContainer extends React.Component {
   const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ])
   
   const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ])
-  const { getUser } = await getModule([ 'getCurrentUser' ])
+  const getCurrentUser = await getModule([ 'getCurrentUser' ]);
+  const { getUser } = getCurrentUser;
   const { getChannel } = await getModule(['getChannel'])
   const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
   const content = [...this.props.content];
@@ -67,6 +68,7 @@ module.exports = class InlineQuoteContainer extends React.Component {
         message: new MessageC({ ...messageData }),
         channel: getChannel(messageData.channel_id),
         author: messageData.author,
+        mentionType: 0,
         content: parser.parse(messageData.content.trim(), true, { channelId: this.props.message.channel_id }),
         style: { cursor: "pointer" },
         link: e.props.href
@@ -76,12 +78,16 @@ module.exports = class InlineQuoteContainer extends React.Component {
     if (e.props?.className === blockquoteContainer && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
       //msg.message.content = msg.message.content.replace(e.props.href, '')
       const messageData = /(?:> )([\s\S]+)(<@!?(\d+)>)/g.exec(this.props.message.content);
+      const author = getUser(messageData[3]);
+      const currentUser = await getCurrentUser.getCurrentUser();
+      const mentionSelf = currentUser.id === author.id;
       //console.log(messageData, messageData[1].replace(/\n> /g, ''))
       content[i + 1] = null;
       
       content[i] = React.createElement(quote, {
         className: `${message} ${cozyMessage} ${groupStart}`,
-        author: getUser(messageData[3]),
+        author: author,
+        mentionType: mentionSelf ? 2 : 1,
         timestamp: this.props.message.id,
         raw: messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, ''),
         content: parser.parse(messageData[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim(), true, { channelId: this.props.message.channel_id }),
