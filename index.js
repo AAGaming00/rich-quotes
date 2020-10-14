@@ -2,7 +2,7 @@ const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
 const renderer = require('./components/Renderer');
-const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g
+const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/
 
 module.exports = class RichQuotes extends Plugin {
   startPlugin () {
