@@ -14,8 +14,8 @@ module.exports = class RichQuote extends React.Component {
         const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
         const opts = { author_id,
           max_id,
-          content,
-          include_nsfw: true };
+          content
+         };
 
         const s = new Search(id, dm ? 'DM' : 'GUILD', asc
           ? { offset: 0,
