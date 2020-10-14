@@ -1,6 +1,5 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
 const quote = require('./Quote')
-const parser = getModule(["parse", "parseTopic"], false);
 let lastFetch;
 
 module.exports = class QuoteRenderer extends React.Component {
@@ -27,7 +26,8 @@ module.exports = class QuoteRenderer extends React.Component {
     const getCurrentUser = await getModule([ 'getCurrentUser' ]);
     const { getUser } = getCurrentUser;
     const { getChannel } = await getModule(['getChannel'])
-    const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
+    const parser = await getModule(["parse", "parseTopic"]);
+    // const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
 
     const content = [...this.props.content];
     const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g;
