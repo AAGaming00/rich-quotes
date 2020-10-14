@@ -1,0 +1,94 @@
+:root {
+    --rq-mention-text-color: #7289da;
+    --rq-mention-text-highlight: rgba(114,137,218,.1);
+    --rq-mention-bg-highlight: var(--background-mentioned);
+    --rq-mention-accent-line: #faa61a;
+}
+
+#a11y-hack {
+.rq-inline {
+    background: var(--background-secondary);
+    border-radius: 10px;
+    max-width: 400px;
+    overflow: hidden;
+    margin-top: 2px;
+    
+    &>.rq-mention-highlight {
+        background: var(--rq-mention-bg-highlight);
+        height: 100%;
+        padding-bottom: 6px;
+        border-left: 2px solid var(--rq-mention-accent-line);
+    }
+
+    .rq-header {
+        height: auto;
+        padding-top: 8px;
+        padding-left: 8px;
+        min-height: 0px !important;
+        &>.rq-avatar {
+            left: 0px;
+            position: relative;
+            width: 20px;
+            height: 20px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+        &>.rq-username {
+            position: relative;
+            margin-left: 8px;
+            bottom: 5px;
+            
+            &.rq-mention-1 {
+                color: var(--rq-mention-text-color);
+                background: var(--rq-mention-text-highlight);
+            }
+            &.rq-mention-2 {
+                color: var(--rq-mention-text-color);
+            }
+        }
+    }
+
+    .rq-content {
+        position: relative;
+        margin-left: 35px;
+        top: -6px;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        hyphens: auto;
+
+        &>pre>code {
+            max-height: 10rem;
+        }
+    }
+
+    .rq-button {
+        display:flex;
+        overflow:hidden;
+        float: left;
+        padding-left: 8px;
+
+        &>div {
+            display:flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            height: 20px;
+            width: 20px;
+            background-color: var(--background-tertiary);
+            user-select: none;
+
+            &.rq-clickable {
+                cursor: pointer;
+            }
+
+            &>svg {
+                width: 12px;
+                height: 12px;
+
+                &.rq-180-flip {
+                    transform: rotateY(180deg);
+                }
+            }
+        }
+    }
+}}
