@@ -120,13 +120,13 @@ module.exports = class RichQuote extends React.Component {
             <div className='rq-clickable' onClick= {() => transitionTo(this.props.link) }><Icon className='rq-jump rq-180-flip' name="Reply"/></div>
           </div>
           : <div className='rq-button'>
-            <div key={this.state?.searchStatus}
+            <div key={this.state.searchStatus}
               className={(this.state.searchStatus !== 'loading') ? 'rq-clickable' : ''}
               onClick= {async () => this.state?.searchStatus !== 'error' ? this.search() : false}
             >
-              {this.state?.searchStatus === 'loading'
+              {this.state.searchStatus === 'loading'
                 ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
-                : this.state?.searchStatus === 'error'
+                : this.state.searchStatus === 'error'
                   ? <div title="Could not find matching message" className='rq-error'>!</div>
                   : <Icon className='rq-search' name="Search"/>
               }
