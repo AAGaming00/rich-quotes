@@ -8,15 +8,10 @@ const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserCont
 const userStore = getModule([ 'getCurrentUser' ], false);
 
 module.exports = class RichQuote extends React.Component {
-  constructor (props) {
-    super(props);
-    this.state = {};
-  }
-
-  // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
-  
+  constructor (props) { super(props); this.state = {}; }
 
   async search() {
+    // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
     function searchAPI (content, author_id, max_id, id, dm, asc) {
       return new Promise((resolve, reject) => {
         const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
