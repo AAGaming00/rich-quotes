@@ -3,7 +3,7 @@ const { Icon, Spinner } = require('powercord/components');
 
 module.exports = class RichQuote extends React.Component {
   constructor (props) {
-    super(props); this.state = {};
+    super(props); this.state = { searchStatus: '' };
   }
 
   async search () {
@@ -121,7 +121,7 @@ module.exports = class RichQuote extends React.Component {
           </div>
           : <div className='rq-button'>
             <div key={this.state?.searchStatus}
-              className={(!this.state.searchStatus) ? 'rq-clickable' : ''}
+              className={(this.state.searchStatus !== 'loading') ? 'rq-clickable' : ''}
               onClick= {async () => this.state?.searchStatus !== 'error' ? this.search() : false}
             >
               {this.state?.searchStatus === 'loading'
