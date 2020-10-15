@@ -12,7 +12,8 @@ module.exports = class RichQuotes extends Plugin {
       if (
         (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) || 
         linkSelector.test(args[0].message.content)) {
-
+        // ugggggghhhh I put a console log here and its spams on message hover. whyyyyyyyy
+        
         res.props.children = React.createElement(renderer, {
           content: args[0].content,
           message: args[0].message

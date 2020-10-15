@@ -2,59 +2,64 @@ const { React, getModule, contextMenu, getModuleByDisplayName } = require('power
 const { Tooltip, Icon, Spinner } = require('powercord/components');
 
 module.exports = class RichQuote extends React.Component {
-  constructor (props) {
-    super(props); this.state = { searchStatus: '' };
-  }
+  constructor (props) { super(props); this.state = { searchStatus: false } }
 
   async search () {
     const { transitionTo } = await getModule([ 'transitionTo' ]);
+
+    const setStatus = (s) => this.setState({ ...this.state, searchStatus: s });
+
     // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
     function searchAPI (content, author_id, max_id, id, dm, asc) {
       return new Promise((resolve, reject) => {
         const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
-        const opts = { author_id,
-          max_id,
-          content
-         };
-
-        const s = new Search(id, dm ? 'DM' : 'GUILD', asc
-          ? { offset: 0,
-            sort_by: 'timestamp',
-            sort_order: 'asc',
-            ...opts }
-          : opts);
+        const opts = { author_id, max_id, content };
+        const s = new Search(id, dm ? 'DM' : 'GUILD', 
+          asc ? { offset: 0, sort_by: 'timestamp', sort_order: 'asc', ...opts } : opts);
+        
         s.fetch(res => resolve(res.body), () => void 0, reject);
       });
     }
 
-    this.setState({ ...this.state,
-      searchStatus: 'loading' });
+    setStatus('loading');
 
-    const result = await searchAPI(
-      this.props.search.raw, this.props.author.id,
+    const result = await searchAPI(this.props.search.raw, this.props.author.id,
       this.props.search.timestamp, this.props.channel.guild_id || this.props.channel.id,
       !this.props.channel.guild_id
     );
 
-    if (result.messages.length !== 0) {
-      const message = result.messages[0].filter((e) => e?.content.includes(this.props.search.raw));
+    if (result.messages.length === 0) setStatus('error');
+    else {
+      const message = result.messages[0].filter((e) => e?.content.includes(this.props.search.raw))[0];
 
-      if (!message) {
-        this.setState({ ...this.state,
-          searchStatus: 'error' });
-        return;
+      if (!message) setStatus('error');
+      else {
+        setStatus('done');
+
+        let newCache = false;
+
+        if (!window.localStorage.richQuoteCache) {
+          window.localStorage.richQuoteCache = JSON.stringify([{ searches: [] }]);
+          newCache = true;
+        }
+
+        const searchResult = {
+          content: message.content, authorId: message.author.id,
+          original_content: undefined,
+          link: [this.props.channel.guild_id || "@me", message.channel_id, message.id]
+        };
+        if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
+
+        const searches = JSON.parse(window.localStorage.richQuoteCache).searches;
+
+        window.localStorage.richQuoteCache = 
+          JSON.stringify({ searches: !newCache ? [...searches, searchResult] : [searchResult]});
+  
+        transitionTo(`/channels/${this.props.channel.guild_id || '@me'}/${message.channel_id}/${message.id}`);
       }
-
-      this.setState({ ...this.state,
-        searchStatus: 'done' });
-
-      const messageRoute = `/channels/${this.props.channel.guild_id || '@me'}/${this.props.channel.id}/${message[0].id}`;
-
-      transitionTo(messageRoute);
-    } else {
-      this.setState({ ...this.state,
-        searchStatus: 'error' });
     }
+
+      
   }
 
   openPopout (event) {
@@ -104,8 +109,11 @@ module.exports = class RichQuote extends React.Component {
   render () {
     const { transitionTo } = getModule([ 'transitionTo' ], false);
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
+
     return (
-      <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={`${this.props.mentionType === 2 ? 'rq-mention-highlight' : ''}`}>
+      <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={
+        `${this.props.mentionType >= 2 ? `rq-mention-highlight${this.props.mentionType === 2 ? '-alt' : ''}` : ''}`}>
+        
         <div className='rq-header threads-header-hack'>
           <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`}
             src={this.props.author.avatarURL} onClick={(e) => this.openPopout(e)} onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
@@ -118,10 +126,11 @@ module.exports = class RichQuote extends React.Component {
         {this.props.link
           ? <div className='rq-button'>
             <Tooltip position="left" text="Jump to Message"><div className='rq-clickable' 
-              onClick= {() => transitionTo(this.props.link) }><Icon className='rq-jump rq-180-flip' name="Reply"/>
+              onClick= {() => transitionTo(`/channels/${this.props.link.join('/')}`) }><Icon className='rq-jump rq-180-flip' name="Reply"/>
             </div></Tooltip>
           </div>
-          : <div className='rq-button'>
+          : this.state.searchStatus !== 'done' ? // this is really stupid, it should be rerendering the component (or running the link handler through an import I don't know how to do) instead. AA please fix
+          <div className='rq-button'>
             <Tooltip position="left" text={
               this.state.searchStatus ? 
               this.state.searchStatus === 'error' ? 
@@ -130,7 +139,7 @@ module.exports = class RichQuote extends React.Component {
               : 'Search for Message'
             }><div key={this.state.searchStatus}
               className={this.state.searchStatus ? '' : 'rq-clickable'}
-              onClick= {async () => this.state?.searchStatus !== 'error' ? this.search() : false}
+              onClick= {async () => this.state.searchStatus !== 'error' ? this.search() : false}
             >
               {this.state.searchStatus === 'loading'
                 ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
@@ -139,7 +148,7 @@ module.exports = class RichQuote extends React.Component {
                   : <Icon className='rq-search' name="Search"/>
               }
             </div></Tooltip>
-          </div>}
+          </div> : false}
         <div className='rq-content'>
           {this.props.content}
           {/* this.props.accessories*/}

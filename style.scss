@@ -19,6 +19,11 @@
         padding-bottom: 6px;
         border-left: 2px solid var(--rq-mention-accent-line);
     }
+    &>.rq-mention-highlight-alt {
+        background: var(--rq-mention-bg-highlight);
+        height: 100%;
+        padding-bottom: 6px;
+    }
 
     .rq-header {
         height: auto;
@@ -42,9 +47,8 @@
                 color: var(--rq-mention-text-color);
                 background: var(--rq-mention-text-highlight);
             }
-            &.rq-mention-2 {
-                color: var(--rq-mention-text-color);
-            }
+            &.rq-mention-2 { color: var(--rq-mention-text-color); }
+            &.rq-mention-3 { color: var(--rq-mention-text-color); }
         }
     }
 
