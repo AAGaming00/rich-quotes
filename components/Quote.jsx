@@ -1,5 +1,5 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
-const { Icon, Spinner } = require('powercord/components');
+const { Tooltip, Icon, Spinner } = require('powercord/components');
 
 module.exports = class RichQuote extends React.Component {
   constructor (props) {
@@ -110,27 +110,35 @@ module.exports = class RichQuote extends React.Component {
           <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`}
             src={this.props.author.avatarURL} onClick={(e) => this.openPopout(e)} onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
           </img>
-          <div className={`rq-username ${`rq-mention-${this.props.mentionType}`} ${username} ${clickable}`}
+          <div className={`rq-username rq-mention-${this.props.mentionType} ${username} ${clickable}`}
             onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}>
             {(this.props.mentionType !== 0 ? '@' : '') + this.props.author.username}
           </div>
         </div>
         {this.props.link
           ? <div className='rq-button'>
-            <div className='rq-clickable' onClick= {() => transitionTo(this.props.link) }><Icon className='rq-jump rq-180-flip' name="Reply"/></div>
+            <Tooltip position="left" text="Jump to Message"><div className='rq-clickable' 
+              onClick= {() => transitionTo(this.props.link) }><Icon className='rq-jump rq-180-flip' name="Reply"/>
+            </div></Tooltip>
           </div>
           : <div className='rq-button'>
-            <div key={this.state.searchStatus}
-              className={(this.state.searchStatus !== 'loading') ? 'rq-clickable' : ''}
+            <Tooltip position="left" text={
+              this.state.searchStatus ? 
+              this.state.searchStatus === 'error' ? 
+              'Could not find matching message'
+              : 'Message search loading...'
+              : 'Search for Message'
+            }><div key={this.state.searchStatus}
+              className={this.state.searchStatus ? '' : 'rq-clickable'}
               onClick= {async () => this.state?.searchStatus !== 'error' ? this.search() : false}
             >
               {this.state.searchStatus === 'loading'
                 ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
                 : this.state.searchStatus === 'error'
-                  ? <div title="Could not find matching message" className='rq-error'>!</div>
+                  ? <div className='rq-error'>!</div>
                   : <Icon className='rq-search' name="Search"/>
               }
-            </div>
+            </div></Tooltip>
           </div>}
         <div className='rq-content'>
           {this.props.content}
