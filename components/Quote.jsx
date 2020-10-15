@@ -112,7 +112,7 @@ module.exports = class RichQuote extends React.Component {
 
     return (
       <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={
-        `${this.props.mentionType >= 2 ? `rq-mention-highlight${this.props.mentionType === 2 ? '-alt' : ''}` : ''}`}>
+        `${this.props.mentionType >= 2 ? `rq-mention-highlight${this.props.mentionType === 3 ? '-alt' : ''}` : ''}`}>
         
         <div className='rq-header threads-header-hack'>
           <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`}
