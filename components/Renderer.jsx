@@ -1,5 +1,7 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
+
 const quote = require('./Quote')
+
 let lastFetch;
 
 module.exports = class QuoteRenderer extends React.Component {
@@ -15,12 +17,12 @@ module.exports = class QuoteRenderer extends React.Component {
   async componentDidMount () { await this.buildQuote() }
 
   async buildQuote () {
-    const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM)
-    const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ])
-    const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ])
+    const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM);
+    const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ]);
+    const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ]);
     const getCurrentUser = await getModule([ 'getCurrentUser' ]);
     const { getUser } = getCurrentUser;
-    const { getChannel } = await getModule(['getChannel'])
+    const { getChannel } = await getModule(['getChannel']);
     const parser = await getModule(["parse", "parseTopic"]);
     // const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
 
@@ -34,7 +36,9 @@ module.exports = class QuoteRenderer extends React.Component {
 
       message: undefined, channel: undefined, search: undefined,
       
-      link: undefined, accessories: undefined, mentionType: 0
+      link: undefined, accessories: undefined, mentionType: 0,
+
+      cacheSearch: this.props.settings.cacheSearch
     };
 
     content.forEach(async (e, i) => { if (e && e.props) {
@@ -52,6 +56,8 @@ module.exports = class QuoteRenderer extends React.Component {
         const author = await getUser(quoteMatch[3]);
         const currentUser = await getCurrentUser.getCurrentUser();
         const channel = await getChannel(this.props.message.channel_id);
+
+        console.log({ ...quoteMatch });
         
         const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
 
@@ -72,7 +78,7 @@ module.exports = class QuoteRenderer extends React.Component {
         }
 
         /* Search cache for matching messages */
-        if (window.localStorage.richQuoteCache) 
+        if (this.props.settings.cacheSearch && window.localStorage.richQuoteCache) 
         for (let cached_message of JSON.parse(window.localStorage.richQuoteCache).searches) {
           if (
             cached_message.content.includes(raw_content) &&
@@ -128,6 +134,7 @@ module.exports = class QuoteRenderer extends React.Component {
         //})
       }
 
+      /* Render Quote */
       if (quoteParams.content) content[i] = React.createElement(quote, quoteParams);
     }});
 

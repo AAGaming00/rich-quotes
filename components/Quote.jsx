@@ -1,4 +1,5 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
+
 const { Tooltip, Icon, Spinner } = require('powercord/components');
 
 module.exports = class RichQuote extends React.Component {
@@ -36,26 +37,27 @@ module.exports = class RichQuote extends React.Component {
       else {
         setStatus('done');
 
-        let newCache = false;
+        const link = [this.props.channel.guild_id || "@me", message.channel_id, message.id];
 
-        if (!window.localStorage.richQuoteCache) {
-          window.localStorage.richQuoteCache = JSON.stringify([{ searches: [] }]);
-          newCache = true;
+        if (this.props.cacheSearch) {
+          let newCache = false;
+
+          if (!window.localStorage.richQuoteCache) {
+            window.localStorage.richQuoteCache = JSON.stringify([{ searches: [] }]);
+            newCache = true;
+          }
+
+          const searchResult = { content: message.content, authorId: message.author.id, link: link };
+          
+          if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
+
+          const searches = JSON.parse(window.localStorage.richQuoteCache).searches;
+
+          window.localStorage.richQuoteCache = 
+            JSON.stringify({ searches: !newCache ? [...searches, searchResult] : [searchResult]});
         }
-
-        const searchResult = {
-          content: message.content, authorId: message.author.id,
-          original_content: undefined,
-          link: [this.props.channel.guild_id || "@me", message.channel_id, message.id]
-        };
-        if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
-
-        const searches = JSON.parse(window.localStorage.richQuoteCache).searches;
-
-        window.localStorage.richQuoteCache = 
-          JSON.stringify({ searches: !newCache ? [...searches, searchResult] : [searchResult]});
   
-        transitionTo(`/channels/${this.props.channel.guild_id || '@me'}/${message.channel_id}/${message.id}`);
+        transitionTo(`/channels/${link.join('/')}`);
       }
     }
 
