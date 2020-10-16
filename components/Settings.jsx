@@ -4,9 +4,8 @@ const { SwitchItem, ButtonItem } = require("powercord/components/settings");
 const { Button } = require("powercord/components");
 
 module.exports = class Settings extends React.Component {
-    async render() {
+    render() {
         const { getSetting, toggleSetting } = this.props;
-
         return (
             <div>
                 <SwitchItem
