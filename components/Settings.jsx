@@ -9,7 +9,6 @@ module.exports = class Settings extends React.Component {
 
         return (
             <div>
-                {quote_preview}
                 <SwitchItem
                     note="When disabled quote search will no longer cache results."
                     value={getSetting("cacheSearch", true)}
