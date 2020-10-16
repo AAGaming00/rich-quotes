@@ -4,9 +4,12 @@ const { SwitchItem, ButtonItem } = require("powercord/components/settings");
 const { Button } = require("powercord/components");
 
 module.exports = class Settings extends React.Component {
-    render() {
+    async render() {
+        const { getSetting, toggleSetting } = this.props;
+
         return (
             <div>
+                {quote_preview}
                 <SwitchItem
                     note="When disabled quote search will no longer cache results."
                     value={getSetting("cacheSearch", true)}
