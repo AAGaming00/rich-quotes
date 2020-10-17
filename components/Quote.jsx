@@ -110,19 +110,42 @@ module.exports = class RichQuote extends React.Component {
 
   render () {
     const { transitionTo } = getModule([ 'transitionTo' ], false);
+    const MessageTimestamp = getModule([ 'MessageTimestamp' ], false);
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
+    const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
 
+    const quoteTimestamp = this.props.link ? MessageTimestamp.MessageTimestamp({
+      className: "rq-timestamp",
+      compact: false,
+      timestamp: Timestamp(this.props.message.timestamp),
+      isOnlyVisibleOnHover: false
+    }) : false;
+
+    const highlight = this.props.mentionType !== 0 ? `rq-highlight${this.props.mentionType >= 2 ? ' rq-highlight-alt' : ''}` : '';
+
+    const highlightChannel = `rq-highlight${this.props.mentionType >= 2 ? ' rq-highlight-alt' : ''}`
+
+    const highlightContainer = this.props.mentionType >= 2 ? `rq-highlight-container${this.props.mentionType === 3 ? ' rq-highlight-container-alt' : ''}` : '';
+    
     return (
-      <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={
-        `${this.props.mentionType >= 2 ? `rq-mention-highlight${this.props.mentionType === 3 ? '-alt' : ''}` : ''}`}>
-        
+      <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={highlightContainer}>
         <div className='rq-header threads-header-hack'>
           <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`}
-            src={this.props.author.avatarURL} onClick={(e) => this.openPopout(e)} onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
+            src={this.props.author.avatarURL} onClick={(e) => this.openPopout(e)} 
+            onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
           </img>
-          <div className={`rq-username rq-mention-${this.props.mentionType} ${username} ${clickable}`}
-            onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}>
-            {(this.props.mentionType !== 0 ? '@' : '') + this.props.author.username}
+          <div className='rq-userTag'>
+            <span className={`rq-username ${highlight} ${username} ${clickable}`} 
+              onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
+            >{`${this.props.mentionType !== 0 ? '@' : ''}${this.props.author.username}`}</span>{
+              this.props.link ? 
+              <span>
+                <span className='rq-infoText'>posted in </span>
+                <span className={`rq-channel rq-clickable ${highlightChannel}`}
+                  onClick= {() => transitionTo(`/channels/${this.props.link.slice(0,2).join('/')}`) }
+                >{`#${this.props.channel.name}`}</span>
+              </span>
+            : false}{quoteTimestamp}
           </div>
         </div>
         {this.props.link
