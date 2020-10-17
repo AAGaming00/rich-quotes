@@ -70,6 +70,7 @@
          user-select: none;
 
          .rq-highlight {
+            -webkit-text-fill-color: unset;
             color: var(--rq-highlight-text-color);
             background: var(--rq-highlight-text-bg);
          }

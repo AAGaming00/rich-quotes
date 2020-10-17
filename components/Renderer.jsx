@@ -7,9 +7,9 @@ let lastFetch;
 module.exports = class QuoteRenderer extends React.Component {
   constructor (props) { super(props); this.state = {} }
 
-  static getDerivedStateFromProps(props, state) {
-     if (!state.new) return { ...Object.assign({}, props) };
-     else return state;
+  static getDerivedStateFromProps (props, state) {
+    return { ...Object.assign({}, props),
+      ...state };
   }
 
   async componentDidUpdate () { if (!_.isEqual(this.props.message.content, this.state.message.content)) await this.buildQuote() }
@@ -65,11 +65,6 @@ module.exports = class QuoteRenderer extends React.Component {
         else {
           if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
             quoteParams.mentionType = 2;
-
-            // This sucks ass and breaks when the message component updates (eg. on right click). AA please fix, hopefully doesn't mean we'll have to inject the ChannelMessage
-            const parent_comp = document.getElementById(`chat-messages-${this.props.message.id}`);
-
-            parent_comp.className = parent_comp.className.replace('mentioned-xhSam7','')
           } else {
             quoteParams.mentionType = 3;
           }
@@ -136,7 +131,7 @@ module.exports = class QuoteRenderer extends React.Component {
       if (quoteParams.content) content[i] = React.createElement(quote, quoteParams);
     }});
 
-    this.setState({...this.props, content, oldContent: this.props.content, new: true });
+    this.setState({...this.props, content, oldContent: this.props.content });
 
     setTimeout(() => { this.forceUpdate() }, 500);
   }
