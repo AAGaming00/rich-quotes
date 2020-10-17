@@ -2,7 +2,7 @@ const { React } = require('powercord/webpack');
 
 const { SwitchItem, ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
-
+// TODO Preview of quotes
 module.exports = class Settings extends React.Component {
   render () {
     const { getSetting, toggleSetting } = this.props;
