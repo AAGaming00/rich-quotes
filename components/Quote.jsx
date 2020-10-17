@@ -134,22 +134,29 @@ module.exports = class RichQuote extends React.Component {
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
     const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
 
-    const quoteTimestamp = this.state.link
-      ? new MessageTimestamp.MessageTimestamp({
-        className: 'rq-timestamp',
-        compact: false,
-        timestamp: new Timestamp(this.props.message.timestamp),
-        isOnlyVisibleOnHover: false
-      })
-      : false;
+    const link = this.state.link,
+          searchMsg = this.state.searchStatus;
 
-    const highlight = this.props.mentionType !== 0 ? `rq-highlight${this.props.mentionType >= 2 ? ' rq-highlight-alt' : ''}` : '';
+    const quoteTimestamp = link ? new MessageTimestamp.MessageTimestamp({
+      className: 'rq-timestamp',
+      compact: false,
+      timestamp: new Timestamp(this.props.message.timestamp),
+      isOnlyVisibleOnHover: false
+    }) : false;
 
-    const highlightChannel = `rq-highlight${this.props.mentionType >= 2 ? ' rq-highlight-alt' : ''}`;
-
-    const highlightContainer = this.props.mentionType >= 2 ? `rq-highlight-container${this.props.mentionType === 3 ? ' rq-highlight-container-alt' : ''}` : '';
+    const highlightAlter = this.props.mentionType >= 2 ? 'rq-highlight-alt' : '',
+          mention = this.props.mentionType !== 0 ? `rq-highlight ${highlightAlter}` : '',
+          container = 'rq-highlight-container',
+          highlightContainer = this.props.mentionType >= 2 ? 
+            `${container} ${this.props.mentionType === 3 ? `${container}-alt` : ''}` : '';
 
     const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
+
+    const jumpTooltip = 'Jump to Message',
+          searchTooltip = searchMsg ? searchMsg === 'error' ? 
+            'Could not find matching message' : 
+            'Message search loading...' : 
+            'Search for Message';
 
     return (
       <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={highlightContainer}>
@@ -159,46 +166,32 @@ module.exports = class RichQuote extends React.Component {
             onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
           </img>
           <div className='rq-userTag'>
-            <span className={`rq-username ${highlight} ${username} ${clickable}`}
+            <span className={`rq-username ${mention} ${username} ${clickable}`}
               onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
             >{`${this.props.mentionType !== 0 ? '@' : ''}${this.props.author.username}`}</span>{
-              this.state.link
-                ? <span>
-                  <span className='rq-infoText'>posted in </span>
-                  <span className={`rq-channel rq-clickable ${highlightChannel}`}
-                    onClick= {() => transitionTo(`/channels/${this.state.link.slice(0, 2).join('/')}`) }
-                  >{`#${this.props.channel.name}`}</span>
-                </span>
-                : false}{quoteTimestamp}
+              link ? 
+              <span>
+                <span className='rq-infoText'>posted in </span>
+                <span className={`rq-channel rq-clickable rq-highlight ${highlightAlter}`}
+                  onClick= {() => transitionTo(`/channels/${link.slice(0, 2).join('/')}`) }
+                >{`#${this.props.channel.name}`}</span>
+              </span>
+              : false}{quoteTimestamp}
           </div>
         </div>
-        {this.state.link
-          ? <div className='rq-button'>
-            <Tooltip position="left" text="Jump to Message"><div className='rq-clickable'
-              onClick= {() => transitionTo(`/channels/${this.state.link.join('/')}`) }><Icon className='rq-jump rq-180-flip' name="Reply"/>
-            </div></Tooltip>
-          </div>
-          : this.state.searchStatus !== 'done' // this is really stupid, it should be rerendering the component (or running the link handler through an import I don't know how to do) instead. AA please fix
-            ? <div className='rq-button'>
-              <Tooltip position="left" text={
-                this.state.searchStatus
-                  ? this.state.searchStatus === 'error'
-                    ? 'Could not find matching message'
-                    : 'Message search loading...'
-                  : 'Search for Message'
-              }><div key={this.state.searchStatus}
-                  className={this.state.searchStatus ? '' : 'rq-clickable'}
-                  onClick= {async () => this.state.searchStatus !== 'error' ? this.search() : false}
-                >
-                  {this.state.searchStatus === 'loading'
-                    ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
-                    : this.state.searchStatus === 'error'
-                      ? <div className='rq-error'>!</div>
-                      : <Icon className='rq-search' name="Search"/>
-                  }
-                </div></Tooltip>
-            </div>
-            : false}
+        <div className='rq-button-container'>{ link ? 
+          <Tooltip position="left" text={jumpTooltip}>
+          <div className='rq-button rq-jump rq-clickable' onClick= {() => transitionTo(`/channels/${link.join('/')}`)}>
+            <Icon className='rq-180-flip' name="Reply"/>
+          </div></Tooltip>
+          : 
+          <Tooltip position="left" text={searchTooltip}>
+          <div key={searchMsg} className={`rq-button rq-search ${!searchMsg ? 'rq-clickable' : ''}`} onClick= {async () => !searchMsg ? this.search() : false}>{
+            !searchMsg ? <Icon className='rq-searching' name="Search"/> :
+            searchMsg === 'loading' ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
+            : <div className='rq-error'>!</div>
+          }</div></Tooltip>
+        }</div>
         <div className='rq-content'>
           <MessageContent message={this.props.message} content={this.props.content}/>
           {/* this.props.accessories*/}

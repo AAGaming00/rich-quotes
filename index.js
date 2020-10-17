@@ -25,7 +25,6 @@ module.exports = class RichQuotes extends Plugin {
       if (
         (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
         linkSelector.test(args[0].message.content)) {
-        // ugggggghhhh I put a console log here and its spams on message hover. whyyyyyyyy
 
         const cacheSearch = this.settings.get('cacheSearch', true);
 
@@ -41,7 +40,7 @@ module.exports = class RichQuotes extends Plugin {
             partialQuotes: this.settings.get('partialQuotes', true)
           }
         });
-        // I cant think of any good way of moving this into renderer, oh well
+        
         if (!res.props.childrenMessageContent.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
           res.props.className = res.props.className.replace(mentioned, '');
         }

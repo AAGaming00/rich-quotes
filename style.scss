@@ -20,7 +20,7 @@
       grid-template-columns: 20px auto;
       grid-template-rows: min-content auto;
       grid-column-gap: 8px;
-      grid-row-gap: 6px;
+      grid-row-gap: 4px;
 
       &.rq-highlight-container {
          background: var(--rq-highlight-container);
@@ -44,7 +44,7 @@
       &:hover { text-decoration: underline; }
    }
 
-   .rq-header {
+   &>div>.rq-header {
       min-height: 0px !important;
       grid-column: 1 / 2;
       grid-row: 1 / 1;
@@ -73,6 +73,7 @@
             -webkit-text-fill-color: unset;
             color: var(--rq-highlight-text-color);
             background: var(--rq-highlight-text-bg);
+            font-weight: 500;
          }
          .rq-highlight-alt { background: transparent; }
 
@@ -81,7 +82,7 @@
       }
    }
 
-   .rq-content {
+   &>div>.rq-content {
       grid-column: 2;
       grid-row: 2;
       position: unset;
@@ -93,27 +94,24 @@
       }
    }
 
-   .rq-button {
+   &>div>.rq-button-container {
       grid-column: 1;
       grid-row: 2;
-      display: flex;
-      overflow: hidden;
-      height: 20px;
       width: 20px;
-
-      &>div>div {
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         border-radius: 10px;
-         height: 20px;
+      
+      &>div>.rq-button {
          width: 20px;
+         height: 20px;
+         border-radius: 10px;
          background-color: var(--background-tertiary);
-         user-select: none;
 
-         &>svg {
-            width: 12px;
-            height: 12px;
+         display: grid;
+         align-content: center;
+         justify-content: center;
+
+         svg {
+            width: 14px;
+            height: 14px;
 
             &.rq-180-flip { transform: rotateY(180deg); }
          }

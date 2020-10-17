@@ -4,7 +4,6 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@master"
       - name: "TODO to Issue"
         uses: "alstr/todo-to-issue-action@v2.0"
         with:
@@ -12,6 +11,6 @@ jobs:
           BEFORE: ${{ github.event.before }}
           SHA: ${{ github.sha }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LABEL: "// TODO"
+          LABEL: "// @todo"
           COMMENT_MARKER: "//"
         id: "todo"
