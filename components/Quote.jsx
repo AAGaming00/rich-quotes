@@ -8,16 +8,13 @@ module.exports = class RichQuote extends React.Component {
   }
 
   static getDerivedStateFromProps (props, state) {
-    return { ...Object.assign({}, props),
-      ...state };
+    return { ...Object.assign({}, props), ...state };
   }
 
   async search () {
     const { transitionTo } = await getModule([ 'transitionTo' ]);
 
-    const setStatus = (s, link) => this.setState({ ...this.state,
-      searchStatus: s,
-      link });
+    const setStatus = (s, link) => this.setState({ ...this.state, searchStatus: s, link });
 
     // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
     function searchAPI (content, author_id, max_id, id, dm, asc) {
@@ -45,14 +42,12 @@ module.exports = class RichQuote extends React.Component {
       !this.props.channel.guild_id
     );
 
-    if (result.messages.length === 0) {
-      setStatus('error');
-    } else {
+    if (result.messages.length === 0) setStatus('error');
+    else {
       const message = result.messages[0].filter((e) => e?.content.includes(this.props.search.raw))[0];
 
-      if (!message) {
-        setStatus('error');
-      } else {
+      if (!message) setStatus('error');
+      else {
         const link = [ this.props.channel.guild_id || '@me', message.channel_id, message.id ];
 
         setStatus('done', link);
@@ -65,13 +60,9 @@ module.exports = class RichQuote extends React.Component {
             newCache = true;
           }
 
-          const searchResult = { content: message.content,
-            authorId: message.author.id,
-            link };
+          const searchResult = { content: message.content, authorId: message.author.id, link };
 
-          if (message.content !== this.props.search.raw) {
-            searchResult.original_content = this.props.search.raw;
-          }
+          if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
 
           const { searches } = JSON.parse(window.localStorage.richQuoteCache);
 
@@ -135,7 +126,8 @@ module.exports = class RichQuote extends React.Component {
     const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
 
     const link = this.state.link,
-          searchMsg = this.state.searchStatus;
+          searchMsg = this.state.searchStatus,
+          previewQuote = this.props.channel.id === 'uwu';
 
     const quoteTimestamp = link ? new MessageTimestamp.MessageTimestamp({
       className: 'rq-timestamp',
@@ -157,6 +149,11 @@ module.exports = class RichQuote extends React.Component {
             'Could not find matching message' : 
             'Message search loading...' : 
             'Search for Message';
+    
+    function jump() {
+      if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
+      else document.getElementById('uwu-0').scrollIntoViewIfNeeded();
+    }
 
     return (
       <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={highlightContainer}>
@@ -169,24 +166,26 @@ module.exports = class RichQuote extends React.Component {
             <span className={`rq-username ${mention} ${username} ${clickable}`}
               onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
             >{`${this.props.mentionType !== 0 ? '@' : ''}${this.props.author.username}`}</span>{
-              link ? 
+              link && this.props.settings.displayChannel ? 
               <span>
                 <span className='rq-infoText'>posted in </span>
                 <span className={`rq-channel rq-clickable rq-highlight ${highlightAlter}`}
-                  onClick= {() => transitionTo(`/channels/${link.slice(0, 2).join('/')}`) }
+                  onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
                 >{`#${this.props.channel.name}`}</span>
               </span>
-              : false}{quoteTimestamp}
+              : false }{
+                this.props.settings.displayTimestamp ? quoteTimestamp : false
+              }
           </div>
         </div>
         <div className='rq-button-container'>{ link ? 
           <Tooltip position="left" text={jumpTooltip}>
-          <div className='rq-button rq-jump rq-clickable' onClick= {() => transitionTo(`/channels/${link.join('/')}`)}>
+          <div className={`rq-button rq-jump rq-clickable`} onClick= {() => jump()}>
             <Icon className='rq-180-flip' name="Reply"/>
           </div></Tooltip>
           : 
           <Tooltip position="left" text={searchTooltip}>
-          <div key={searchMsg} className={`rq-button rq-search ${!searchMsg ? 'rq-clickable' : ''}`} onClick= {async () => !searchMsg ? this.search() : false}>{
+          <div key={searchMsg} className={`rq-button rq-search ${!searchMsg && !previewQuote ? 'rq-clickable' : ''}`} onClick= {async () => !searchMsg ? this.search() : false}>{
             !searchMsg ? <Icon className='rq-searching' name="Search"/> :
             searchMsg === 'loading' ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
             : <div className='rq-error'>!</div>

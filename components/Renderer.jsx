@@ -8,8 +8,7 @@ module.exports = class QuoteRenderer extends React.Component {
   constructor (props) { super(props); this.state = {} }
 
   static getDerivedStateFromProps (props, state) {
-    return { ...Object.assign({}, props),
-      ...state };
+    return { ...Object.assign({}, props), ...state };
   }
 
   async componentDidUpdate () { if (!_.isEqual(this.props.message.content, this.state.message.content)) await this.buildQuote() }
@@ -38,7 +37,7 @@ module.exports = class QuoteRenderer extends React.Component {
       
       link: undefined, accessories: undefined, mentionType: 0,
 
-      cacheSearch: this.props.settings.cacheSearch
+      settings: this.props.settings
     };
 
     content.forEach(async (e, i) => { if (e && e.props) {
@@ -55,30 +54,24 @@ module.exports = class QuoteRenderer extends React.Component {
         const quoteMatch = /(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g.exec(this.props.message.content);
         const author = await getUser(quoteMatch[3]);
         const currentUser = await getCurrentUser.getCurrentUser();
-        const channel = await getChannel(this.props.message.channel_id);
+        const channel = await getChannel(this.props.message.channel_id) || {id: this.props.message.channel_id};
         
         const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
 
         content[i + 1] = null;
 
         if (currentUser.id !== author.id) quoteParams.mentionType = 1;
-        else {
-          if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
-            quoteParams.mentionType = 2;
-          } else {
-            quoteParams.mentionType = 3;
-          }
-        }
+        else if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`))
+          quoteParams.mentionType = 2;
+        else quoteParams.mentionType = 3;
 
         /* Search cache for matching messages */
         if (this.props.settings.cacheSearch && window.localStorage.richQuoteCache) 
-        for (let cached_message of JSON.parse(window.localStorage.richQuoteCache).searches) {
-          if (
-            cached_message.content.includes(raw_content) &&
-            cached_message.authorId === author.id &&
-            cached_message.link[0] === (channel.guild_id || '@me')
-          ) link = cached_message.link;
-        }
+        for (let cached_message of JSON.parse(window.localStorage.richQuoteCache).searches) if (
+          cached_message.content.includes(raw_content) &&
+          cached_message.authorId === author.id &&
+          cached_message.link[0] === (channel.guild_id || '@me')
+        ) link = cached_message.link;
 
         /* Parse and set info when message is not cached/linked */
         if (link.length === 0) {
@@ -100,31 +93,44 @@ module.exports = class QuoteRenderer extends React.Component {
 
       /* Fetch/Process Message & set info for linked messages */
       if (link.length !== 0) {
-        const messageData = await this.getMsgWithQueue(link[1], link[2]);
+        if (link[0] !== '000000000000000000') {
+          const messageData = await this.getMsgWithQueue(link[1], link[2]);
 
-        if (!messageData) return;
+          if (!messageData) return;
 
-        if (messageData.embeds) messageData.embeds.forEach((e, i) => {
-          if (typeof e.color !== 'string') 
-            messageData.embeds[i].color = '#00000000';
-        });
+          if (messageData.embeds) messageData.embeds.forEach((e, i) => {
+            if (typeof e.color !== 'string') 
+              messageData.embeds[i].color = '#00000000';
+          });
 
-        quoteParams.content = await parser.parse(
-          messageData.content.trim(), true, 
-          { channelId: this.props.message.channel_id }
-        );
+          quoteParams.content = await parser.parse(
+            messageData.content.trim(), true, 
+            { channelId: this.props.message.channel_id }
+          );
 
-        quoteParams.author = messageData.author;
+          quoteParams.author = messageData.author;
 
-        quoteParams.message = await new MessageC({ ...messageData });
-        quoteParams.channel = await getChannel(messageData.channel_id);
-        quoteParams.link = link;
+          quoteParams.message = await new MessageC({ ...messageData });
+          quoteParams.channel = await getChannel(messageData.channel_id);
+          quoteParams.link = link;
 
-        //quoteParams.accessories = React.createElement(renderSimpleAccessories, {
-        //  message: messageData,
-        //  channel: quoteParams.channel,
-        //  hasSpoilerEmbeds: false
-        //})
+          //quoteParams.accessories = React.createElement(renderSimpleAccessories, {
+          //  message: messageData,
+          //  channel: quoteParams.channel,
+          //  hasSpoilerEmbeds: false
+          //})
+        } else {
+          quoteParams.content = await parser.parse(
+           'Check out this preview', true, 
+            { channelId: '000000000000000000' }
+          );
+
+          quoteParams.author = await getCurrentUser.getCurrentUser();
+
+          quoteParams.message = await new MessageC({ ...'' });
+          quoteParams.channel = { id: 'uwu', name: 'test-channel'};
+          quoteParams.link = ['000000000000000000','000000000000000000','000000000000000000'];
+        }
       }
 
       /* Render Quote */

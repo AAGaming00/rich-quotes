@@ -32,16 +32,21 @@ module.exports = class RichQuotes extends Plugin {
           window.localStorage.removeItem('richQuoteCache');
         }
 
-        res.props.childrenMessageContent.props.content = React.createElement(renderer, {
-          content: res.props.childrenMessageContent.props.content,
+        let MessageContent = res.props.childrenMessageContent.props;
+        
+        let get = (n) => this.settings.get(n, true);
+
+        MessageContent.content = React.createElement(renderer, {
+          content: MessageContent.content,
           message: args[0].message,
           settings: {
             cacheSearch,
-            partialQuotes: this.settings.get('partialQuotes', true)
+            displayChannel: get('displayChannel'),
+            displayTimestamp: get('displayTimestamp')
           }
         });
         
-        if (!res.props.childrenMessageContent.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
+        if (!MessageContent.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
           res.props.className = res.props.className.replace(mentioned, '');
         }
       }
@@ -49,7 +54,6 @@ module.exports = class RichQuotes extends Plugin {
       return res;
     }, false);
   }
-
 
   pluginWillUnload () {
     powercord.api.settings.unregisterSettings(this.entityID);
