@@ -15,41 +15,50 @@ const settingStrings = {
 }
 
 module.exports = class Settings extends React.Component {
-  render () {
+  constructor(props) {
+    super(props)
+    this.state = {reload: false}
+  }
+  toggleSetting (setting) {
     const { getSetting, toggleSetting } = this.props;
+    toggleSetting(setting)
+    this.setState({...this.state, reload: Date.now().toString()})
+  }
 
-    // @todo Have preview reload on display changes
+  render () {
+    const { getSetting } = this.props;
+
+
     return (
       <div>
-        <FormTitle tag='h3'>Preview</FormTitle>
+        <FormTitle>Preview</FormTitle>
         
-        <QuotesPreview {...this.props}/>
-        <p className="rq-settingsNote">(Switch settings pages to view display changes)</p>
+        <QuotesPreview key={this.state.reload} {...this.props}/>
         
 
-        <FormTitle className='rq-settingsHeader' tag='h3'>Display</FormTitle>
+        <FormTitle className='rq-settingsHeader'>Display</FormTitle>
 
         <SwitchItem note={settingStrings.displayChannel[1]}
           value={getSetting('displayChannel', true)}
-          onChange={() => toggleSetting('displayChannel')}
+          onChange={() => this.toggleSetting('displayChannel')}
         >{settingStrings.displayChannel[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.displayTimestamp[1]}
           value={getSetting('displayTimestamp', true)}
-          onChange={() => toggleSetting('displayTimestamp')}
+          onChange={() => this.toggleSetting('displayTimestamp')}
         >{settingStrings.displayTimestamp[0]}</SwitchItem>
 
 
-        <FormTitle className='rq-settingsHeader' tag='h3'>Caching</FormTitle>
+        <FormTitle className='rq-settingsHeader'>Caching</FormTitle>
 
         <SwitchItem note={settingStrings.cacheSearch[1]}
           value={getSetting('cacheSearch', true)}
-          onChange={() => toggleSetting('cacheSearch')}
+          onChange={() => this.toggleSetting('cacheSearch')}
         >{settingStrings.cacheSearch[0]}</SwitchItem>
 
         {/*<SwitchItem note={settingStrings.partialQuotes[1]}
           value={getSetting('partialQuotes', true)}
-          onChange={() => toggleSetting('partialQuotes')}
+          onChange={() => this.toggleSetting('partialQuotes')}
         >{settingStrings.partialQuotes[0]}</SwitchItem>*/}
 
         <ButtonItem

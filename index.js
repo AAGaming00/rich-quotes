@@ -15,8 +15,6 @@ module.exports = class RichQuotes extends Plugin {
 
     this.loadStylesheet('./style.scss');
 
-    const currentUser = await (await getModule([ 'getCurrentUser' ])).getCurrentUser();
-
     const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
 
     const { mentioned } = await getModule([ 'mentioned' ]);
@@ -25,9 +23,8 @@ module.exports = class RichQuotes extends Plugin {
       if (
         (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
         linkSelector.test(args[0].message.content)) {
-
+        const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
         const cacheSearch = this.settings.get('cacheSearch', true);
-
         if (!cacheSearch && window.localStorage.richQuoteCache) {
           window.localStorage.removeItem('richQuoteCache');
         }

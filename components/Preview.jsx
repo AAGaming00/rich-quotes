@@ -67,6 +67,7 @@ module.exports = React.memo(
                     content: msg[1]
                   })}
                   id={`uwu-${i.toString()}`}
+                  class={'richquotes-preview-message'}
                   groupId={i}
                 />
               ))}
