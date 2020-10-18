@@ -54,7 +54,7 @@ module.exports = class QuoteRenderer extends React.Component {
         const quoteMatch = /(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g.exec(this.props.message.content);
         const author = await getUser(quoteMatch[3]);
         const currentUser = await getCurrentUser.getCurrentUser();
-        const channel = await getChannel(this.props.message.channel_id) || {id: this.props.message.channel_id};
+        const channel = await getChannel(this.props.message.channel_id) || {id: 'uwu'};
         
         const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
 

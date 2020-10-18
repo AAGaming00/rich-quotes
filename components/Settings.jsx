@@ -20,14 +20,14 @@ module.exports = class Settings extends React.Component {
     this.state = {reload: false}
   }
   toggleSetting (setting) {
-    const { getSetting, toggleSetting } = this.props;
-    toggleSetting(setting)
-    this.setState({...this.state, reload: Date.now().toString()})
+    this.props.toggleSetting(setting);
+    this.setState({...this.state, reload: Date.now().toString()});
+
+    setTimeout(() => document.getElementById('uwu-6').scrollIntoViewIfNeeded(), 100);
   }
 
   render () {
     const { getSetting } = this.props;
-
 
     return (
       <div>

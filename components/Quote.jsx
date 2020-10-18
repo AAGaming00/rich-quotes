@@ -20,16 +20,11 @@ module.exports = class RichQuote extends React.Component {
     function searchAPI (content, author_id, max_id, id, dm, asc) {
       return new Promise((resolve, reject) => {
         const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
-        const opts = { author_id,
-          max_id,
-          content };
-        const s = new Search(id, dm ? 'DM' : 'GUILD',
-          asc
-            ? { offset: 0,
-              sort_by: 'timestamp',
-              sort_order: 'asc',
-              ...opts }
-            : opts);
+        const opts = { author_id, max_id, content };
+        const s = new Search(id, dm ? 'DM' : 'GUILD', 
+          asc ? 
+          { offset: 0, sort_by: 'timestamp', sort_order: 'asc', ...opts }
+          : opts);
 
         s.fetch(res => resolve(res.body), () => void 0, reject);
       });
@@ -52,13 +47,10 @@ module.exports = class RichQuote extends React.Component {
 
         setStatus('done', link);
 
-        if (this.props.cacheSearch) {
+        if (this.props.settings.cacheSearch) {
           let newCache = false;
 
-          if (!window.localStorage.richQuoteCache) {
-            window.localStorage.richQuoteCache = JSON.stringify([ { searches: [] } ]);
-            newCache = true;
-          }
+          if (!window.localStorage.richQuoteCache) newCache = true;
 
           const searchResult = { content: message.content, authorId: message.author.id, link };
 
@@ -155,6 +147,8 @@ module.exports = class RichQuote extends React.Component {
       else document.getElementById('uwu-0').scrollIntoViewIfNeeded();
     }
 
+    const allowSearch = !searchMsg && !previewQuote;
+
     return (
       <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={highlightContainer}>
         <div className='rq-header threads-header-hack'>
@@ -169,7 +163,7 @@ module.exports = class RichQuote extends React.Component {
               link && this.props.settings.displayChannel ? 
               <span>
                 <span className='rq-infoText'>posted in </span>
-                <span className={`rq-channel rq-clickable rq-highlight ${highlightAlter}`}
+                <span className={`rq-channel ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
                   onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
                 >{`#${this.props.channel.name}`}</span>
               </span>
@@ -185,7 +179,7 @@ module.exports = class RichQuote extends React.Component {
           </div></Tooltip>
           : 
           <Tooltip position="left" text={searchTooltip}>
-          <div key={searchMsg} className={`rq-button rq-search ${!searchMsg && !previewQuote ? 'rq-clickable' : ''}`} onClick= {async () => !searchMsg ? this.search() : false}>{
+          <div key={searchMsg} className={`rq-button rq-search ${ allowSearch ? 'rq-clickable' : ''}`} onClick= {async () => allowSearch ? this.search() : false}>{
             !searchMsg ? <Icon className='rq-searching' name="Search"/> :
             searchMsg === 'loading' ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
             : <div className='rq-error'>!</div>

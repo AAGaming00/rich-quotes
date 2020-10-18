@@ -25,9 +25,8 @@ module.exports = class RichQuotes extends Plugin {
         linkSelector.test(args[0].message.content)) {
         const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
         const cacheSearch = this.settings.get('cacheSearch', true);
-        if (!cacheSearch && window.localStorage.richQuoteCache) {
-          window.localStorage.removeItem('richQuoteCache');
-        }
+        
+        if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
 
         let MessageContent = res.props.childrenMessageContent.props;
         

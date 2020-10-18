@@ -46,7 +46,7 @@ module.exports = React.memo(
 
     // Render
     return (
-      <div className='total-members-preview'>
+      <div id='rich-quotes-preview'>
         <HeaderBarContainer>
           <div className={iconWrapper}>
             <ChannelText className={icon}/>
