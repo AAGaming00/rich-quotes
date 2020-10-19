@@ -60,7 +60,7 @@ module.exports = class QuoteRenderer extends React.Component {
         
         const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
 
-        content[i + 1] = null;
+        content[i + 1] = <div/>;
 
         if (currentUser.id !== author.id) quoteParams.mentionType = 1;
         else if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`))
