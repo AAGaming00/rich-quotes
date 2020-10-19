@@ -50,8 +50,6 @@ module.exports = class RichQuote extends React.Component {
         if (this.props.settings.cacheSearch) {
           const searchResult = { content: message.content, authorId: message.author.id, link };
 
-          if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
-
           let newCache = false;
 
           if (!window.localStorage.richQuoteCache) newCache = true;
