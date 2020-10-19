@@ -1,26 +1,67 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
-const renderer = require('./components/InlineQuoteContainer');
+const renderer = require('./components/Renderer');
+const settings = require('./components/Settings');
+const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/;
+
 module.exports = class RichQuotes extends Plugin {
-  startPlugin () {
-    const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false)
+  async startPlugin () {
+    powercord.api.settings.registerSettings(this.entityID, {
+      label: 'Rich Quotes',
+      category: this.entityID,
+      render: settings
+    });
+
     this.loadStylesheet('./style.scss');
-    inject('rich-quotes-Message', MessageContent, 'type', (args, res) => {
-      //console.log(res, args[0]);
-      if ((/(> .+\n)+(<@!?(\d+)>)/g).test(args[0].message.content) || (/(https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19})+/g).test(args[0].message.content)) {
-        res.props.children = React.createElement(renderer, {
-          content: args[0].content,
-          message: args[0].message
+
+    const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
+
+    const { mentioned } = await getModule([ 'mentioned' ]);
+
+    inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
+      if (
+        (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
+        linkSelector.test(args[0].message.content)) {
+        const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
+        const cacheSearch = this.settings.get('cacheSearch', true);
+        
+        if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
+
+        let MessageContent = res.props.childrenMessageContent.props;
+        
+        let get = (n) => this.settings.get(n, true);
+
+        MessageContent.content = React.createElement(renderer, {
+          content: MessageContent.content,
+          message: args[0].message,
+          settings: {
+            cacheSearch,
+
+            displayChannel: get('displayChannel'),
+            displayTimestamp: get('displayTimestamp'),
+            displayNickname: get('displayNickname'),
+
+            displayEmbeds: get('displayEmbeds'),
+            
+            embedImages: get('embedImages'), embedVideos: get('embedVideos'),
+            embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),
+            embedFile: get('embedFile'), //embedSpecial: get('embedSpecial'),
+            embedOther: get('embedOther'), embedAll: get('embedAll')
+          }
         });
+        
+        if (!MessageContent.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
+          res.props.className = res.props.className.replace(mentioned, '');
+        }
       }
+
       return res;
     }, false);
-    MessageContent.type.displayName = 'MessageContent';
   }
 
-
   pluginWillUnload () {
-    uninject('rich-quotes-Message');
+    powercord.api.settings.unregisterSettings(this.entityID);
+    uninject('Rich-Quotes-Message');
   }
 };

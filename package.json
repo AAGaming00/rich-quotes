@@ -1,0 +1,22 @@
+{
+  "name": "rich-quotes",
+  "version": "1.0.0",
+  "description": "Discord client plugin for Powercord that makes quotes and message links more wealthy.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ADoesGit/rich-quotes.git"
+  },
+  "author": "AAGaming, MulverineX",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ADoesGit/rich-quotes/issues"
+  },
+  "homepage": "https://github.com/ADoesGit/rich-quotes#readme",
+  "dependencies": {
+    "mime-types": "^2.1.27"
+  }
+}
