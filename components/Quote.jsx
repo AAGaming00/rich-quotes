@@ -190,7 +190,7 @@ module.exports = class RichQuote extends React.Component {
         }</div>
 
         <div className='rq-content'>
-          <MessageContent message={this.props.message} content={this.props.content}/>
+          {this.props.content ? <MessageContent message={this.props.message} content={this.props.content}/> : null}
           {this.props.accessories}
         </div>
       </div></div></div>
