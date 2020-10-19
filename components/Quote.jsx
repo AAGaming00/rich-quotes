@@ -113,15 +113,18 @@ module.exports = class RichQuote extends React.Component {
 
   render () {
     const { transitionTo } = getModule([ 'transitionTo' ], false);
+    const { getName } = getModule([ 'getName' ], false);
+
     const MessageTimestamp = getModule([ 'MessageTimestamp' ], false);
-    const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
     const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
+
+    const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 
     const link = this.state.link,
           searchMsg = this.state.searchStatus,
           previewQuote = this.props.channel.id === 'uwu';
 
-    const quoteTimestamp = link ? new MessageTimestamp.MessageTimestamp({
+    const quoteTimestamp = link && this.props.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
       className: 'rq-timestamp',
       compact: false,
       timestamp: new Timestamp(this.props.message.timestamp),
@@ -142,12 +145,13 @@ module.exports = class RichQuote extends React.Component {
             'Message search loading...' : 
             'Search for Message';
     
-    function jump() {
-      if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
-      else document.getElementById('uwu-0').scrollIntoViewIfNeeded();
-    }
+    const previewJump = document.getElementById('uwu-0')?.scrollIntoViewIfNeeded;
 
     const allowSearch = !searchMsg && !previewQuote;
+
+    // Nickname handler
+    const displayName = this.props.settings.displayNickname ? 
+      getName(link ? link[0] : this.props.channel.guild_id, this.props.channel.id, this.props.author) : false;
 
     return (
       <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={highlightContainer}>
@@ -159,7 +163,7 @@ module.exports = class RichQuote extends React.Component {
           <div className='rq-userTag'>
             <span className={`rq-username ${mention} ${username} ${clickable}`}
               onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
-            >{`${this.props.mentionType !== 0 ? '@' : ''}${this.props.author.username}`}</span>{
+            >{`${this.props.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
               link && this.props.settings.displayChannel ? 
               <span>
                 <span className='rq-infoText'>posted in </span>
@@ -167,14 +171,13 @@ module.exports = class RichQuote extends React.Component {
                   onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
                 >{`#${this.props.channel.name}`}</span>
               </span>
-              : false }{
-                this.props.settings.displayTimestamp ? quoteTimestamp : false
-              }
+              : false }{ quoteTimestamp }
           </div>
         </div>
+
         <div className='rq-button-container'>{ link ? 
           <Tooltip position="left" text={jumpTooltip}>
-          <div className={`rq-button rq-jump rq-clickable`} onClick= {() => jump()}>
+          <div className='rq-button rq-jump rq-clickable' onClick= {() => !previewQuote ? transitionTo(`/channels/${link.join('/')}`) : previewJump()}>
             <Icon className='rq-180-flip' name="Reply"/>
           </div></Tooltip>
           : 
@@ -185,9 +188,10 @@ module.exports = class RichQuote extends React.Component {
             : <div className='rq-error'>!</div>
           }</div></Tooltip>
         }</div>
+
         <div className='rq-content'>
           <MessageContent message={this.props.message} content={this.props.content}/>
-          {/* this.props.accessories*/}
+          {this.props.accessories}
         </div>
       </div></div></div>
     );

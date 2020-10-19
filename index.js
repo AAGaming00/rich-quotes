@@ -37,8 +37,17 @@ module.exports = class RichQuotes extends Plugin {
           message: args[0].message,
           settings: {
             cacheSearch,
+
             displayChannel: get('displayChannel'),
-            displayTimestamp: get('displayTimestamp')
+            displayTimestamp: get('displayTimestamp'),
+            displayNickname: get('displayNickname'),
+
+            displayEmbeds: get('displayEmbeds'),
+            
+            embedImages: get('embedImages'), embedVideos: get('embedVideos'),
+            embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),
+            embedFile: get('embedFile'), //embedSpecial: get('embedSpecial'),
+            embedOther: get('embedOther'), embedAll: get('embedAll')
           }
         });
         

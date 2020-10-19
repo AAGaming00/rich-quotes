@@ -1,4 +1,5 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
+const mime = require('../node_modules/mime-types')
 
 const quote = require('./Quote')
 
@@ -23,7 +24,7 @@ module.exports = class QuoteRenderer extends React.Component {
     const { getUser } = getCurrentUser;
     const { getChannel } = await getModule(['getChannel']);
     const parser = await getModule(["parse", "parseTopic"]);
-    // const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
+    const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
 
     const content = [...this.props.content];
     const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g;
@@ -94,14 +95,68 @@ module.exports = class QuoteRenderer extends React.Component {
       /* Fetch/Process Message & set info for linked messages */
       if (link.length !== 0) {
         if (link[0] !== '000000000000000000') {
-          const messageData = await this.getMsgWithQueue(link[1], link[2]);
+          const originalMessage = await this.getMsgWithQueue(link[1], link[2]);
+          let messageData = { ...originalMessage };
+          const settings = this.props.settings;
+          let hasEmbedSpoilers = false;
+          // @todo This giant hack has false negatives, eventually should be fixed
+          const spoilerMatcher = (b) => new RegExp(`\\|\\|${b.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&').replace('\/\/','\/\/(.*?)').replace(/\//g,'\\/')}(.*?)\\|\\|`);
 
-          if (!messageData) return;
+          if (!originalMessage) return;
 
-          if (messageData.embeds) messageData.embeds.forEach((e, i) => {
-            if (typeof e.color !== 'string') 
-              messageData.embeds[i].color = '#00000000';
-          });
+          if (settings.displayEmbeds && !settings.embedAll) {
+            if (messageData.embeds?.length !== 0) {
+              let colorFixes = [];
+              let urls = []
+
+              messageData.embeds = messageData.embeds?.filter((embed, i) => {
+                if (spoilerMatcher(embed.url).test(messageData.content)) hasEmbedSpoilers = true;
+                if (typeof e.color !== 'string') colorFixes.push(i);
+
+                let keepEmbed = true;
+
+                if (embed.image) keepEmbed = settings.embedImages;
+                else if (embed.video) {
+                  keepEmbed = settings.embedVideos;
+                  if (!embed.video.proxyURL) keepEmbed = settings.embedYouTube
+                } else keepEmbed = settings.embedOther;
+
+                if (keepEmbed) urls.push(embed.url);
+
+                if (urls.length === 1 && messageData.content === urls[0]) messageData.content = '';
+
+                return keepEmbed;
+              });
+
+              // @todo Move this to filter?
+              if (colorFixes.length !== 0) colorFixes.forEach((e, i) => { if (messageData.embeds[i]) messageData.embeds[i].color = '#00000000' });
+            }
+
+            if (messageData.attachments?.length !== 0) 
+            messageData.attachments = messageData.attachments.filter((file) => {
+              const mime_type = mime.lookup(file.proxy_url.split('/')[6]);
+              if (mime_type) switch (mime_type.split('/')[0]) {
+                case 'image': return settings.embedImages; break;
+                case 'video': return settings.embedVideos; break;
+                case 'audio': return settings.embedAudio;  break;
+                default:      return settings.embedFile;   break;
+              }
+              else return settings.embedFile;
+            });
+          } else if (settings.displayEmbeds) {
+            let urls = [];
+
+            messageData.embeds.forEach((embed, i) => {
+              if (spoilerMatcher(embed.url).test(messageData.content)) hasEmbedSpoilers = true;
+              if (typeof e.color !== 'string') messageData.embeds[i].color = '#00000000';
+              urls.push(embed.url);
+            });
+
+            if (urls.length === 1 && messageData.content === urls[0]) messageData.content = '';
+          } else { 
+            messageData.embeds = [];
+            messageData.attachments = [];
+          }
 
           quoteParams.content = await parser.parse(
             messageData.content.trim(), true, 
@@ -114,12 +169,12 @@ module.exports = class QuoteRenderer extends React.Component {
           quoteParams.channel = await getChannel(messageData.channel_id);
           quoteParams.link = link;
 
-          //quoteParams.accessories = React.createElement(renderSimpleAccessories, {
-          //  message: messageData,
-          //  channel: quoteParams.channel,
-          //  hasSpoilerEmbeds: false
-          //})
+          if (settings.displayEmbeds && (messageData.embeds?.length !== 0 || messageData.attachments?.length !== 0)) 
+            quoteParams.accessories = renderSimpleAccessories({ message: messageData, channel: quoteParams.channel}, hasEmbedSpoilers)
+          else quoteParams.accessories = false;
+
         } else {
+          // funni preview handler
           quoteParams.content = await parser.parse(
            'Check out this preview', true, 
             { channelId: '000000000000000000' }

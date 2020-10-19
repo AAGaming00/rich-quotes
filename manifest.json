@@ -1,7 +1,7 @@
 {
   "name": "Rich Quotes",
   "description": "A replaces message links with the actual message.",
-  "author": "AAGaming#9395",
+  "author": "AAGaming#9395, MulverineX#0001",
   "license": "MIT",
-  "version": "0.5.4"
+  "version": "0.6.0"
 }
