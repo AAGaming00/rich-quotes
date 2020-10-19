@@ -1,5 +1,5 @@
 const { getModule, http: { get }, constants: { Endpoints }, React } = require('powercord/webpack');
-
+const ErrorBoundry = require('./ErrorBoundary')
 const embedHandler = require('../utils/embedHandler.js');
 
 const quote = require('./Quote')
@@ -189,5 +189,5 @@ module.exports = class QuoteRenderer extends React.Component {
     return message;
   }
 
-  render () { return ( <div key={this.props.content}>{this.state.content}</div> ) }
+  render () { return (<ErrorBoundry><div key={this.props.content}>{this.state.content}</div></ErrorBoundry> ) }
 };
