@@ -37,14 +37,8 @@ class ErrorBoundary extends React.PureComponent {
                     The error message has been copied to your clipboard.
             {'\n'}
                     Send it to AAGaming in the Powercord server for support.
-            {'\n'}    Full error:
 
           </div>
-          <pre>
-            <code>
-              {this.state.error.stack.substring(0, 2000 - 36)}
-            </code>
-          </pre>
         </div>
       );
     }
