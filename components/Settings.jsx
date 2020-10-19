@@ -61,58 +61,58 @@ module.exports = class Settings extends React.Component {
 
         <SwitchItem note={settingStrings.displayChannel[1]}
           value={getSetting('displayChannel', true)}
-          onChange={() => this.toggleSetting('displayChannel')}
+          onChange={() => this.toggleSetting('displayChannel', true)}
         >{settingStrings.displayChannel[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.displayTimestamp[1]}
           value={getSetting('displayTimestamp', true)}
-          onChange={() => this.toggleSetting('displayTimestamp')}
+          onChange={() => this.toggleSetting('displayTimestamp', true)}
         >{settingStrings.displayTimestamp[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.displayNickname[1]}
           value={getSetting('displayNickname', true)}
-          onChange={() => this.toggleSetting('displayNickname')}
+          onChange={() => this.toggleSetting('displayNickname', true)}
         >{settingStrings.displayNickname[0]}</SwitchItem>
 
 
         <SwitchItem note={settingStrings.displayEmbeds[1]}
           value={getSetting('displayEmbeds', true)}
-          onChange={() => this.toggleSetting('displayEmbeds')}
+          onChange={() => this.toggleSetting('displayEmbeds', true)}
         >{settingStrings.displayEmbeds[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.embedImages[1]}
           value={getSetting('embedImages', true)}
-          onChange={() => this.toggleSetting('embedImages')}
+          onChange={() => this.toggleSetting('embedImages', true)}
         >{settingStrings.embedImages[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.embedVideos[1]}
           value={getSetting('embedVideos', true)}
-          onChange={() => this.toggleSetting('embedVideos')}
+          onChange={() => this.toggleSetting('embedVideos', true)}
         >{settingStrings.embedVideos[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.embedYouTube[1]}
           value={getSetting('embedYouTube', true)}
-          onChange={() => this.toggleSetting('embedYouTube')}
+          onChange={() => this.toggleSetting('embedYouTube', true)}
         >{settingStrings.embedYouTube[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.embedAudio[1]}
           value={getSetting('embedAudio', true)}
-          onChange={() => this.toggleSetting('embedAudio')}
+          onChange={() => this.toggleSetting('embedAudio', true)}
         >{settingStrings.embedAudio[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.embedFile[1]}
           value={getSetting('embedFile', true)}
-          onChange={() => this.toggleSetting('embedFile')}
+          onChange={() => this.toggleSetting('embedFile', true)}
         >{settingStrings.embedFile[0]}</SwitchItem>
 
         {/*<SwitchItem note={settingStrings.embedSpecial[1]}
           value={getSetting('embedSpecial', true)}
-          onChange={() => this.toggleSetting('embedSpecial')}
+          onChange={() => this.toggleSetting('embedSpecial', true)}
         >{settingStrings.embedSpecial[0]}</SwitchItem>*/}
 
         <SwitchItem note={settingStrings.embedOther[1]}
           value={getSetting('embedOther', true)}
-          onChange={() => this.toggleSetting('embedOther')}
+          onChange={() => this.toggleSetting('embedOther', true)}
         >{settingStrings.embedOther[0]}</SwitchItem>
         
 
@@ -121,12 +121,12 @@ module.exports = class Settings extends React.Component {
 
         <SwitchItem note={settingStrings.cacheSearch[1]}
           value={getSetting('cacheSearch', true)}
-          onChange={() => this.props.toggleSetting('cacheSearch')}
+          onChange={() => this.props.toggleSetting('cacheSearch', true)}
         >{settingStrings.cacheSearch[0]}</SwitchItem>
 
         {/*<SwitchItem note={settingStrings.partialQuotes[1]}
           value={getSetting('partialQuotes', true)}
-          onChange={() => this.toggleSetting('partialQuotes')}
+          onChange={() => this.toggleSetting('partialQuotes', true)}
         >{settingStrings.partialQuotes[0]}</SwitchItem>*/}
 
         <ButtonItem
