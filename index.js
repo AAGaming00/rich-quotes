@@ -20,39 +20,40 @@ module.exports = class RichQuotes extends Plugin {
     const { mentioned } = await getModule([ 'mentioned' ]);
 
     inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
-      if (
-        (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
-        linkSelector.test(args[0].message.content)) {
-        const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
-        const cacheSearch = this.settings.get('cacheSearch', true);
-        
-        if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
+      if (res.props.childrenMessageContent) { 
+        if (
+          (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
+          linkSelector.test(args[0].message.content)) {
+          const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
+          const cacheSearch = this.settings.get('cacheSearch', true);
+          
+          if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
+          let MessageContent = res.props.childrenMessageContent.props;
+          
+          let get = (n) => this.settings.get(n, true);
 
-        let MessageContent = res.props.childrenMessageContent.props;
-        
-        let get = (n) => this.settings.get(n, true);
+          MessageContent.content = React.createElement(renderer, {
+            content: MessageContent.content,
+            message: args[0].message,
+            settings: {
+              cacheSearch,
 
-        MessageContent.content = React.createElement(renderer, {
-          content: MessageContent.content,
-          message: args[0].message,
-          settings: {
-            cacheSearch,
+              displayChannel: get('displayChannel'),
+              displayTimestamp: get('displayTimestamp'),
+              displayNickname: get('displayNickname'),
 
-            displayChannel: get('displayChannel'),
-            displayTimestamp: get('displayTimestamp'),
-            displayNickname: get('displayNickname'),
-
-            displayEmbeds: get('displayEmbeds'),
-            
-            embedImages: get('embedImages'), embedVideos: get('embedVideos'),
-            embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),
-            embedFile: get('embedFile'), //embedSpecial: get('embedSpecial'),
-            embedOther: get('embedOther'), embedAll: get('embedAll')
+              displayEmbeds: get('displayEmbeds'),
+              
+              embedImages: get('embedImages'), embedVideos: get('embedVideos'),
+              embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),
+              embedFile: get('embedFile'), //embedSpecial: get('embedSpecial'),
+              embedOther: get('embedOther'), embedAll: get('embedAll')
+            }
+          });
+          
+          if (!MessageContent.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
+            res.props.className = res.props.className.replace(mentioned, '');
           }
-        });
-        
-        if (!MessageContent.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
-          res.props.className = res.props.className.replace(mentioned, '');
         }
       }
 
