@@ -31,7 +31,7 @@ class ErrorBoundary extends React.PureComponent {
     if (this.state.hasError) {
       return (
         <div>
-          <div className = 'colorStandard-2KCXvj size14-e6ZScH'>
+          <div className = 'rq-error colorStandard-2KCXvj size14-e6ZScH'>
                     An error occurred while rendering this element.
             {'\n'}
                     The error message has been copied to your clipboard.
