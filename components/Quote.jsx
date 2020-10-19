@@ -48,17 +48,17 @@ module.exports = class RichQuote extends React.Component {
         setStatus('done', link);
 
         if (this.props.settings.cacheSearch) {
-          let newCache = false;
-
-          if (!window.localStorage.richQuoteCache) newCache = true;
-
           const searchResult = { content: message.content, authorId: message.author.id, link };
 
           if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
 
-          const { searches } = newCache ? [] : JSON.parse(window.localStorage.richQuoteCache);
+          let newCache = false;
 
-          window.localStorage.richQuoteCache = JSON.stringify({ searches: [ ...searches, searchResult ]});
+          if (!window.localStorage.richQuoteCache) newCache = true;
+
+          const { searches } = newCache ? false : JSON.parse(window.localStorage.richQuoteCache);
+
+          window.localStorage.richQuoteCache = JSON.stringify({ searches: searches ? [ ...searches, searchResult ] : [ searchResult ]});
         }
 
         transitionTo(`/channels/${link.join('/')}`);
