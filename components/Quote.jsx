@@ -56,10 +56,9 @@ module.exports = class RichQuote extends React.Component {
 
           if (message.content !== this.props.search.raw) searchResult.original_content = this.props.search.raw;
 
-          const { searches } = JSON.parse(window.localStorage.richQuoteCache);
+          const { searches } = newCache ? [] : JSON.parse(window.localStorage.richQuoteCache);
 
-          window.localStorage.richQuoteCache =
-            JSON.stringify({ searches: !newCache ? [ ...searches, searchResult ] : [ searchResult ] });
+          window.localStorage.richQuoteCache = JSON.stringify({ searches: [ ...searches, searchResult ]});
         }
 
         transitionTo(`/channels/${link.join('/')}`);
