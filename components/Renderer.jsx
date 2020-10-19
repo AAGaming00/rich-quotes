@@ -60,7 +60,7 @@ module.exports = class QuoteRenderer extends React.Component {
         
         const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
 
-        content[i + 1] = <div/>;
+        content[i + 1] = null;
 
         if (currentUser.id !== author.id) quoteParams.mentionType = 1;
         else if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`))
@@ -102,7 +102,7 @@ module.exports = class QuoteRenderer extends React.Component {
 
           if (!originalMessage) return;
 
-          if (this.props.settings.displayEmbeds) embedHandler(messageData, this.props.settings, hasEmbedSpoilers);
+          if (/*this.props.settings.displayEmbeds*/false) embedHandler(messageData, this.props.settings, hasEmbedSpoilers);
           else { 
             messageData.embeds = [];
             messageData.attachments = [];
@@ -119,7 +119,7 @@ module.exports = class QuoteRenderer extends React.Component {
           quoteParams.channel = await getChannel(messageData.channel_id);
           quoteParams.link = link;
 
-          if (this.props.settings.displayEmbeds && (messageData.embeds?.length !== 0 || messageData.attachments?.length !== 0)) 
+          if (/*this.props.settings.displayEmbeds*/false && (messageData.embeds?.length !== 0 || messageData.attachments?.length !== 0)) 
             quoteParams.accessories = renderSimpleAccessories({ message: messageData, channel: quoteParams.channel}, hasEmbedSpoilers);
           else quoteParams.accessories = false;
 
