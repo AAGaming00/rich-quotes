@@ -14,7 +14,7 @@ Discord client plugin for Powercord that makes quotes and message links more wea
 
 ## Features
  - Rich Message Link & Markdown Quotes
- - ~~Support for Images, Videos, and all other embeds on linked quotes~~ Disabled for now, bug AA, enable in cloned source if you wish for crashing.
+ - ~~Support for Images, Videos, and all other embeds on linked quotes~~ Disabled for now, bug AA. Enable in cloned source if you wish for crashing.
  - Channels & Timestamps on linked quotes
  - Linking of markdown quotes via a search button & ca~~s~~ching
  - Settings page with a fancy preview, expensive display options, and ca~~s~~che controls
