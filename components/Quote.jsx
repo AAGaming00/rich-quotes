@@ -166,10 +166,13 @@ module.exports = class RichQuote extends React.Component {
             >{`${this.props.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
               link && this.props.settings.displayChannel ? 
               <span>
-                <span className='rq-infoText'>posted in </span>
-                <span className={`rq-channel ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
-                  onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
-                >{`#${this.props.channel.name}`}</span>
+                <span className='rq-infoText'>{`posted in ${this.props.channel.name ? '' : 'a DM'}`}</span>
+                {
+                  this.props.channel.name ?
+                  <span className={`rq-channel ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
+                    onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
+                  >{`#${this.props.channel.name}`}</span> : false
+                }
               </span>
               : false }{ quoteTimestamp }
           </div>
