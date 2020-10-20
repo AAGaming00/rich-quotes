@@ -7,7 +7,7 @@ const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/
 
 module.exports = class RichQuotes extends Plugin {
   async startPlugin () {
-    powercord.api.settings.registerSettings(this.entityID, {
+    powercord.api.settings.registerSettings("rich-quotes", {
       label: 'Rich Quotes',
       category: this.entityID,
       render: settings
