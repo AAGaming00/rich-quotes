@@ -63,7 +63,7 @@ module.exports = class RichQuotes extends Plugin {
   }
 
   pluginWillUnload () {
-    powercord.api.settings.unregisterSettings(this.entityID);
+    powercord.api.settings.unregisterSettings("rich-quotes");
     uninject('Rich-Quotes-Message');
   }
 };
