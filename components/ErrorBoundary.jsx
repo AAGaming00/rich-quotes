@@ -11,7 +11,13 @@ class ErrorBoundary extends React.PureComponent {
   componentDidCatch (error) {
     console.error(error);
 
-    let errorString = error.stack.substring(0, 4000 - 36);
+    let errorString = error.stack
+      .split('\n')
+      .filter(l => !l.includes('discordapp.com/assets/') && !l.includes('discord.com/assets/'))
+      .join('\n')
+      .split('../../')
+      .join('')
+      .substring(0, 2000 - 36);
     if (errorString.length === 2000 - 36) {
       errorString += '...';
     }
@@ -30,13 +36,16 @@ class ErrorBoundary extends React.PureComponent {
   render () {
     if (this.state.hasError) {
       return (
-        <div className = 'rq-error colorStandard-2KCXvj size14-e6ZScH'>
+        <>
+          <div className = 'rq-error colorStandard-2KCXvj size14-e6ZScH'>
                     An error occurred while rendering this element.
           {'\n'}
                     The error message has been copied to your clipboard.
           {'\n'}
                     Send it to AAGaming in the Powercord server for support.
-        </div>
+          </div>
+          {this.props.content}
+        </>
       );
     }
     return this.props.children;
