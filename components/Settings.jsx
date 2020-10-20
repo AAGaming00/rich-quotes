@@ -11,7 +11,7 @@ const settingStrings = {
   displayTimestamp: ['Display Timestamps', 'When disabled timestamps will instead be displayed in info.'],
   displayNickname: ['Display Nickname', 'When disabled will always show actual username.'],
   
-  displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.'],
+  displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.\nCurrently broken and can cause crashes.'],
 
   embedImages: ['Embed Images', 'When disabled will not display images.'],
   embedVideos: ['Embed Videos', 'When disabled will not display regular videos.'],
@@ -31,9 +31,9 @@ module.exports = class Settings extends React.Component {
     super(props)
     this.state = {reload: false}
   }
-  toggleSetting (setting) {
+  toggleSetting (setting, defaultOption) {
     const { getSetting } = this.props;
-    this.props.toggleSetting(setting);
+    this.props.toggleSetting(setting, defaultOption);
     this.setState({...this.state, reload: Date.now().toString()});
 
     const embedDisplays = [ 'embedImages', 'embedVideos', 'embedYouTube', 'embedAudio', 'embedFile', 'embedSpecial', 'embedOther' ]
@@ -42,8 +42,15 @@ module.exports = class Settings extends React.Component {
     
     embedDisplays.forEach((type) => { if (getSetting(type) === false) embedAll = false; });
 
-    if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll');
+    if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll', defaultOption);
 
+  }
+
+  componentDidMount () {
+    this.componentDidUpdate()
+  }
+
+  componentDidUpdate () {
     setTimeout(() => document.getElementById('uwu-6').scrollIntoViewIfNeeded(), 100);
   }
 
@@ -76,8 +83,8 @@ module.exports = class Settings extends React.Component {
 
 
         <SwitchItem note={settingStrings.displayEmbeds[1]}
-          value={getSetting('displayEmbeds', true)}
-          onChange={() => this.toggleSetting('displayEmbeds', true)}
+          value={getSetting('displayEmbeds', false)}
+          onChange={() => this.toggleSetting('displayEmbeds', false)}
         >{settingStrings.displayEmbeds[0]}</SwitchItem>
 
         <SwitchItem note={settingStrings.embedImages[1]}
