@@ -31,9 +31,9 @@ module.exports = class Settings extends React.Component {
     super(props)
     this.state = {reload: false}
   }
-  toggleSetting (setting) {
+  toggleSetting (setting, defaultOption) {
     const { getSetting } = this.props;
-    this.props.toggleSetting(setting);
+    this.props.toggleSetting(setting, defaultOption);
     this.setState({...this.state, reload: Date.now().toString()});
 
     const embedDisplays = [ 'embedImages', 'embedVideos', 'embedYouTube', 'embedAudio', 'embedFile', 'embedSpecial', 'embedOther' ]
@@ -42,8 +42,15 @@ module.exports = class Settings extends React.Component {
     
     embedDisplays.forEach((type) => { if (getSetting(type) === false) embedAll = false; });
 
-    if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll');
+    if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll', defaultOption);
 
+  }
+
+  componentDidMount () {
+    this.componentDidUpdate()
+  }
+
+  componentDidUpdate () {
     setTimeout(() => document.getElementById('uwu-6').scrollIntoViewIfNeeded(), 100);
   }
 
