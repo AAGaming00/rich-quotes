@@ -11,7 +11,13 @@ class ErrorBoundary extends React.PureComponent {
   componentDidCatch (error) {
     console.error(error);
 
-    let errorString = error.stack.substring(0, 4000 - 36);
+    let errorString = error.stack
+      .split('\n')
+      .filter(l => !l.includes('discordapp.com/assets/') && !l.includes('discord.com/assets/'))
+      .join('\n')
+      .split('../../')
+      .join('')
+      .substring(0, 2000 - 36);
     if (errorString.length === 2000 - 36) {
       errorString += '...';
     }
