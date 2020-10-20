@@ -189,5 +189,5 @@ module.exports = class QuoteRenderer extends React.Component {
     return message;
   }
 
-  render () { return (<ErrorBoundry><div key={this.props.content}>{this.state.content}</div></ErrorBoundry> ) }
+  render () { return (<ErrorBoundry content={this.props.content}><div key={this.props.content}>{this.state.content}</div></ErrorBoundry> ) }
 };
