@@ -11,25 +11,11 @@ class ErrorBoundary extends React.PureComponent {
   componentDidCatch (error) {
     console.error(error);
 
-    let errorString = error.stack
-      .split('\n')
-      .filter(l => !l.includes('discordapp.com/assets/') && !l.includes('discord.com/assets/'))
-      .join('\n')
-      .split('../../')
-      .join('')
-      .substring(0, 2000 - 36);
-    if (errorString.length === 2000 - 36) {
-      errorString += '...';
-    }
-    clipboard.copy(
-      `<@373833473091436546>\n\`\`\`js\n${errorString}\n\`\`\``
-    );
-
     this.setState({ hasError: true,
       error });
 
     if (typeof this.props.onError === 'function') {
-      this.props.onError(err);
+      this.props.onError(error);
     }
   }
 
@@ -40,10 +26,28 @@ class ErrorBoundary extends React.PureComponent {
           <div className = 'rq-error colorStandard-2KCXvj size14-e6ZScH'>
                     An error occurred while rendering this element.
             {'\n'}
-                    The error message has been copied to your clipboard.
+                    Click the button below to copy the error message.
             {'\n'}
                     Send it to AAGaming in the Powercord server for support.
           </div>
+          <button onClick = {() => {
+            let errorString = this.state.error.stack
+              .split('\n')
+              .filter(l => !l.includes('discordapp.com/assets/') && !l.includes('discord.com/assets/'))
+              .join('\n')
+              .split('../../')
+              .join('')
+              .substring(0, 2000 - 36);
+            if (errorString.length === 2000 - 36) {
+              errorString += '...';
+            }
+            clipboard.copy(
+              `<@373833473091436546>\n\`\`\`js\n${errorString}\n\`\`\``
+            );
+          }}>
+            Copy Error Message
+          </button>
+          {'\n'}
           {this.props.content}
         </>
       );
