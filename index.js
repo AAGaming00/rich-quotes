@@ -30,7 +30,7 @@ module.exports = class RichQuotes extends Plugin {
           if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
           const MessageContent = res.props.childrenMessageContent.props;
           
-          const get = (n, d) => this.settings.get(n, d || tue);
+          const get = (n, d) => this.settings.get(n, d || true);
 
           MessageContent.content = React.createElement(renderer, {
             content: MessageContent.content,
