@@ -166,5 +166,24 @@
 main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
 
 .rq-error {
-   background: var(--background-secondary)
+   background: var(--background-secondary);
+   padding: 1rem;
+   border-radius: .5rem;
+   width: 24rem;
+   margin-bottom: .5rem;
+
+   &>.powercord-settings-item {
+      margin: 0px !important;
+      width: min-content;
+      height: min-content;
+
+      button {
+         margin-top: .5rem;
+         margin-left: 0px !important;
+      }
+
+      &>div[class^=divider] {
+         display: none;
+      }
+  }
 }
