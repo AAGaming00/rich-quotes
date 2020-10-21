@@ -16,7 +16,6 @@ module.exports = class RichQuotes extends Plugin {
     this.loadStylesheet('./style.scss');
 
     const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
-    const oType = ChannelMessage.type;
     const { mentioned } = await getModule([ 'mentioned' ]);
 
     inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
@@ -59,7 +58,6 @@ module.exports = class RichQuotes extends Plugin {
 
       return res;
     }, false);
-    Object.assign(ChannelMessage.type, oType);
     ChannelMessage.type.displayName = 'ChannelMessage';
   }
 
