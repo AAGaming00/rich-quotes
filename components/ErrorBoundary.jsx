@@ -72,7 +72,7 @@ class ErrorBoundary extends React.PureComponent {
           }
           { hasBad ? 
             <ButtonItem button={'Disable & Reload'} color={Button.Colors.GREEN}
-              onClick={() => { powercord.pluginManager.disable('open-in-spotify'); setTimeout(() => document.location.reload(), 250) }}
+              onClick={() => { powercord.pluginManager.disable('open-in-spotify'); setTimeout(() => window.location.reload(), 250) }}
             ></ButtonItem> : 
             <ButtonItem button='Copy Error Message' color={Button.Colors.GREEN}
               onClick={ () => clipboard.copy( `<@${support.author.id}>\n\`\`\`js\n${errorString}\n\`\`\`` ) }
