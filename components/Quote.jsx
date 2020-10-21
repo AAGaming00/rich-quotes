@@ -79,7 +79,7 @@ module.exports = class RichQuote extends React.Component {
         guildId
       }),
       shadow: false,
-      position: 'left'
+      position: 'right'
     }, 'quote-user-popout');
   }
 
