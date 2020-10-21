@@ -96,13 +96,14 @@ module.exports = class QuoteRenderer extends React.Component {
       /* Fetch/Process Message & set info for linked messages */
       if (link.length !== 0) {
         if (link[0] !== '000000000000000000') {
-          const originalMessage = await this.getMsgWithQueue(link[1], link[2]);
-          let messageData = { ...originalMessage };
+          const response = await this.getMsgWithQueue(link[1], link[2]);
+
+          if (!response) return;
+
+          let messageData = { ...response.msg };
           let hasEmbedSpoilers = false;
 
-          if (!originalMessage) return;
-
-          if (this.props.settings.displayEmbeds) embedHandler(messageData, this.props.settings, hasEmbedSpoilers);
+          if (response.cached && this.props.settings.displayEmbeds) embedHandler(messageData, this.props.settings, hasEmbedSpoilers);
           else { 
             messageData.embeds = [];
             messageData.attachments = [];
@@ -164,9 +165,9 @@ module.exports = class QuoteRenderer extends React.Component {
     const User = await getModule(m => m.prototype && m.prototype.tag)
     const Timestamp = await getModule(m => m.prototype && m.prototype.toDate && m.prototype.month)
     const { getMessage } = await getModule(['getMessages'])
-    let message = getMessage(channelId, messageId);
+    let message = { msg: getMessage(channelId, messageId), cached: true };
 
-    if (!message) {
+    if (!message.msg) {
       if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, 2500));
       
       const data = await get({
@@ -179,12 +180,14 @@ module.exports = class QuoteRenderer extends React.Component {
       });
       
       lastFetch = Date.now();
-      message = data.body.find(m => m.id == messageId);
+      message.msg = data.body.find(m => m.id == messageId);
 
-      if (!message) return;
+      if (!message.msg) return false;
 
-      message.author = new User(message.author);
-      message.timestamp = new Timestamp(message.timestamp);
+      message.msg.author = new User(message.msg.author);
+      message.msg.timestamp = new Timestamp(message.msg.timestamp);
+      
+      message.cached = false;
     }
     return message;
   }
