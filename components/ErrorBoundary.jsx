@@ -42,7 +42,7 @@ class ErrorBoundary extends React.PureComponent {
     
     let errorString = this.state.error?.stack;
 
-    errorString // Clean error string
+    errorString = errorString // Clean error string
       ?.split('\n')
       .filter(l => !l.includes('discordapp.com/assets/') && !l.includes('discord.com/assets/'))
       .join('\n')
