@@ -30,7 +30,7 @@ class ReqError extends React.PureComponent {
             onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
           ></ButtonItem>)
         ];
-        else {
+        else if (link[0] !== '@me') {
           let missingGuild = false;
           try {
             missingGuild = await get({ url: Endpoints.GUILD_PREVIEW(linkGuild), retries: 1 });
@@ -51,8 +51,9 @@ class ReqError extends React.PureComponent {
                 }}
               ></ButtonItem>)*/
             ]
-          } else errorBody = [(<div className={errorText}>{`Error: ${link[0] === '@me' ? "Other user's DM" : 'Private/Deleted server'}`}</div>)];
+          } else errorBody = [(<div className={errorText}>Error: Private/Deleted server</div>)];
         }
+        else errorBody = [(<div className={errorText}>Error: Other user's DM</div>)];
       } break;
       case 'no-match': errorBody = [
         (<div className={errorText}>Error: Message deleted or invalid ID</div>),
