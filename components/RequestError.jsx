@@ -51,7 +51,7 @@ class ReqError extends React.PureComponent {
                 }}
               ></ButtonItem>)*/
             ]
-          } else errorBody = [(<div className={errorText}>Error: Private server</div>)];
+          } else errorBody = [(<div className={errorText}>{`Error: ${link[0] === '@me' ? "Other user's DM" : 'Private/Deleted server'}`}</div>)];
         }
       } break;
       case 'no-match': errorBody = [
@@ -70,7 +70,7 @@ class ReqError extends React.PureComponent {
         (<ButtonItem button='Go to Server' color={Button.Colors.GREEN}
           onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
         ></ButtonItem>)
-      ] : [(<div className={errorText}>Error: In-accessible DM</div>)]; break;
+      ] : [(<div className={errorText}>Error: Invalid DM</div>)]; break;
       case 'failed-request': errorBody = [(<div className={errorText}>Error: Discord API request failed</div>)]; break;
       case 'invalid-response': errorBody = [(<div className={errorText}>Error: Malformed Discord API response</div>)]; break;
     }
