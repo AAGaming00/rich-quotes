@@ -130,23 +130,9 @@ module.exports = class QuoteRenderer extends React.Component {
             quoteParams.channel = await getChannel(messageData.channel_id);
             quoteParams.link = link;
 
-            if (this.props.settings.displayEmbeds && (messageData.embeds?.length !== 0 || messageData.attachments?.length !== 0)) {
-              quoteParams.accessories = renderSimpleAccessories({ message: messageData, channel: quoteParams.channel}, hasEmbedSpoilers);
-
-              const fallbacks = [['codedLinks',[]],['giftCodes',[]],['mentionChannels',[]],['mentionRoles',[]],['reactions',[]],['stickers',[]]];
-              
-              console.log(JSON.stringify(quoteParams.accessories))
-
-              if (!quoteParams.accessories.props.message.codedLinks) quoteParams.accessories.props.message.codedLinks = [];
-              fallbacks.forEach(([key, fallback]) => {
-                if (!quoteParams.accessories.props.message[key])
-                  quoteParams.accessories.props.message[key] = fallback;
-              });
-
-              console.log(JSON.stringify(quoteParams.accessories))
-
-              console.log(JSON.stringify(quoteParams.message))
-            } else quoteParams.accessories = false;
+            if (this.props.settings.displayEmbeds && (messageData.embeds?.length !== 0 || messageData.attachments?.length !== 0)) 
+              quoteParams.accessories = renderSimpleAccessories({ message: quoteParams.message, channel: quoteParams.channel}, hasEmbedSpoilers);
+            else quoteParams.accessories = false;
           }
         } else {
           // funni preview handler
