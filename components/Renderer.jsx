@@ -134,12 +134,18 @@ module.exports = class QuoteRenderer extends React.Component {
               quoteParams.accessories = renderSimpleAccessories({ message: messageData, channel: quoteParams.channel}, hasEmbedSpoilers);
 
               const fallbacks = [['codedLinks',[]],['giftCodes',[]],['mentionChannels',[]],['mentionRoles',[]],['reactions',[]],['stickers',[]]];
+              
+              console.log(JSON.stringify(quoteParams.accessories))
 
               if (!quoteParams.accessories.props.message.codedLinks) quoteParams.accessories.props.message.codedLinks = [];
               fallbacks.forEach(([key, fallback]) => {
                 if (!quoteParams.accessories.props.message[key])
                   quoteParams.accessories.props.message[key] = fallback;
               });
+
+              console.log(JSON.stringify(quoteParams.accessories))
+
+              console.log(JSON.stringify(quoteParams.message))
             } else quoteParams.accessories = false;
           }
         } else {
