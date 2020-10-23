@@ -15,7 +15,7 @@ const ChannelMessage = getModule([ 'MESSAGE_ID_PREFIX' ], false).default;
 const channel = {
   isPrivate: () => false,
   isSystemDM: () => false,
-  getGuildId: () => 'uwu'
+  getGuildId: () => 'owo'
 };
 
 // Classes
@@ -58,7 +58,7 @@ module.exports = React.memo(
             <div className='group-spacing-16'>
               {conversation.map((msg, i) => (
                 <ChannelMessage
-                  key={`uwu-${i.toString()}`}
+                  key={`owo-${i.toString()}`}
                   channel={channel}
                   message={new Message({
                     id: i,
@@ -66,7 +66,7 @@ module.exports = React.memo(
                     colorString: msg[0],
                     content: msg[1]
                   })}
-                  id={`uwu-${i.toString()}`}
+                  id={`owo-${i.toString()}`}
                   class={'richquotes-preview-message'}
                   groupId={i}
                 />

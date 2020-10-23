@@ -72,7 +72,7 @@ module.exports = class RichQuote extends React.Component {
     // modified from smart typers
     PopoutDispatcher.openPopout(event.target, {
       closeOnScroll: false,
-      containerClass: 'quowoter-popout',
+      containerClass: 'rich-quotes-popout',
       render: (props) => React.createElement(UserPopout, {
         ...props,
         userId,
@@ -117,9 +117,10 @@ module.exports = class RichQuote extends React.Component {
 
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 
+
     const link = this.state.link,
           searchMsg = this.state.searchStatus,
-          previewQuote = this.props.channel.id === 'uwu';
+          previewQuote = this.props.channel.id === 'owo';
 
     const quoteTimestamp = link && this.props.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
       className: 'rq-timestamp',
@@ -142,7 +143,7 @@ module.exports = class RichQuote extends React.Component {
             'Message search loading...' : 
             'Search for Message';
     
-    const previewJump = document.getElementById('uwu-0')?.scrollIntoViewIfNeeded;
+    const previewJump = document.getElementById('owo-0')?.scrollIntoViewIfNeeded;
 
     const allowSearch = !searchMsg && !previewQuote;
 

@@ -29,7 +29,7 @@ module.exports = class RichQuotes extends Plugin {
           if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
           const MessageContent = res.props.childrenMessageContent.props;
           
-          const get = (n, d) => this.settings.get(n, d || true);
+          const get = (n, d) => this.settings.get(n, d = true);
 
           MessageContent.content = React.createElement(renderer, {
             content: MessageContent.content,
@@ -41,7 +41,8 @@ module.exports = class RichQuotes extends Plugin {
               displayTimestamp: get('displayTimestamp'),
               displayNickname: get('displayNickname'),
 
-              displayEmbeds: get('displayEmbeds', false),
+              displayReactions: get('displayReactions'),
+              displayEmbeds: get('displayEmbeds'),
               
               embedImages: get('embedImages'), embedVideos: get('embedVideos'),
               embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),

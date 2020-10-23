@@ -3,39 +3,37 @@ const { clipboard } = getModule([ 'clipboard' ], false);
 const { ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
-class ErrorBoundary extends React.PureComponent {
+class RenderError extends React.PureComponent {
   constructor (props) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
   componentDidCatch (error) {
-    console.error(error);
+    this.setState({ hasError: true, error });
 
-    this.setState({ hasError: true,
-      error });
-
-    if (typeof this.props.onError === 'function') {
-      this.props.onError(error);
-    }
+    if (typeof this.props.onError === 'function') this.props.onError(error);
   }
 
   render () {
     const { getGuilds } = getModule([ 'getGuilds' ], false);
     const parser = getModule(["parse", "parseTopic"], false);
-    
+    const errorText = 'rq-error-text colorStandard-2KCXvj';
+
 
     const support = { 
       author: { name: 'AAGaming', id: '373833473091436546' },
       server: { name: 'Powercord', invite: 'nFRHhDk', link: ['538759280057122817','755004260902764646'] } // plugin-support
     }
 
-    const inGuild = () => { let is = false;
-      Object.keys(getGuilds()).forEach((key) => { if (key == support.server.link[0]) is = true }); return is };
-    
-    let server_link = (parser.parse(inGuild() ?
-      `https://${document.location.href.split('/')[2]}/channels/${support.server.link.join('/')}` :
+    const originalContent = this.props.content;
 
+    const inGuild = (() => { let is = false;
+      Object.keys(getGuilds()).forEach((key) => { if (key == support.server.link[0]) is = true }); return is })();
+    
+    let server_link = (parser.parse(inGuild ?
+      `https://${document.location.href.split('/')[2]}/channels/${support.server.link.join('/')}`
+      :
       `https://discord.gg/${support.server.invite}`))[0];
 
     server_link.props.children[0] = `${support.server.name} server`;
@@ -59,12 +57,12 @@ class ErrorBoundary extends React.PureComponent {
 
     if (this.state.hasError) {
       return (<>
-        <div className='rq-error'>
+        <div className='rq-error rq-error-render'>
           { hasBad ? 
-            <div className = 'rq-error-text colorStandard-2KCXvj'>
+            <div className={errorText}>
               You have Open in Spotify installed, it is probably causing the issue, disable the plugin.
             </div> :
-            <div className = 'rq-error-text colorStandard-2KCXvj'>
+            <div className={errorText}>
               An error occurred while rendering this element. {'\n'}
               Click the button below to copy the error message. {'\n'}
               Send it to {support.author.name} in the {server_link} for support.
@@ -79,11 +77,11 @@ class ErrorBoundary extends React.PureComponent {
             ></ButtonItem>
           }
         </div>
-        {this.props.content}
+        {originalContent}
       </>);
     }
     return this.props.children;
   }
 }
 
-module.exports = ErrorBoundary;
+module.exports = RenderError;

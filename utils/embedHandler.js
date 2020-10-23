@@ -43,7 +43,7 @@ module.exports = (messageData, settings, hasEmbedSpoilers) => {
             }
             else return settings.embedFile;
         });
-    } else if (settings.displayEmbeds) {
+    } else {
         let urls = [];
 
         messageData.embeds.forEach((embed, i) => {

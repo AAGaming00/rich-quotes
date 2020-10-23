@@ -11,7 +11,8 @@ const settingStrings = {
   displayTimestamp: ['Display Timestamps', 'When disabled timestamps will instead be displayed in info.'],
   displayNickname: ['Display Nickname', 'When disabled will always show actual username.'],
   
-  displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.\nCurrently broken and can cause crashes.'],
+  displayReactions: ['Display Reactions', 'When disabled will not display reactions.'],
+  displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.'],
 
   embedImages: ['Embed Images', 'When disabled will not display images.'],
   embedVideos: ['Embed Videos', 'When disabled will not display regular videos.'],
@@ -51,7 +52,7 @@ module.exports = class Settings extends React.Component {
   }
 
   componentDidUpdate () {
-    setTimeout(() => document.getElementById('uwu-6').scrollIntoViewIfNeeded(), 100);
+    setTimeout(() => document.getElementById('owo-6').scrollIntoViewIfNeeded(), 100);
   }
 
   render () {
@@ -82,6 +83,11 @@ module.exports = class Settings extends React.Component {
         >{settingStrings.displayNickname[0]}</SwitchItem>
 
 
+        <SwitchItem note={settingStrings.displayReactions[1]}
+          value={getSetting('displayReactions', false)}
+          onChange={() => this.toggleSetting('displayReactions', false)}
+        >{settingStrings.displayReactions[0]}</SwitchItem>
+        
         <SwitchItem note={settingStrings.displayEmbeds[1]}
           value={getSetting('displayEmbeds', false)}
           onChange={() => this.toggleSetting('displayEmbeds', false)}
