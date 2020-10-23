@@ -196,7 +196,7 @@ module.exports = class QuoteRenderer extends React.Component {
 
       const { getGuilds } = await getModule([ 'getGuilds' ]);
 
-      const inGuild = (() => { let is = false;
+      const inGuild = guildId === '@me' ? true : (() => { let is = false;
         Object.keys(getGuilds()).forEach((key) => { if (key == guildId) is = true }); return is })();
 
       try { data = await get({
