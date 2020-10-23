@@ -30,7 +30,7 @@ class ReqError extends React.PureComponent {
             onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
           ></ButtonItem>)
         ];
-        else if (link[0] !== '@me') {
+        else if (linkGuild !== '@me') {
           let missingGuild = false;
           try {
             missingGuild = await get({ url: Endpoints.GUILD_PREVIEW(linkGuild), retries: 1 });
