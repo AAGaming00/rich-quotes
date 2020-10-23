@@ -58,7 +58,7 @@ module.exports = class Settings extends React.Component {
   render () {
     const { getSetting } = this.props;
 
-    return (
+    return ( // @todo Make embed type toggles in settings collapse
       <div>
         <FormTitle>Preview</FormTitle>
         
