@@ -219,16 +219,15 @@ module.exports = class QuoteRenderer extends React.Component {
       
       lastFetch = Date.now();
       const msg = data.body[0];
-      message = msg.id === messageId ? msg : false;
 
-      if (!message) return { error: 'no-match', closest: msg.id, inGuild: true };
+      if (!msg.id === messageId) return { error: 'no-match', closest: msg.id, inGuild: true };
       
       if (!inGuild) return { error: 'missing-access', inGuild: false }
 
-      message.msg.author = new User(message.msg.author);
-      message.msg.timestamp = new Timestamp(message.msg.timestamp);
-      
-      message.cached = false;
+      msg.author = new User(msg.author);
+      msg.timestamp = new Timestamp(msg.timestamp);
+
+      message = msg;
     }
     return message;
   }
