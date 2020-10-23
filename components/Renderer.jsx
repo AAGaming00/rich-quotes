@@ -135,6 +135,8 @@ module.exports = class QuoteRenderer extends React.Component {
 
               const fallbacks = [['codedLinks',[]],['giftCodes',[]],['mentionChannels',[]],['mentionRoles',[]],['reactions',[]],['stickers',[]]];
 
+              console.log(quoteParams.accessories);
+
               if (!quoteParams.accessories.props.message.codedLinks) quoteParams.accessories.props.message.codedLinks = [];
               fallbacks.forEach(([key, fallback]) => {
                 if (!quoteParams.accessories.props.message[key])

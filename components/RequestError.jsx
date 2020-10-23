@@ -36,8 +36,6 @@ class ReqError extends React.PureComponent {
             missingGuild = await get({ url: Endpoints.GUILD_PREVIEW(linkGuild), retries: 1 });
           } catch (e) {}
 
-          console.log(missingGuild);
-
           if (missingGuild) {
             errorBody = [
               (<div className={errorText}>{`Error: Not on the ${missingGuild.body.name} server`}</div>),
@@ -54,8 +52,6 @@ class ReqError extends React.PureComponent {
               ></ButtonItem>)*/
             ]
           } else errorBody = [(<div className={errorText}>Error: Private server</div>)];
-
-          console.log(errorBody);
         }
       } break;
       case 'no-match': errorBody = [
@@ -78,8 +74,6 @@ class ReqError extends React.PureComponent {
       case 'failed-request': errorBody = [(<div className={errorText}>Error: Discord API request failed</div>)]; break;
       case 'invalid-response': errorBody = [(<div className={errorText}>Error: Malformed Discord API response</div>)]; break;
     }
-
-    console.log(errorBody);
     
     if (!errorBody[1]) errorBody.push(false);
 
