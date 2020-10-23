@@ -189,7 +189,7 @@ module.exports = class QuoteRenderer extends React.Component {
 
     let message = getMessage(channelId, messageId);
 
-    if (!message) {
+    if (!message.msg) {
       if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, 2500));
 
       let data;
@@ -223,8 +223,10 @@ module.exports = class QuoteRenderer extends React.Component {
       
       if (!inGuild) return { error: 'missing-access', inGuild: false }
 
-      message.author = new User(message.author);
-      message.timestamp = new Timestamp(message.timestamp);
+      message.msg.author = new User(message.msg.author);
+      message.msg.timestamp = new Timestamp(message.msg.timestamp);
+      
+      message.cached = false;
     }
     return message;
   }
