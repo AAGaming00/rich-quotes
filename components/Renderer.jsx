@@ -135,8 +135,6 @@ module.exports = class QuoteRenderer extends React.Component {
 
               const fallbacks = [['codedLinks',[]],['giftCodes',[]],['mentionChannels',[]],['mentionRoles',[]],['reactions',[]],['stickers',[]]];
 
-              console.log(quoteParams.accessories);
-
               if (!quoteParams.accessories.props.message.codedLinks) quoteParams.accessories.props.message.codedLinks = [];
               fallbacks.forEach(([key, fallback]) => {
                 if (!quoteParams.accessories.props.message[key])
@@ -191,7 +189,7 @@ module.exports = class QuoteRenderer extends React.Component {
 
     let message = getMessage(channelId, messageId);
 
-    if (!message.msg) {
+    if (!message) {
       if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, 2500));
 
       let data;
