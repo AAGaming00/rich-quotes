@@ -19,6 +19,7 @@ module.exports = class RichQuotes extends Plugin {
     const oType = ChannelMessage.type;
     const { mentioned } = await getModule([ 'mentioned' ]);
 
+    // @todo (Re)add MessageContent injector for rendering in search/inbox/threads
     inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
       if (res.props.childrenMessageContent) { 
         if (

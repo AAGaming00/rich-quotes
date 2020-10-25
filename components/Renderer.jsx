@@ -130,9 +130,21 @@ module.exports = class QuoteRenderer extends React.Component {
             quoteParams.channel = await getChannel(messageData.channel_id);
             quoteParams.link = link;
 
-            if (this.props.settings.displayEmbeds && (messageData.embeds?.length !== 0 || messageData.attachments?.length !== 0)) 
+            if (this.props.settings.displayEmbeds && (quoteParams.message.embeds?.length !== 0 || quoteParams.message.attachments?.length !== 0)) {
+              if (quoteParams.message.embeds?.length !== 0) {
+                // @todo Attempt to find a function Discord has to normalize embed key's
+                const fixers = [['description','rawDescription'],['title','rawTitle']];
+
+                quoteParams.message.embeds.forEach((e, i) => fixers.forEach((f) => {
+                  if (e[f[0]]) {
+                    quoteParams.message.embeds[i][f[1]] = e[f[0]];
+                    delete quoteParams.message.embeds[i][f[0]];
+                  }
+                }))
+              }
+
               quoteParams.accessories = renderSimpleAccessories({ message: quoteParams.message, channel: quoteParams.channel}, hasEmbedSpoilers);
-            else quoteParams.accessories = false;
+            } else quoteParams.accessories = false;
           }
         } else {
           // funni preview handler
