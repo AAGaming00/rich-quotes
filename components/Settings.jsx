@@ -11,6 +11,7 @@ const settingStrings = {
   displayTimestamp: ['Display Timestamps', 'When disabled timestamps will instead be displayed in info.'],
   displayNickname: ['Display Nickname', 'When disabled will always show actual username.'],
   
+  cullBotQuotes: ['Cull Bot Quotes', 'Removes embeds from bot messages that have an error-free linked quote.'],
   displayReactions: ['Display Reactions', 'When disabled will not display reactions.'],
   displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.'],
 
@@ -83,6 +84,11 @@ module.exports = class Settings extends React.Component {
         >{settingStrings.displayNickname[0]}</SwitchItem>
 
 
+        <SwitchItem note={settingStrings.cullBotQuotes[1]}
+          value={getSetting('cullBotQuotes', false)}
+          onChange={() => this.toggleSetting('cullBotQuotes', false)}
+        >{settingStrings.cullBotQuotes[0]}</SwitchItem>
+        
         <SwitchItem note={settingStrings.displayReactions[1]}
           value={getSetting('displayReactions', false)}
           onChange={() => this.toggleSetting('displayReactions', false)}

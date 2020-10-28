@@ -43,6 +43,7 @@ module.exports = class RichQuotes extends Plugin {
               displayTimestamp: get('displayTimestamp'),
               displayNickname: get('displayNickname'),
 
+              cullBotQuotes: get('cullBotQuotes'),
               displayReactions: get('displayReactions'),
               displayEmbeds: get('displayEmbeds'),
               

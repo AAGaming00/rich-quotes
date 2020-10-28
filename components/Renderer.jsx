@@ -34,6 +34,8 @@ module.exports = class QuoteRenderer extends React.Component {
     const content = [...this.props.content];
     const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g;
 
+    let didError = false;
+
     content.forEach(async (e, i) => { if (e && e.props) {
       let quoteParams = {
         className: `${message} ${cozyMessage} ${groupStart}`,
@@ -52,7 +54,6 @@ module.exports = class QuoteRenderer extends React.Component {
 
       /* Link Handler */
       if (e.props.href && linkSelector.test(e.props.href)) link = e.props.href.split('/').slice(-3);
-      
 
       /* Markup Quote Handler */
       if (e.props.className && e.props.className === blockquoteContainer 
@@ -165,12 +166,19 @@ module.exports = class QuoteRenderer extends React.Component {
       if (quoteParams.content) content[i] = React.createElement(Quote, quoteParams);
 
       /* Create Request Error */
-      if (errorParams) content[i] = React.createElement(RequestError, errorParams);
+      if (errorParams) {
+        didError = true;
+        content[i] = React.createElement(RequestError, errorParams);
+      }
     }});
 
-    this.setState({...this.props, content, oldContent: this.props.content });
+    if (content !== this.props.content) {
+      if (this.props.message.author.bot && this.props.settings.cullBotQuotes && !didError) this.props.message.embeds = [];
 
-    setTimeout(() => { this.forceUpdate() }, 500);
+      this.setState({...this.props, content, oldContent: this.props.content });
+
+      setTimeout(() => { this.forceUpdate() }, 500);
+    }
   }
 
   // queue based on https://stackoverflow.com/questions/53540348/js-async-await-tasks-queue

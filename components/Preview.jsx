@@ -34,6 +34,7 @@ module.exports = React.memo(
     const colorStaff = React.useMemo(() => `#${ROLE_COLORS[Math.round(Math.random() * 10)].toString(16)}`, []);
     const colorMod = React.useMemo(() => `#${ROLE_COLORS[Math.round(Math.random() * 10)].toString(16)}`, []);
 
+    // @todo Add embeds & reactions to preview
     const conversation = React.useMemo(() => [
       [ colorStaff, `Check out this preview` ],
       [ null, `We're previewing the sick new plugin? Heck yeah!` ],
