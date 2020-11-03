@@ -14,7 +14,7 @@ module.exports = class RichQuote extends React.Component {
   async search () {
     const { transitionTo } = await getModule([ 'transitionTo' ]);
 
-    const setStatus = (s, link) => this.setState({ ...this.state, searchStatus: s, link });
+    const setStatus = (s, link) => this.setState({ searchStatus: s, link });
 
     // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
     function searchAPI (content, author_id, max_id, id, dm, asc) {
