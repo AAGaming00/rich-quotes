@@ -245,5 +245,5 @@ module.exports = class QuoteRenderer extends React.Component {
     return message;
   }
 
-  render () { console.log(this.state.content); return (<RenderError content={this.props.content}><div>{this.state.content}</div></RenderError> ) }
+  render = () => <RenderError content={this.props.content}><div>{this.state.content}</div></RenderError>
 };
