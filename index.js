@@ -62,8 +62,7 @@ module.exports = class RichQuotes extends Plugin {
 
       return res;
     }, false);
-    ChannelMessage.type.displayName = 'ChannelMessage';
-    Object.assign(oType, ChannelMessage.type);
+    Object.assign(ChannelMessage.type, oType);
   }
 
   pluginWillUnload () {
