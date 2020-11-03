@@ -64,7 +64,7 @@ module.exports = class QuoteRenderer extends React.Component {
       if (e.props.className && e.props.className === blockquoteContainer 
         && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
 
-        const quoteMatch = /(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g.exec(this.props.message.content);
+        const quoteMatch = /(?:> )([\s\S]+?)\n(<@!?(\d+)>)/.exec(this.props.message.content);
         const author = await getUser(quoteMatch[3]);
         const currentUser = await getCurrentUser.getCurrentUser();
         const channel = await getChannel(this.props.message.channel_id) || {id: 'owo'};
@@ -196,7 +196,6 @@ module.exports = class QuoteRenderer extends React.Component {
         return this.getMsg(guildId, channelId, messageId)
       }
     }
-    console.log(run)
     return (link) => (pending = run(link));
   })()
 
