@@ -54,7 +54,7 @@ module.exports = class RichQuotes extends Plugin {
             }
           });
           
-          if (!MessageContent.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
+          if (!MessageContent.message.content.replace(new RegExp(`<@!${currentUser.id}`, 'g'), '').includes(`<@!${currentUser.id}`)) {
             res.props.className = res.props.className.replace(mentioned, '');
           }
         }
