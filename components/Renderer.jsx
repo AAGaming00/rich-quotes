@@ -12,13 +12,15 @@ const embedHandler = require('../utils/embedHandler.js');
 let lastFetch;
 
 module.exports = class QuoteRenderer extends React.Component {
-  constructor (props) { super(props); this.state = {loading: true} }
+  constructor (props) { super(props); this.state = {
+    content: [<Preloader/>],
+    loading: true} }
 
   static getDerivedStateFromProps (props, state) {
     return { ...Object.assign({}, props), ...state };
   }
 
-  async componentDidUpdate () { if (!_.isEqual(this.props.message.content, this.state.message.content)) await this.buildQuote() }
+  async componentDidUpdate () { if (!_.isEqual(this.props.message.content, this.state.message.content) && this.state.loading !== false) await this.buildQuote() }
 
   async componentDidMount () { await this.buildQuote() }
 
@@ -33,11 +35,12 @@ module.exports = class QuoteRenderer extends React.Component {
     const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
 
     const content = [...this.props.content];
-    const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/g;
+    const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/;
 
     let didError = false;
 
-    content.forEach(async (e, i) => { if (e && e.props) {
+    for (const [i, e] of content.entries()){
+      if (e && e.props) {
       let quoteParams = {
         className: `${message} ${cozyMessage} ${groupStart}`,
   
@@ -54,8 +57,9 @@ module.exports = class QuoteRenderer extends React.Component {
       let link = [];
 
       /* Link Handler */
-      if (e.props.href && linkSelector.test(e.props.href)) link = e.props.href.split('/').slice(-3);
-
+      if (e.props.href && linkSelector.test(e.props.href)) {
+        link = e.props.href.split('/').slice(-3);
+      }
       /* Markup Quote Handler */
       if (e.props.className && e.props.className === blockquoteContainer 
         && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
@@ -171,12 +175,13 @@ module.exports = class QuoteRenderer extends React.Component {
         didError = true;
         content[i] = <RequestError {...errorParams}/>;
       }
-    }});
+    }};
 
     if (content !== this.props.content) {
       if (this.props.message.author.bot && this.props.settings.cullBotQuotes && !didError) this.props.message.embeds = [];
-
-      this.setState({...this.props, loading: false, content, oldContent: this.props.content });
+      setTimeout(() => {
+        this.setState({...this.props, content, oldContent: this.props.content, loading: false });        
+      }, 1000);
 
       //setTimeout(() => { this.forceUpdate() }, 500);
     }
@@ -191,7 +196,7 @@ module.exports = class QuoteRenderer extends React.Component {
         return this.getMsg(guildId, channelId, messageId)
       }
     }
-
+    console.log(run)
     return (link) => (pending = run(link));
   })()
 
@@ -243,5 +248,5 @@ module.exports = class QuoteRenderer extends React.Component {
     return message;
   }
 
-  render () { return (<RenderError content={this.props.content}><div>{this.state.loading ? <Preloader/> : this.state.content}</div></RenderError> ) }
+  render () { console.log(this.state.content); return (<RenderError content={this.props.content}><div>{this.state.content}</div></RenderError> ) }
 };
