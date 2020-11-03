@@ -184,9 +184,9 @@ module.exports = class RichQuote extends React.Component {
           : 
           <Tooltip position="left" text={searchTooltip}>
           <div key={searchMsg} className={`rq-button rq-search ${ allowSearch ? 'rq-clickable' : ''}`} onClick= {async () => allowSearch ? this.search() : false}>{
-            !searchMsg ? <Icon className='rq-searching' name="Search"/> :
-            searchMsg === 'loading' ? <Spinner className='rq-loading' type='pulsingEllipsis'/>
-            : <div className='rq-error'>!</div>
+            !searchMsg ? <Icon className='rq-search-icon' name="Search"/> :
+            searchMsg === 'loading' ? <Spinner className='rq-loading-icon' type='pulsingEllipsis'/>
+            : <div className='rq-error-icon'>!</div>
           }</div></Tooltip>
         }</div>
 
