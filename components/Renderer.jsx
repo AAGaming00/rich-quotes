@@ -2,6 +2,7 @@ const { getModule, http: { get }, constants: { Endpoints }, React } = require('p
 
 
 const Quote = require('./Quote');
+const Preloader = require('./Preloader')
 const RequestError = require('./RequestError');
 const RenderError = require('./RenderError');
 
@@ -11,7 +12,7 @@ const embedHandler = require('../utils/embedHandler.js');
 let lastFetch;
 
 module.exports = class QuoteRenderer extends React.Component {
-  constructor (props) { super(props); this.state = {} }
+  constructor (props) { super(props); this.state = {loading: true} }
 
   static getDerivedStateFromProps (props, state) {
     return { ...Object.assign({}, props), ...state };
@@ -163,21 +164,21 @@ module.exports = class QuoteRenderer extends React.Component {
       }
 
       /* Create Quote */
-      if (quoteParams.content) content[i] = React.createElement(Quote, quoteParams);
+      if (quoteParams.content) content[i] = <Quote {...quoteParams}/>;
 
       /* Create Request Error */
       if (errorParams) {
         didError = true;
-        content[i] = React.createElement(RequestError, errorParams);
+        content[i] = <RequestError {...errorParams}/>;
       }
     }});
 
     if (content !== this.props.content) {
       if (this.props.message.author.bot && this.props.settings.cullBotQuotes && !didError) this.props.message.embeds = [];
 
-      this.setState({...this.props, content, oldContent: this.props.content });
+      this.setState({...this.props, loading: false, content, oldContent: this.props.content });
 
-      setTimeout(() => { this.forceUpdate() }, 500);
+      //setTimeout(() => { this.forceUpdate() }, 500);
     }
   }
 
@@ -242,5 +243,5 @@ module.exports = class QuoteRenderer extends React.Component {
     return message;
   }
 
-  render () { return (<RenderError content={this.props.content}><div key={this.props.content}>{this.state.content}</div></RenderError> ) }
+  render () { return (<RenderError content={this.props.content}><div>{this.state.loading ? <Preloader/> : this.state.content}</div></RenderError> ) }
 };
