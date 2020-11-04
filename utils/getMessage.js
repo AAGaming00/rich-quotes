@@ -15,35 +15,49 @@ module.exports = async (guildId, channelId, messageId) => {
 
    if (!message) {
       if (lastFetch() > Date.now() - 2500) await new Promise(r => setTimeout(r, 2500));
+      
+      const { getGuilds } = await getModule(['getGuilds']);
 
       let data;
-
-      const { getGuilds } = await getModule(['getGuilds']);
+      let errorData = false;
+      let rateLimit = false;
 
       const inGuild = guildId === '@me' ? true : (() => {
          let is = false;
          Object.keys(getGuilds()).forEach((key) => { if (key == guildId) is = true }); return is
       })();
 
-      try {
-         data = await get({
+      const req = async () => {
+         try {data = await get({
             url: Endpoints.MESSAGES(channelId),
             query: { limit: 1, around: messageId },
             retries: 2
-         })
-      } catch (e) {
-         if (!e.text) return { error: 'failed-request', inGuild: inGuild };
-
-         const error = JSON.parse(e.text).message;
-
-         switch (error) {
-            case 'Unknown Channel': return { error: 'unknown-channel', inGuild: true };
-            case 'Missing Access': return { error: 'missing-access', inGuild: inGuild };
-            default: return { error: 'invalid-response', inGuild: inGuild };
+         })} catch (e) {
+            if (!e.text) return { error: 'failed-request', inGuild: inGuild };
+   
+            const error = JSON.parse(e.text);
+   
+            console.log(JSON.parse(e.text));
+   
+            switch (error.message) {
+               case 'Unknown Channel': { return errorData = { error: 'unknown-channel', inGuild: true } };
+               case 'Missing Access': { return errorData = { error: 'missing-access', inGuild: inGuild } };
+               case 'You are being rate limited.': { rateLimit = error.retry_after * 1000 } break;
+               default: { return errorData = { error: 'invalid-response', inGuild: inGuild } };
+            }
          }
+      }
+      
+      await req();
+
+      if (rateLimit) {
+         await new Promise(r => setTimeout(r, rateLimit));
+         await req();
       }
 
       lastFetch(true);
+
+      if (errorData) return errorData;
 
       const msg = data.body[0];
 
