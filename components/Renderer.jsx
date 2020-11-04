@@ -2,18 +2,14 @@ const { getModule, http: { get }, constants: { Endpoints }, React } = require('p
 
 
 const Quote = require('./Quote');
-const Preloader = require('./Preloader')
-const RequestError = require('./RequestError');
 const RenderError = require('./RenderError');
-
-const embedHandler = require('../utils/embedHandler.js');
 
 
 let lastFetch;
 
 module.exports = class QuoteRenderer extends React.Component {
   constructor (props) { super(props); this.state = {
-    content: [<Preloader/>],
+    content: [<></>],
     loading: true} }
 
   static getDerivedStateFromProps (props, state) {
@@ -32,12 +28,9 @@ module.exports = class QuoteRenderer extends React.Component {
     const { getUser } = getCurrentUser;
     const { getChannel } = await getModule(['getChannel']);
     const parser = await getModule(["parse", "parseTopic"]);
-    const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories')
 
     const content = [...this.props.content];
     const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/;
-
-    let didError = false;
 
     for (const [i, e] of content.entries()){
       if (e && e.props) {
@@ -50,16 +43,13 @@ module.exports = class QuoteRenderer extends React.Component {
         
         link: undefined, accessories: undefined, mentionType: 0,
   
-        settings: this.props.settings
+        settings: this.props.settings, thisChannel: this.props.message.channel_id
       };
-      let errorParams = false;
-
       let link = [];
 
       /* Link Handler */
-      if (e.props.href && linkSelector.test(e.props.href)) {
-        link = e.props.href.split('/').slice(-3);
-      }
+      if (e.props.href && linkSelector.test(e.props.href)) link = e.props.href.split('/').slice(-3);
+
       /* Markup Quote Handler */
       if (e.props.className && e.props.className === blockquoteContainer 
         && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
@@ -104,84 +94,16 @@ module.exports = class QuoteRenderer extends React.Component {
         }
       }
 
-      /* Fetch/Process Message & set info for linked messages */
-      if (link.length !== 0) {
-        if (link[0] !== '000000000000000000') {
-          const originalMessage = await this.getMsgWithQueue(link);
-
-          if (originalMessage.error) {
-            errorParams = originalMessage;
-            errorParams.link = link;
-          }
-          else {
-            let messageData = { ...originalMessage };
-            let hasEmbedSpoilers = false;
-
-            if (this.props.settings.displayEmbeds) embedHandler(messageData, this.props.settings, hasEmbedSpoilers);
-            else { 
-              messageData.embeds = [];
-              messageData.attachments = [];
-            }
-
-            if (!this.props.settings.displayReactions) messageData.reactions = [];
-
-            quoteParams.content = await parser.parse(
-              messageData.content.trim(), true, 
-              { channelId: this.props.message.channel_id }
-            );
-
-            quoteParams.author = messageData.author;
-
-            quoteParams.message = await new MessageC({ ...messageData });
-            quoteParams.channel = await getChannel(messageData.channel_id);
-            quoteParams.link = link;
-
-            if (this.props.settings.displayEmbeds && (quoteParams.message.embeds?.length !== 0 || quoteParams.message.attachments?.length !== 0)) {
-              if (quoteParams.message.embeds?.length !== 0) {
-                // @todo Attempt to find a function Discord has to normalize embed key's
-                const fixers = [['description','rawDescription'],['title','rawTitle']];
-
-                quoteParams.message.embeds.forEach((e, i) => fixers.forEach((f) => {
-                  if (e[f[0]]) {
-                    quoteParams.message.embeds[i][f[1]] = e[f[0]];
-                    delete quoteParams.message.embeds[i][f[0]];
-                  }
-                }))
-              }
-
-              quoteParams.accessories = renderSimpleAccessories({ message: quoteParams.message, channel: quoteParams.channel}, hasEmbedSpoilers);
-            } else quoteParams.accessories = false;
-          }
-        } else {
-          // funni preview handler
-          quoteParams.content = await parser.parse(
-           'Check out this preview', true, 
-            { channelId: '000000000000000000' }
-          );
-
-          quoteParams.author = await getCurrentUser.getCurrentUser();
-
-          quoteParams.message = await new MessageC({ ...'' });
-          quoteParams.channel = { id: 'owo', name: 'test-channel'};
-          quoteParams.link = ['000000000000000000','000000000000000000','000000000000000000'];
-        }
-      }
+      /* Set for Linked Quotes */
+      if (link.length !== 0) quoteParams.link = link;
 
       /* Create Quote */
-      if (quoteParams.content) content[i] = <Quote {...quoteParams}/>;
-
-      /* Create Request Error */
-      if (errorParams) {
-        didError = true;
-        content[i] = <RequestError {...errorParams}/>;
-      }
+      if (quoteParams.link || quoteParams.content) content[i] = <Quote {...quoteParams}/>;
     }};
 
     if (content !== this.props.content) {
-      if (this.props.message.author.bot && this.props.settings.cullBotQuotes && !didError) this.props.message.embeds = [];
-      this.setState({...this.props, content, oldContent: this.props.content, loading: false });        
-
-      //setTimeout(() => { this.forceUpdate() }, 500);
+      if (this.props.message.author.bot && this.props.settings.cullBotQuotes) this.props.message.embeds = [];
+      this.setState({...this.props, content, oldContent: this.props.content, loading: false });
     }
   }
 
