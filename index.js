@@ -28,33 +28,26 @@ module.exports = class RichQuotes extends Plugin {
     const mcType = MessageContent.type;
 
     const getSettings = () => {
-      const get = (n, d) => this.settings.get(n, d = true);
+      const settingsList = [
+        'displayChannel','displayTimestamp','displayNickname',
+        'cullBotQuotes','displayReactions','displayEmbeds',
+        'embedImages','embedVideos','embedYouTube','embedAudio',
+        'embedFile',/* 'embedSpecial',*/ 'embedOther', 'embedAll'];
+      
+      let settings = { cacheSearch };
 
-      return {
-        cacheSearch,
+      settingsList.forEach((setting) => { settings[setting] = this.settings.get(setting, true) })
 
-        displayChannel: get('displayChannel'),
-        displayTimestamp: get('displayTimestamp'),
-        displayNickname: get('displayNickname'),
-
-        cullBotQuotes: get('cullBotQuotes'),
-        displayReactions: get('displayReactions'),
-        displayEmbeds: get('displayEmbeds'),
-        
-        embedImages: get('embedImages'), embedVideos: get('embedVideos'),
-        embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),
-        embedFile: get('embedFile'), //embedSpecial: get('embedSpecial'),
-        embedOther: get('embedOther'), embedAll: get('embedAll')
-      }
+      return settings
     }
     
 
-    // @todo (Re)add MessageContent injector for rendering in search/inbox/threads
     inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
       if (res.props.childrenMessageContent) { 
         if (
           (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
-          linkSelector.test(args[0].message.content)) {
+          linkSelector.test(args[0].message.content)
+        ) {
           const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
           const { mentioned } = getModule([ 'mentioned' ], false);
 
@@ -77,13 +70,17 @@ module.exports = class RichQuotes extends Plugin {
     }, false);
     Object.assign(ChannelMessage.type, cmType);
 
+    // For search, pinned, inbox, threads, and other plugin compatibility
     inject('Rich-Quotes-Message-Content', MessageContent, 'type', (args, res) => {
 
-      if (!args[0].rqinject && (linkSelector.test(args[0].message.content) || (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content))) {
+      if (!args[0].rqinject && (
+        linkSelector.test(args[0].message.content) || 
+        (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content)
+      )) {
         console.log(res.props.children[0]);
 
         res.props.children = React.createElement(Renderer, {
-          content: res.props.children,
+          content: res.props.children[0],
           message: args[0].message,
           settings: getSettings()
         });
