@@ -59,8 +59,8 @@ module.exports = class RichQuotes extends Plugin {
             settings: getSettings()
           });
 
-          MessageC.rqinject = true;
-          
+          MessageC.preventInject = true;
+
           if (!MessageC.message.content.replace(new RegExp(`<@!${currentUser.id}`, 'g'), '').includes(`<@!${currentUser.id}`))
             res.props.className = res.props.className.replace(mentioned, '');
         }
@@ -73,7 +73,7 @@ module.exports = class RichQuotes extends Plugin {
     // For search, pinned, inbox, threads, and other plugin compatibility
     inject('Rich-Quotes-Message-Content', MessageContent, 'type', (args, res) => {
 
-      if (!args[0].rqinject && (
+      if (!args[0].preventInject && (
         linkSelector.test(args[0].message.content) || 
         (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content)
       )) {
