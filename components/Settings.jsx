@@ -1,7 +1,7 @@
 const { React } = require('powercord/webpack');
 
 const { FormTitle } = require('powercord/components');
-const { SwitchItem, ButtonItem } = require('powercord/components/settings');
+const { SwitchItem, ButtonItem, Category } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
 const QuotesPreview = require('./Preview')
@@ -10,9 +10,9 @@ const settingStrings = {
   displayChannel: ['Display Channel', 'When disabled channel will instead be displayed in info.'],
   displayTimestamp: ['Display Timestamps', 'When disabled timestamps will instead be displayed in info.'],
   displayNickname: ['Display Nickname', 'When disabled will always show actual username.'],
-  
-  cullBotQuotes: ['Cull Bot Quotes', 'Removes embeds from bot messages that have an error-free linked quote.'],
   displayReactions: ['Display Reactions', 'When disabled will not display reactions.'],
+  cullBotQuotes: ['Cull Bot Quotes', 'Removes embeds from bot messages that have an error-free linked quote.'],
+
   displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.'],
 
   embedImages: ['Embed Images', 'When disabled will not display images.'],
@@ -23,26 +23,26 @@ const settingStrings = {
   //embedSpecial: ['Embed Special', 'When disabled will not display special embeds eg. Sketchfab.'],
   embedOther: ['Embed Other', 'When disabled will not display misc. embeds eg. github repo description.'],
 
-  cacheSearch: ['Cache quote searches','When disabled quote search will no longer cache results.'],
-  partialQuotes: ['Partial Quotes','When disabled full messages will display on cached quotes.'],
-  clearCache: ['Clear Cache','When disabled quote search will no longer cache results.']
+  cacheSearch: ['Cache quote searches', 'When disabled quote search will no longer cache results.'],
+  partialQuotes: ['Partial Quotes', 'When disabled full messages will display on cached quotes.'],
+  clearCache: ['Clear Cache', 'When disabled quote search will no longer cache results.']
 }
+
+const embedSettings = ['embedImages', 'embedVideos', 'embedYouTube', 'embedAudio', 'embedFile',/* 'embedSpecial',*/ 'embedOther'];
 
 module.exports = class Settings extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = {reload: false}
+    super(props); this.state = {reload: false, categoryOpened: false};
   }
+
   toggleSetting (setting, defaultOption) {
     const { getSetting } = this.props;
     this.props.toggleSetting(setting, defaultOption);
     this.setState({...this.state, reload: Date.now().toString()});
 
-    const embedDisplays = [ 'embedImages', 'embedVideos', 'embedYouTube', 'embedAudio', 'embedFile', 'embedSpecial', 'embedOther' ]
-
     let embedAll = true;
     
-    embedDisplays.forEach((type) => { if (getSetting(type) === false) embedAll = false; });
+    embedSettings.forEach((type) => { if (getSetting(type) === false) embedAll = false; });
 
     if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll', defaultOption);
 
@@ -59,82 +59,33 @@ module.exports = class Settings extends React.Component {
   render () {
     const { getSetting } = this.props;
 
-    return ( // @todo Make embed type toggles in settings collapse
+    const displaySettings = ['displayChannel', 'displayTimestamp', 'displayNickname', 'displayReactions', 'cullBotQuotes', 'displayEmbeds'];
+
+    return (
       <div>
         <FormTitle>Preview</FormTitle>
-        
+
         <QuotesPreview key={this.state.reload} {...this.props}/>
-        
+
 
         <FormTitle className='rq-settingsHeader'>Display</FormTitle>
 
-        <SwitchItem note={settingStrings.displayChannel[1]}
-          value={getSetting('displayChannel', true)}
-          onChange={() => this.toggleSetting('displayChannel', true)}
-        >{settingStrings.displayChannel[0]}</SwitchItem>
+        {displaySettings.map((setting, i) =>
+          <SwitchItem key={i} note={settingStrings[setting][1]}
+            value={getSetting(setting, true)}
+            onChange={() => this.toggleSetting(setting, true)}
+          >{settingStrings[setting][0]}</SwitchItem>
+        )}
 
-        <SwitchItem note={settingStrings.displayTimestamp[1]}
-          value={getSetting('displayTimestamp', true)}
-          onChange={() => this.toggleSetting('displayTimestamp', true)}
-        >{settingStrings.displayTimestamp[0]}</SwitchItem>
-
-        <SwitchItem note={settingStrings.displayNickname[1]}
-          value={getSetting('displayNickname', true)}
-          onChange={() => this.toggleSetting('displayNickname', true)}
-        >{settingStrings.displayNickname[0]}</SwitchItem>
-
-
-        <SwitchItem note={settingStrings.cullBotQuotes[1]}
-          value={getSetting('cullBotQuotes', false)}
-          onChange={() => this.toggleSetting('cullBotQuotes', false)}
-        >{settingStrings.cullBotQuotes[0]}</SwitchItem>
-        
-        <SwitchItem note={settingStrings.displayReactions[1]}
-          value={getSetting('displayReactions', false)}
-          onChange={() => this.toggleSetting('displayReactions', false)}
-        >{settingStrings.displayReactions[0]}</SwitchItem>
-        
-        <SwitchItem note={settingStrings.displayEmbeds[1]}
-          value={getSetting('displayEmbeds', false)}
-          onChange={() => this.toggleSetting('displayEmbeds', false)}
-        >{settingStrings.displayEmbeds[0]}</SwitchItem>
-
-        <SwitchItem note={settingStrings.embedImages[1]}
-          value={getSetting('embedImages', true)}
-          onChange={() => this.toggleSetting('embedImages', true)}
-        >{settingStrings.embedImages[0]}</SwitchItem>
-
-        <SwitchItem note={settingStrings.embedVideos[1]}
-          value={getSetting('embedVideos', true)}
-          onChange={() => this.toggleSetting('embedVideos', true)}
-        >{settingStrings.embedVideos[0]}</SwitchItem>
-
-        <SwitchItem note={settingStrings.embedYouTube[1]}
-          value={getSetting('embedYouTube', true)}
-          onChange={() => this.toggleSetting('embedYouTube', true)}
-        >{settingStrings.embedYouTube[0]}</SwitchItem>
-
-        <SwitchItem note={settingStrings.embedAudio[1]}
-          value={getSetting('embedAudio', true)}
-          onChange={() => this.toggleSetting('embedAudio', true)}
-        >{settingStrings.embedAudio[0]}</SwitchItem>
-
-        <SwitchItem note={settingStrings.embedFile[1]}
-          value={getSetting('embedFile', true)}
-          onChange={() => this.toggleSetting('embedFile', true)}
-        >{settingStrings.embedFile[0]}</SwitchItem>
-
-        {/*<SwitchItem note={settingStrings.embedSpecial[1]}
-          value={getSetting('embedSpecial', true)}
-          onChange={() => this.toggleSetting('embedSpecial', true)}
-        >{settingStrings.embedSpecial[0]}</SwitchItem>*/}
-
-        <SwitchItem note={settingStrings.embedOther[1]}
-          value={getSetting('embedOther', true)}
-          onChange={() => this.toggleSetting('embedOther', true)}
-        >{settingStrings.embedOther[0]}</SwitchItem>
-        
-
+        <Category name='Embed Types' description='Individual toggles for all embed types.' 
+          opened={this.state.categoryOpened} onChange={() => this.setState({ categoryOpened: !this.state.categoryOpened })}>
+          {embedSettings.map((setting, i) =>
+            <SwitchItem key={i} note={settingStrings[setting][1]}
+              value={getSetting(setting, true)}
+              onChange={() => this.toggleSetting(setting, true)}
+            >{settingStrings[setting][0]}</SwitchItem>
+          )}
+        </Category>
 
         <FormTitle className='rq-settingsHeader'>Caching</FormTitle>
 

@@ -165,6 +165,14 @@
 
 main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
 
+.rq-preloader {
+   background: var(--background-secondary);
+   padding: 1rem;
+   border-radius: .5rem;
+   width: 24rem;
+   margin-bottom: .5rem;
+}
+
 .rq-error {
    background: var(--background-secondary);
    padding: 1rem;
