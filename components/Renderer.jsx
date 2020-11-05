@@ -22,8 +22,6 @@ module.exports = class QuoteRenderer extends React.Component {
   async buildQuote () {
     const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ]);
 
-    console.log(this.state);
-
     const content = [...this.props.content];
 
     let targetEntries = [];

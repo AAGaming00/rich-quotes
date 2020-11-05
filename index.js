@@ -76,15 +76,11 @@ module.exports = class RichQuotes extends Plugin {
       if (!args[0].preventInject && (
         linkSelector.test(args[0].message.content) || 
         (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content)
-      )) {
-        console.log(res.props.children[0]);
-
-        res.props.children = React.createElement(Renderer, {
-          content: res.props.children[0],
-          message: args[0].message,
-          settings: getSettings()
-        });
-      }
+      )) res.props.children = React.createElement(Renderer, {
+        content: res.props.children[0],
+        message: args[0].message,
+        settings: getSettings()
+      });
       
       return res;
     })
