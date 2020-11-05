@@ -3,15 +3,17 @@ const { React, getModule, contextMenu, getModuleByDisplayName } = require('power
 const { Tooltip, Icon, Spinner } = require('powercord/components');
 
 const RequestError = require('./RequestError');
+const RenderError = require('./RenderError');
 
 const getMsg = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
 
-let errorParams = false;
+let lastFetch = 0;
+
 
 module.exports = class RichQuote extends React.Component {
   constructor (props) {
-    super(props); this.state = { searchStatus: false };
+    super(props); this.state = { searchStatus: false, errorParams: false };
   }
 
   static getDerivedStateFromProps (props, state) {
@@ -22,23 +24,25 @@ module.exports = class RichQuote extends React.Component {
     const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM);
     const parser = await getModule(["parse", "parseTopic"]);
 
-    if (this.props.link[0] !== '000000000000000000') {
+    if (this.state.link[0] !== '000000000000000000') {
       const getWithQueue = (() => {
           let pending = Promise.resolve()
-      
+
           const run = async ([guildId, channelId, messageId]) => {
             try { await pending } finally {
-              return getMsg(guildId, channelId, messageId);
+              return getMsg(guildId, channelId, messageId, lastFetch);
             }
           }
           return (link) => (pending = run(link));
         })(),
-        originalMessage = await getWithQueue(this.props.link);
+        originalMessage = await getWithQueue(this.state.link);
+
+      lastFetch = Date.now();
 
 
       if (originalMessage.error) {
-        errorParams = originalMessage;
-        errorParams.link = this.props.link;
+        this.state.errorParams = originalMessage;
+        this.state.errorParams.link = this.state.link;
       }
       else {
         const { getChannel } = await getModule(['getChannel']);
@@ -47,54 +51,54 @@ module.exports = class RichQuote extends React.Component {
         let messageData = { ...originalMessage };
         let hasEmbedSpoilers = false;
 
-        if (this.props.settings.displayEmbeds) embedHandler(messageData, this.props.settings, hasEmbedSpoilers);
+        if (this.state.settings.displayEmbeds) embedHandler(messageData, this.state.settings, hasEmbedSpoilers);
         else { 
           messageData.embeds = [];
           messageData.attachments = [];
         }
 
-        if (!this.props.settings.displayReactions) messageData.reactions = [];
+        if (!this.state.settings.displayReactions) messageData.reactions = [];
 
-        this.props.content = await parser.parse(
+        this.state.content = await parser.parse(
           messageData.content.trim(), true, 
-          { channelId: this.props.thisChannel }
+          { channelId: this.state.thisChannel }
         );
 
-        this.props.author = messageData.author;
+        this.state.author = messageData.author;
 
-        this.props.message = await new MessageC({ ...messageData });
-        this.props.channel = await getChannel(messageData.channel_id);
+        this.state.message = await new MessageC({ ...messageData });
+        this.state.channel = await getChannel(messageData.channel_id);
 
-        if (this.props.settings.displayEmbeds && (this.props.message.embeds?.length !== 0 || this.props.message.attachments?.length !== 0)) {
-          if (this.props.message.embeds?.length !== 0) {
+        if (this.state.settings.displayEmbeds && (this.state.message.embeds?.length !== 0 || this.state.message.attachments?.length !== 0)) {
+          if (this.state.message.embeds?.length !== 0) {
             // @todo Attempt to find a function Discord has to normalize embed key's
             const fixers = [['description','rawDescription'],['title','rawTitle']];
 
-            this.props.message.embeds.forEach((e, i) => fixers.forEach((f) => {
+            this.state.message.embeds.forEach((e, i) => fixers.forEach((f) => {
               if (e[f[0]]) {
-                this.props.message.embeds[i][f[1]] = e[f[0]];
-                delete this.props.message.embeds[i][f[0]];
+                this.state.message.embeds[i][f[1]] = e[f[0]];
+                delete this.state.message.embeds[i][f[0]];
               }
             }))
           }
 
-          this.props.accessories = renderSimpleAccessories({ message: this.props.message, channel: this.props.channel}, hasEmbedSpoilers);
-        } else this.props.accessories = false;
+          this.state.accessories = renderSimpleAccessories({ message: this.state.message, channel: this.state.channel}, hasEmbedSpoilers);
+        } else this.state.accessories = false;
       }
     } else {
       // funni preview handler
       const getCurrentUser = await getModule([ 'getCurrentUser' ]);
 
-      this.props.content = await parser.parse(
+      this.state.content = await parser.parse(
        'Check out this preview', true, 
         { channelId: '000000000000000000' }
       );
 
-      this.props.author = await getCurrentUser.getCurrentUser();
+      this.state.author = await getCurrentUser.getCurrentUser();
 
-      this.props.message = await new MessageC({ ...'' });
-      this.props.channel = { id: 'owo', name: 'test-channel'};
-      this.props.link = ['000000000000000000','000000000000000000','000000000000000000'];
+      this.state.message = await new MessageC({ ...'' });
+      this.state.channel = { id: 'owo', name: 'test-channel'};
+      this.state.link = ['000000000000000000','000000000000000000','000000000000000000'];
     }
 
     this.setState(this.state);
@@ -121,22 +125,22 @@ module.exports = class RichQuote extends React.Component {
 
     setStatus('loading');
 
-    const result = await searchAPI(this.props.search.raw, this.props.author.id,
-      this.props.search.timestamp, this.props.channel.guild_id || this.props.channel.id,
-      !this.props.channel.guild_id
+    const result = await searchAPI(this.state.search.raw, this.state.author.id,
+      this.state.search.timestamp, this.state.channel.guild_id || this.state.channel.id,
+      !this.state.channel.guild_id
     );
 
     if (result.messages.length === 0) setStatus('error');
     else {
-      const message = result.messages[0].filter((e) => e?.content.includes(this.props.search.raw))[0];
+      const message = result.messages[0].filter((e) => e?.content.includes(this.state.search.raw))[0];
 
       if (!message) setStatus('error');
       else {
-        const link = [ this.props.channel.guild_id || '@me', message.channel_id, message.id ];
+        const link = [ this.state.channel.guild_id || '@me', message.channel_id, message.id ];
 
         setStatus('done', link);
 
-        if (this.props.settings.cacheSearch) {
+        if (this.state.settings.cacheSearch) {
           const searchResult = { content: message.content, authorId: message.author.id, link };
 
           let newCache = false;
@@ -156,8 +160,8 @@ module.exports = class RichQuote extends React.Component {
   openPopout (event) {
     const UserPopout = getModuleByDisplayName('UserPopout', false);
     const PopoutDispatcher = getModule([ 'openPopout' ], false);
-    const guildId = this.props.channel.guild_id;
-    const userId = this.props.author.id;
+    const guildId = this.state.channel.guild_id;
+    const userId = this.state.author.id;
 
     // modified from smart typers
     PopoutDispatcher.openPopout(event.target, {
@@ -177,14 +181,14 @@ module.exports = class RichQuote extends React.Component {
     const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
     const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
     const userStore = getModule([ 'getCurrentUser' ], false);
-    const guildId = this.props.channel.guild_id;
-    const userId = this.props.author.id;
+    const guildId = this.state.channel.guild_id;
+    const userId = this.state.author.id;
 
     if (!guildId) {
       return contextMenu.openContextMenu(event, (props) => React.createElement(GroupDMUserContextMenu, {
         ...props,
         user: userStore.getUser(userId),
-        channel: this.props.channel
+        channel: this.state.channel
       }));
     }
 
@@ -192,15 +196,16 @@ module.exports = class RichQuote extends React.Component {
       ...props,
       user: userStore.getUser(userId),
       guildId,
-      channelId: this.props.channel.id,
+      channelId: this.state.channel.id,
       showMediaItems: false,
       popoutPosition: 'top'
     }));
   }
 
   render () {
-    if (errorParams) return (<RequestError {...errorParams}/>);
-    else if (this.props.link && !this.props.content) {
+
+    if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
+    else if (this.state.link && !this.state.content) {
       this.linkRes();
 
       return (<div className='rq-preloader'>
@@ -219,20 +224,20 @@ module.exports = class RichQuote extends React.Component {
 
       const link = this.state.link,
             searchMsg = this.state.searchStatus,
-            previewQuote = this.props.channel.id === 'owo';
+            previewQuote = this.state.channel.id === 'owo';
 
-      const quoteTimestamp = link && this.props.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
+      const quoteTimestamp = link && this.state.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
         className: 'rq-timestamp',
         compact: false,
-        timestamp: new Timestamp(this.props.message.timestamp),
+        timestamp: new Timestamp(this.state.message.timestamp),
         isOnlyVisibleOnHover: false
       }) : false;
 
-      const highlightAlter = this.props.mentionType >= 2 ? 'rq-highlight-alt' : '',
-            mention = this.props.mentionType !== 0 ? `rq-highlight ${highlightAlter}` : '',
+      const highlightAlter = this.state.mentionType >= 2 ? 'rq-highlight-alt' : '',
+            mention = this.state.mentionType !== 0 ? `rq-highlight ${highlightAlter}` : '',
             container = 'rq-highlight-container',
-            highlightContainer = this.props.mentionType >= 2 ? 
-              `${container} ${this.props.mentionType === 3 ? `${container}-alt` : ''}` : '';
+            highlightContainer = this.state.mentionType >= 2 ? 
+              `${container} ${this.state.mentionType === 3 ? `${container}-alt` : ''}` : '';
 
       const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
 
@@ -247,28 +252,28 @@ module.exports = class RichQuote extends React.Component {
       const allowSearch = !searchMsg && !previewQuote;
 
       // Nickname handler
-      const displayName = this.props.settings.displayNickname ? 
-        getName(link ? link[0] : this.props.channel.guild_id, this.props.channel.id, this.props.author) : false;
+      const displayName = this.state.settings.displayNickname ? 
+        getName(link ? link[0] : this.state.channel.guild_id, this.state.channel.id, this.state.author) : false;
 
-      return (
-        <div id="a11y-hack"><div key={this.props.content} className='rq-inline'><div className={highlightContainer}>
+      return (<RenderError content={this.props.content}>
+        <div id="a11y-hack"><div key={this.state.content} className='rq-inline'><div className={highlightContainer}>
           <div className='rq-header threads-header-hack'>
             <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`}
-              src={this.props.author.avatarURL} onClick={(e) => this.openPopout(e)}
+              src={this.state.author.avatarURL} onClick={(e) => this.openPopout(e)}
               onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
             </img>
             <div className='rq-userTag'>
               <span className={`rq-username ${mention} ${username} ${clickable}`}
                 onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
-              >{`${this.props.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
-                link && this.props.settings.displayChannel ? 
+              >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
+                link && this.state.settings.displayChannel ? 
                 <span>
-                  <span className='rq-infoText'>{`posted in ${this.props.channel.name ? '' : 'a DM'}`}</span>
+                  <span className='rq-infoText'>{`posted in ${this.state.channel.name ? '' : 'a DM'}`}</span>
                   {
-                    this.props.channel.name ?
+                    this.state.channel.name ?
                     <span className={`rq-channel ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
                       onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
-                    >{`#${this.props.channel.name}`}</span> : false
+                    >{`#${this.state.channel.name}`}</span> : false
                   }
                 </span>
                 : false }{ quoteTimestamp }
@@ -290,11 +295,11 @@ module.exports = class RichQuote extends React.Component {
           }</div>
 
           <div className='rq-content'>
-            {this.props.content ? <MessageContent message={this.props.message} content={this.props.content}/> : null}
-            {this.props.accessories}
+            {this.state.content ? <MessageContent message={this.state.message} content={this.state.content}/> : null}
+            {this.state.accessories}
           </div>
         </div></div></div>
-      );
+      </RenderError>);
     }
   }
 };
