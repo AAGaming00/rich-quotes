@@ -1,7 +1,7 @@
 const { React } = require('powercord/webpack');
 
 const { FormTitle } = require('powercord/components');
-const { SwitchItem, ButtonItem } = require('powercord/components/settings');
+const { SwitchItem, ButtonItem, Category } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
 const QuotesPreview = require('./Preview')
@@ -14,6 +14,7 @@ const settingStrings = {
   displayReactions: ['Display Reactions', 'When disabled will not display reactions.'],
   displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.'],
 
+  embedCategory: ['Embed Display Types', 'Displayed content settings'],
   embedImages: ['Embed Images', 'When disabled will not display images.'],
   embedVideos: ['Embed Videos', 'When disabled will not display regular videos.'],
   embedYouTube: ['Embed YouTube', 'When disabled will not display special external vidoes like YouTube.'],
@@ -57,8 +58,7 @@ module.exports = class Settings extends React.Component {
 
   render () {
     const { getSetting } = this.props;
-
-    return ( // @todo Make embed type toggles in settings collapse
+    return (
       <div>
         <FormTitle>Preview</FormTitle>
         
@@ -88,46 +88,53 @@ module.exports = class Settings extends React.Component {
           onChange={() => this.toggleSetting('displayReactions', false)}
         >{settingStrings.displayReactions[0]}</SwitchItem>
         
-        <SwitchItem note={settingStrings.displayEmbeds[1]}
-          value={getSetting('displayEmbeds', false)}
-          onChange={() => this.toggleSetting('displayEmbeds', false)}
-        >{settingStrings.displayEmbeds[0]}</SwitchItem>
+        {/* Embed stuff here */}
+        <Category
+          name={settingStrings.embedCategory[0]}
+          description={settingStrings.embedCategory[1]}
+          opened={getSetting('embedCategory', false)}
+          onChange={() => this.toggleSetting('embedCategory', false)}
+        >
+          <SwitchItem note={settingStrings.displayEmbeds[1]}
+            value={getSetting('displayEmbeds', false)}
+            onChange={() => this.toggleSetting('displayEmbeds', false)}
+          >{settingStrings.displayEmbeds[0]}</SwitchItem>
 
-        <SwitchItem note={settingStrings.embedImages[1]}
-          value={getSetting('embedImages', true)}
-          onChange={() => this.toggleSetting('embedImages', true)}
-        >{settingStrings.embedImages[0]}</SwitchItem>
+          <SwitchItem note={settingStrings.embedImages[1]}
+            value={getSetting('embedImages', true)}
+            onChange={() => this.toggleSetting('embedImages', true)}
+          >{settingStrings.embedImages[0]}</SwitchItem>
 
-        <SwitchItem note={settingStrings.embedVideos[1]}
-          value={getSetting('embedVideos', true)}
-          onChange={() => this.toggleSetting('embedVideos', true)}
-        >{settingStrings.embedVideos[0]}</SwitchItem>
+          <SwitchItem note={settingStrings.embedVideos[1]}
+            value={getSetting('embedVideos', true)}
+            onChange={() => this.toggleSetting('embedVideos', true)}
+          >{settingStrings.embedVideos[0]}</SwitchItem>
 
-        <SwitchItem note={settingStrings.embedYouTube[1]}
-          value={getSetting('embedYouTube', true)}
-          onChange={() => this.toggleSetting('embedYouTube', true)}
-        >{settingStrings.embedYouTube[0]}</SwitchItem>
+          <SwitchItem note={settingStrings.embedYouTube[1]}
+            value={getSetting('embedYouTube', true)}
+            onChange={() => this.toggleSetting('embedYouTube', true)}
+          >{settingStrings.embedYouTube[0]}</SwitchItem>
 
-        <SwitchItem note={settingStrings.embedAudio[1]}
-          value={getSetting('embedAudio', true)}
-          onChange={() => this.toggleSetting('embedAudio', true)}
-        >{settingStrings.embedAudio[0]}</SwitchItem>
+          <SwitchItem note={settingStrings.embedAudio[1]}
+            value={getSetting('embedAudio', true)}
+            onChange={() => this.toggleSetting('embedAudio', true)}
+          >{settingStrings.embedAudio[0]}</SwitchItem>
 
-        <SwitchItem note={settingStrings.embedFile[1]}
-          value={getSetting('embedFile', true)}
-          onChange={() => this.toggleSetting('embedFile', true)}
-        >{settingStrings.embedFile[0]}</SwitchItem>
+          <SwitchItem note={settingStrings.embedFile[1]}
+            value={getSetting('embedFile', true)}
+            onChange={() => this.toggleSetting('embedFile', true)}
+          >{settingStrings.embedFile[0]}</SwitchItem>
 
-        {/*<SwitchItem note={settingStrings.embedSpecial[1]}
-          value={getSetting('embedSpecial', true)}
-          onChange={() => this.toggleSetting('embedSpecial', true)}
-        >{settingStrings.embedSpecial[0]}</SwitchItem>*/}
+          {/*<SwitchItem note={settingStrings.embedSpecial[1]}
+            value={getSetting('embedSpecial', true)}
+            onChange={() => this.toggleSetting('embedSpecial', true)}
+          >{settingStrings.embedSpecial[0]}</SwitchItem>*/}
 
-        <SwitchItem note={settingStrings.embedOther[1]}
-          value={getSetting('embedOther', true)}
-          onChange={() => this.toggleSetting('embedOther', true)}
-        >{settingStrings.embedOther[0]}</SwitchItem>
-        
+          <SwitchItem note={settingStrings.embedOther[1]}
+            value={getSetting('embedOther', true)}
+            onChange={() => this.toggleSetting('embedOther', true)}
+          >{settingStrings.embedOther[0]}</SwitchItem>
+        </Category>
 
 
         <FormTitle className='rq-settingsHeader'>Caching</FormTitle>
