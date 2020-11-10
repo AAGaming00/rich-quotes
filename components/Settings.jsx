@@ -33,11 +33,12 @@ module.exports = class Settings extends React.Component {
     super(props)
     this.state = {reload: false}
   }
-  toggleSetting (setting, defaultOption) {
+  toggleSetting (setting, defaultOption, setState = true) {
     const { getSetting } = this.props;
-    this.props.toggleSetting(setting, defaultOption);
-    this.setState({...this.state, reload: Date.now().toString()});
-
+    this.props.toggleSetting(setting, defaultOption);\
+    if (setState) {
+      this.setState({...this.state, reload: Date.now().toString()});
+    }
     const embedDisplays = [ 'embedImages', 'embedVideos', 'embedYouTube', 'embedAudio', 'embedFile', 'embedSpecial', 'embedOther' ]
 
     let embedAll = true;
@@ -93,7 +94,7 @@ module.exports = class Settings extends React.Component {
           name={settingStrings.embedCategory[0]}
           description={settingStrings.embedCategory[1]}
           opened={getSetting('embedCategory', false)}
-          onChange={() => this.toggleSetting('embedCategory', false)}
+          onChange={() => this.toggleSetting('embedCategory', false, false)}
         >
           <SwitchItem note={settingStrings.displayEmbeds[1]}
             value={getSetting('displayEmbeds', false)}
