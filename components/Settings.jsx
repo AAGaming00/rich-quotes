@@ -14,7 +14,7 @@ const settingStrings = {
   displayReactions: ['Display Reactions', 'When disabled will not display reactions.'],
   displayEmbeds: ['Display Embeds', 'When disabled will not display images/videos/etc.'],
 
-  embedCategory: ['Embed Display Types', 'Displayed content settings'],
+  embedCategory: ['Embed Media', 'Media content settings'],
   embedImages: ['Embed Images', 'When disabled will not display images.'],
   embedVideos: ['Embed Videos', 'When disabled will not display regular videos.'],
   embedYouTube: ['Embed YouTube', 'When disabled will not display special external vidoes like YouTube.'],
@@ -89,6 +89,11 @@ module.exports = class Settings extends React.Component {
           onChange={() => this.toggleSetting('displayReactions', false)}
         >{settingStrings.displayReactions[0]}</SwitchItem>
         
+        <SwitchItem note={settingStrings.displayEmbeds[1]}
+          value={getSetting('displayEmbeds', false)}
+          onChange={() => this.toggleSetting('displayEmbeds', false)}
+        >{settingStrings.displayEmbeds[0]}</SwitchItem>
+        
         {/* Embed stuff here */}
         <Category
           name={settingStrings.embedCategory[0]}
@@ -96,11 +101,6 @@ module.exports = class Settings extends React.Component {
           opened={getSetting('embedCategory', false)}
           onChange={() => this.toggleSetting('embedCategory', false, false)}
         >
-          <SwitchItem note={settingStrings.displayEmbeds[1]}
-            value={getSetting('displayEmbeds', false)}
-            onChange={() => this.toggleSetting('displayEmbeds', false)}
-          >{settingStrings.displayEmbeds[0]}</SwitchItem>
-
           <SwitchItem note={settingStrings.embedImages[1]}
             value={getSetting('embedImages', true)}
             onChange={() => this.toggleSetting('embedImages', true)}
