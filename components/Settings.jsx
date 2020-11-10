@@ -35,7 +35,7 @@ module.exports = class Settings extends React.Component {
   }
   toggleSetting (setting, defaultOption, setState = true) {
     const { getSetting } = this.props;
-    this.props.toggleSetting(setting, defaultOption);\
+    this.props.toggleSetting(setting, defaultOption);
     if (setState) {
       this.setState({...this.state, reload: Date.now().toString()});
     }
