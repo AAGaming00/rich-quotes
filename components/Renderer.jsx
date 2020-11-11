@@ -5,7 +5,7 @@ const Quote = require('./Quote');
 
 module.exports = class QuoteRenderer extends React.Component {
   constructor (props) { super(props); this.state = {
-    content: [<></>],
+    content: [null],
     loading: true} }
 
   static getDerivedStateFromProps (props, state) {
@@ -13,7 +13,7 @@ module.exports = class QuoteRenderer extends React.Component {
   }
 
   async componentDidUpdate () { 
-    if (!_.isEqual(this.props.message.content, this.state.message.content) && this.state.loading) 
+    if (!_.isEqual(this.props.message.content, this.state.message.content) || this.state.loading) 
       await this.buildQuote();
   }
 
