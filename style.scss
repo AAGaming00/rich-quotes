@@ -111,9 +111,7 @@
             width: 100%;
             &>div {
                width: 94%;
-               &>div {
-                  width: 90% !important;
-               }
+               &>div { width: 90% !important }
             }
          }
       }
@@ -123,6 +121,10 @@
       grid-column: 1;
       grid-row: 2;
       width: 20px;
+
+      display: grid;
+      grid-auto-rows: 20px;
+      grid-row-gap: 3px;
       
       &>div>.rq-button {
          width: 20px;
@@ -142,9 +144,10 @@
          svg {
             width: 14px;
             height: 14px;
-
-            &.rq-180-flip { transform: rotateY(180deg); }
          }
+
+         &.rq-jump > svg { transform: rotateY(180deg) }
+         &.rq-channel-jump > svg { width: 12px; height: 12px }
       }
    }
 }}
@@ -195,3 +198,5 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
       }
   }
 }
+
+.rq-tooltip { height: min-content }

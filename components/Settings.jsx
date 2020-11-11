@@ -9,6 +9,7 @@ const QuotesPreview = require('./Preview')
 const settingStrings = {
   displayChannel: ['Display Channel', 'When disabled channel will instead be displayed in info.'],
   displayTimestamp: ['Display Timestamps', 'When disabled timestamps will instead be displayed in info.'],
+  displayMoreBtn: ['Display More Button', 'When disabled will not display More button.'],
   displayNickname: ['Display Nickname', 'When disabled will always show actual username.'],
   displayReactions: ['Display Reactions', 'When disabled will not display reactions.'],
   cullBotQuotes: ['Cull Bot Quotes', 'Removes embeds from bot messages that have an error-free linked quote.'],
@@ -59,7 +60,7 @@ module.exports = class Settings extends React.Component {
   render () {
     const { getSetting } = this.props;
 
-    const displaySettings = ['displayChannel', 'displayTimestamp', 'displayNickname', 'displayReactions', 'cullBotQuotes', 'displayEmbeds'];
+    const displaySettings = ['displayChannel', 'displayTimestamp', 'displayMoreBtn', 'displayNickname', 'displayReactions', 'cullBotQuotes', 'displayEmbeds'];
 
     return (
       <div>

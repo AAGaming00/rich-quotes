@@ -92,6 +92,7 @@ module.exports = class QuoteRenderer extends React.Component {
             quoteParams.content = await parser.parse(
               raw_content, true, { channelId: this.props.message.channel_id }
             );
+            quoteParams.originalContent = raw_content;
 
             quoteParams.message = await new MessageC({ ...quoteMatch });
             quoteParams.channel = channel;

@@ -29,7 +29,7 @@ module.exports = class RichQuotes extends Plugin {
 
     const getSettings = () => {
       const settingsList = [
-        'displayChannel','displayTimestamp','displayNickname',
+        'displayChannel','displayTimestamp','displayNickname', 'displayMoreBtn',
         'cullBotQuotes','displayReactions','displayEmbeds',
         'embedImages','embedVideos','embedYouTube','embedAudio',
         'embedFile',/* 'embedSpecial',*/ 'embedOther', 'embedAll'];

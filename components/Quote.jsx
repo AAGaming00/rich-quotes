@@ -1,7 +1,10 @@
 const { React, getModule, contextMenu, getModuleByDisplayName } = require('powercord/webpack');
 
-const { Tooltip, Icon, Spinner } = require('powercord/components');
+const { Spinner, ContextMenu } = require('powercord/components');
 
+const Button = require('./Button');
+const MoreIcon = require('./Dumb');
+const ViewRaw = require('./dumb_imports/ViewRaw');
 const RequestError = require('./RequestError');
 const RenderError = require('./RenderError');
 
@@ -202,6 +205,72 @@ module.exports = class RichQuote extends React.Component {
     }));
   }
 
+  openMoreContextMenu(e) {
+    const channel = getModule(['getChannel'], false).getChannel(this.state.channel.id);
+
+    const message = this.state.message;
+
+    if (!this.state.message.author) message.author = this.state.author;
+
+    if (!this.state.message.content) message.content = this.state.originalContent;
+
+    let items = [
+      {
+        type: 'button', name: 'Quote',
+        onClick: async () => {
+          const { createQuotedText } = await getModule(['createQuotedText']);
+
+          const quote = createQuotedText(message, channel);
+
+          if (quote !== '') {
+            const { ComponentDispatch } = await getModule(['ComponentDispatch']);
+            
+            ComponentDispatch.dispatchToLastSubscribed('INSERT_TEXT', { content: quote });
+          }
+        }
+      },
+      // @todo Figure out how to run TTS for Speak Quote
+      /*{
+        type: 'button', name: 'Speak Quote',
+        onClick: () => console.log('bar')
+      }*/
+    ];
+
+    if (this.state.link) items = [ ...items,
+      {
+        type: 'button', name: 'Copy Message Link',
+        onClick: async () => (await getModule([ 'clipboard' ])).clipboard.copy( `https://discord.com/channels/${this.state.link.join('/')}` )
+      }
+      // @todo Figure out if developer mode is on for Copy ID
+      /*{
+        type: 'button', name: 'Copy ID',
+        onClick: () => console.log('bar')
+      }*/
+    ];
+
+    items.push({
+      type: 'button', name: 'View Raw',
+      onClick: () => require('powercord/modal').open(() => (<ViewRaw message={message} />))
+    })
+
+    if (this.state.link && this.state.originalContent && this.state.settings.cacheSearch) items.push({
+      type: 'button', name: 'Clear Message Match',
+      onClick: () => {
+        window.localStorage.richQuoteCache = JSON.stringify({
+          searches: JSON.parse(window.localStorage.richQuoteCache).searches.filter((message) => {
+            if (message.link[2] === this.state.link[2]) return false;
+            else return true;
+          }
+        )})
+      }
+    })
+
+    contextMenu.openContextMenu(e, () => React.createElement(ContextMenu, {
+      width: '50px',
+      itemGroups: [ items ]
+    }));
+  }
+
   render () {
 
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
@@ -224,7 +293,8 @@ module.exports = class RichQuote extends React.Component {
 
       const link = this.state.link,
             searchMsg = this.state.searchStatus,
-            previewQuote = this.state.channel.id === 'owo';
+            previewQuote = this.state.channel.id === 'owo',
+            channelHeader = this.state.settings.displayChannel;
 
       const quoteTimestamp = link && this.state.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
         className: 'rq-timestamp',
@@ -241,16 +311,6 @@ module.exports = class RichQuote extends React.Component {
 
       const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
 
-      const jumpTooltip = 'Jump to Message',
-            searchTooltip = searchMsg ? searchMsg === 'error' ? 
-              'Could not find matching message' : 
-              'Message search loading...' : 
-              'Search for Message';
-      
-      const previewJump = document.getElementById('owo-0')?.scrollIntoViewIfNeeded;
-
-      const allowSearch = !searchMsg && !previewQuote;
-
       // Nickname handler
       const displayName = this.state.settings.displayNickname ? 
         getName(link ? link[0] : this.state.channel.guild_id, this.state.channel.id, this.state.author) : false;
@@ -266,33 +326,47 @@ module.exports = class RichQuote extends React.Component {
               <span className={`rq-username ${mention} ${username} ${clickable}`}
                 onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
               >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
-                link && this.state.settings.displayChannel ? 
-                <span>
+                link && channelHeader ? <span>
                   <span className='rq-infoText'>{`posted in ${this.state.channel.name ? '' : 'a DM'}`}</span>
                   {
                     this.state.channel.name ?
-                    <span className={`rq-channel ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
+                    <span className={`rq-channel-header ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
                       onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
                     >{`#${this.state.channel.name}`}</span> : false
                   }
-                </span>
-                : false }{ quoteTimestamp }
+                </span> : false }{ quoteTimestamp }
             </div>
           </div>
 
-          <div className='rq-button-container'>{ link ? 
-            <Tooltip position="left" text={jumpTooltip}>
-            <div className='rq-button rq-jump rq-clickable' onClick= {() => !previewQuote ? transitionTo(`/channels/${link.join('/')}`) : previewJump()}>
-              <Icon className='rq-180-flip' name="Reply"/>
-            </div></Tooltip>
-            : 
-            <Tooltip position="left" text={searchTooltip}>
-            <div key={searchMsg} className={`rq-button rq-search ${ allowSearch ? 'rq-clickable' : ''}`} onClick= {async () => allowSearch ? this.searchRes() : false}>{
-              !searchMsg ? <Icon className='rq-search-icon' name="Search"/> :
-              searchMsg === 'loading' ? <Spinner className='rq-loading-icon' type='pulsingEllipsis'/>
-              : <div className='rq-error-icon'>!</div>
-            }</div></Tooltip>
-          }</div>
+          <div className='rq-button-container'>
+            { link ? [
+              <Button {...{
+                classes: [ 'jump' ], tooltip: 'Jump to Message', icon: 'Reply',
+                function: () => {
+                  if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
+                  else document.getElementById('owo-0').scrollIntoViewIfNeeded;
+                }
+              }}></Button>, 
+              !channelHeader ? <Button {...{
+                classes: [ 'channel-jump' ], tooltip: 'Jump to Channel', icon: 'Hash',
+                function: !previewQuote ? () => transitionTo(`/channels/${link[0]}/${link[1]}`) : false
+              }}></Button> : false
+              ].map(e=>(e)) : 
+              <Button {...{
+                classes: [ 'search' ], icon: !searchMsg ? 'Search' : false,
+                tooltip: !searchMsg ? 
+                  'Search for Message' : searchMsg === 'loading' ?
+                  'Message search loading...' :
+                  'Could not find matching message',
+                function: !(searchMsg || previewQuote) ? async () => this.searchRes() : false
+              }}>{ searchMsg === 'loading' ?
+                <Spinner className='rq-loading-icon' type='pulsingEllipsis'/> : <div className='rq-error-icon'>!</div>
+              }</Button>
+            }
+              { this.props.settings.displayMoreBtn ?
+                <Button {...{ classes: [ 'more' ], tooltip: 'More', function: (e) => this.openMoreContextMenu(e) }}><MoreIcon /></Button>
+              : false }
+          </div>
 
           <div className='rq-content'>
             {this.state.content ? <MessageContent message={this.state.message} content={this.state.content}/> : null}
