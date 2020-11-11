@@ -205,7 +205,6 @@ module.exports = class RichQuote extends React.Component {
   }
 
   openMoreContextMenu(e) {
-    //const channel = getModule(['getChannel'], false).getChannel(this.state.channel.id);
     const { message, channel } = this.state;
 
     contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
