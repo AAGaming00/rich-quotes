@@ -208,66 +208,13 @@ module.exports = class RichQuote extends React.Component {
     //const channel = getModule(['getChannel'], false).getChannel(this.state.channel.id);
     const { message, channel } = this.state;
 
-    if (!this.state.message.author) message.author = this.state.author;
-
-    if (!this.state.message.content) message.content = this.state.originalContent;
-
-    // let items = [
-    //   {
-    //     type: 'button', name: 'Quote',
-    //     onClick: async () => {
-    //       const { createQuotedText } = await getModule(['createQuotedText']);
-
-    //       const quote = createQuotedText(message, channel);
-
-    //       if (quote !== '') {
-    //         const { ComponentDispatch } = await getModule(['ComponentDispatch']);
-            
-    //         ComponentDispatch.dispatchToLastSubscribed('INSERT_TEXT', { content: quote });
-    //       }
-    //     }
-    //   },
-    //   // @todo Figure out how to run TTS for Speak Quote
-    //   /*{
-    //     type: 'button', name: 'Speak Quote',
-    //     onClick: () => console.log('bar')
-    //   }*/
-    // ];
-
-    // if (this.state.link) items = [ ...items,
-    //   {
-    //     type: 'button', name: 'Copy Message Link',
-    //     onClick: async () => (await getModule([ 'clipboard' ])).clipboard.copy( `https://discord.com/channels/${this.state.link.join('/')}` )
-    //   }
-    //   // @todo Figure out if developer mode is on for Copy ID
-    //   /*{
-    //     type: 'button', name: 'Copy ID',
-    //     onClick: () => console.log('bar')
-    //   }*/
-    // ];
-
-    // items.push({
-    //   type: 'button', name: 'View Raw',
-    //   onClick: () => require('powercord/modal').open(() => (<ViewRaw message={message} />))
-    // })
-
-    // if (this.state.link && this.state.originalContent && this.state.settings.cacheSearch) items.push({
-    //   type: 'button', name: 'Clear Message Match',
-    //   onClick: () => {
-    //     window.localStorage.richQuoteCache = JSON.stringify({
-    //       searches: JSON.parse(window.localStorage.richQuoteCache).searches.filter((message) => {
-    //         if (message.link[2] === this.state.link[2]) return false;
-    //         else return true;
-    //       }
-    //     )})
-    //   }
-    // })
-
     contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
       message, channel, target: {...this,
         classList: {contains: ()=>{}},
         tagName: ''
-      }// hack to prevent emojiUtility errors
+      }, // hack to prevent emojiUtility errors
+      settings: this.props.settings, isMarkdown: this.state.isMarkdown,
+      link: this.state.link, clearLink: () => this.setState({ link: false, searchStatus: false })
     }));
   }
 

@@ -55,7 +55,7 @@ module.exports = class QuoteRenderer extends React.Component {
           
           link: undefined, accessories: undefined, mentionType: 0,
     
-          settings: this.props.settings, thisChannel: this.props.message.channel_id
+          settings: this.props.settings, thisChannel: this.props.message.channel_id, isMarkdown: false
         };
 
         let link = [];
@@ -73,6 +73,7 @@ module.exports = class QuoteRenderer extends React.Component {
           const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
 
           content[i + 1] = null;
+          quoteParams.isMarkdown = true;
 
           if (currentUser.id !== author.id) quoteParams.mentionType = 1;
           else if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`))
@@ -92,10 +93,14 @@ module.exports = class QuoteRenderer extends React.Component {
             quoteParams.content = await parser.parse(
               raw_content, true, { channelId: this.props.message.channel_id }
             );
-            quoteParams.originalContent = raw_content;
 
             quoteParams.message = await new MessageC({ ...quoteMatch });
             quoteParams.channel = channel;
+
+            // For More button
+            quoteParams.message.id = this.props.message.id;
+            quoteParams.message.author = author;
+            if (!quoteParams.message.content) quoteParams.message.content = raw_content;
     
             quoteParams.author = author;
 
