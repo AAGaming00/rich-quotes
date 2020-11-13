@@ -10,6 +10,8 @@ const MessageContextMenu = require('./MoreContextMenu')
 const getMsg = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
 
+const previewId = '000000000000000000';
+
 let lastFetch = 0;
 
 
@@ -26,7 +28,7 @@ module.exports = class RichQuote extends React.Component {
     const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM);
     const parser = await getModule(["parse", "parseTopic"]);
 
-    if (this.state.link[0] !== '000000000000000000') {
+    if (this.state.link[0] !== previewId) {
       const getWithQueue = (() => {
           let pending = Promise.resolve()
 
@@ -93,14 +95,14 @@ module.exports = class RichQuote extends React.Component {
 
       this.state.content = await parser.parse(
        'Check out this preview', true, 
-        { channelId: '000000000000000000' }
+        { channelId: previewId }
       );
 
       this.state.author = await getCurrentUser.getCurrentUser();
 
       this.state.message = await new MessageC({ ...'' });
       this.state.channel = { id: 'owo', name: 'test-channel'};
-      this.state.link = ['000000000000000000','000000000000000000','000000000000000000'];
+      this.state.link = [previewId, previewId,previewId];
     }
 
     this.setState(this.state);
@@ -207,7 +209,7 @@ module.exports = class RichQuote extends React.Component {
   openMoreContextMenu(e) {
     const { message, channel } = this.state;
 
-    contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
+    if (this.state.link[0] !== previewId) contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
       message, channel, target: {...this,
         classList: {contains: ()=>{}},
         tagName: ''
@@ -218,16 +220,18 @@ module.exports = class RichQuote extends React.Component {
   }
 
   render () {
-
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
     else if (this.state.link && !this.state.content) {
-      this.linkRes();
+        this.linkRes();
 
-      return (<div className='rq-preloader'>
-        <Spinner type='pulsingEllipsis' />
-      </div>);
-  }
+        return (<div className='rq-preloader'>
+          <Spinner type='pulsingEllipsis' />
+        </div>);
+    }
+
     const { transitionTo } = getModule([ 'transitionTo' ], false);
+    const { parse } = getModule(['parse', 'parseTopic'], false);
+    const { getGuild } = getModule(['getGuild'], false);
     const { getName } = getModule([ 'getName' ], false);
 
     const MessageTimestamp = getModule([ 'MessageTimestamp' ], false);
@@ -237,6 +241,12 @@ module.exports = class RichQuote extends React.Component {
 
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 
+    let channel = this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.thisChannel }) : false;
+
+    
+    /*if (channel) {
+      channel = 
+    }*/
 
     const link = this.state.link,
           searchMsg = this.state.searchStatus,
@@ -275,12 +285,7 @@ module.exports = class RichQuote extends React.Component {
             >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
               link && channelHeader ? <span>
                 <span className='rq-infoText'>{`posted in ${this.state.channel.name ? '' : 'a DM'}`}</span>
-                {
-                  this.state.channel.name ?
-                  <span className={`rq-channel-header ${!previewQuote ? 'rq-clickable' : ''} rq-highlight ${highlightAlter}`}
-                    onClick= {() => !previewQuote ? transitionTo(`/channels/${link.slice(0, 2).join('/')}`) : false }
-                  >{`#${this.state.channel.name}`}</span> : false
-                }
+                {channel}
               </span> : false }{ quoteTimestamp }
           </div>
         </div>

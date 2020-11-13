@@ -16,7 +16,7 @@ class RenderError extends React.PureComponent {
   }
 
   render () {
-    const { getGuilds } = getModule([ 'getGuilds' ], false);
+    const { getGuild } = getModule([ 'getGuild' ], false);
     const parser = getModule(["parse", "parseTopic"], false);
     const errorText = 'rq-error-text colorStandard-2KCXvj';
 
@@ -28,16 +28,15 @@ class RenderError extends React.PureComponent {
 
     const originalContent = this.props.content;
 
-    const inGuild = (() => { let is = false;
-      Object.keys(getGuilds()).forEach((key) => { if (key == support.server.link[0]) is = true }); return is })();
-    
+    const inGuild = getGuild(support.server.link[0]) !== undefined;
+
     let server_link = (parser.parse(inGuild ?
       `https://${document.location.href.split('/')[2]}/channels/${support.server.link.join('/')}`
       :
       `https://discord.gg/${support.server.invite}`))[0];
 
     server_link.props.children[0] = `${support.server.name} server`;
-    
+
     let errorString = this.state.error?.stack;
 
     errorString = errorString // Clean error string
@@ -47,12 +46,12 @@ class RenderError extends React.PureComponent {
       .split('../../')
       .join('')
       .substring(0, 2000 - 36);
-    
+
     // Jank ass sanity check
     const badPlugins = ['open-in-spotify']
     const hasBad = (() => { let has = false;
       powercord.pluginManager.getPlugins().forEach((name) => { badPlugins.forEach((bad) => { if (name.includes(bad)) has = true;})}); return has })();
-    
+
     if (errorString?.length === 2000 - 36) errorString += '...';
 
     if (this.state.hasError) {
