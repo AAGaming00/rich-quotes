@@ -1,5 +1,5 @@
 // @todo This giant hack has false negatives, eventually should be fixed
-const spoilerMatcher = (b) => new RegExp(`\\|\\|${b.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&').replace('\/\/', '\/\/(.*?)').replace(/\//g, '\\/')}(.*?)\\|\\|`);
+//const spoilerMatcher = (b) => new RegExp(`\\|\\|${b.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&').replace('\/\/', '\/\/(.*?)').replace(/\//g, '\\/')}(.*?)\\|\\|`);
 
 const mime = require('../node_modules/mime-types');
 
@@ -10,7 +10,7 @@ module.exports = (messageData, settings, hasEmbedSpoilers) => {
          let urls = []
 
          messageData.embeds = messageData.embeds?.filter((embed, i) => {
-            if (spoilerMatcher(embed.url).test(messageData.content)) hasEmbedSpoilers = true;
+            //if (spoilerMatcher(embed.url).test(messageData.content)) hasEmbedSpoilers = true;
             if (typeof embed.color !== 'string') colorFixes.push(i);
 
             let keepEmbed = true;
@@ -47,7 +47,7 @@ module.exports = (messageData, settings, hasEmbedSpoilers) => {
       let urls = [];
 
       messageData.embeds.forEach((embed, i) => {
-         if (spoilerMatcher(embed.url).test(messageData.content)) hasEmbedSpoilers = true;
+         //if (spoilerMatcher(embed.url).test(messageData.content)) hasEmbedSpoilers = true;
          if (typeof embed.color !== 'string') messageData.embeds[i].color = '#00000000';
          urls.push(embed.url);
       });

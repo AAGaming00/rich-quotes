@@ -34,9 +34,10 @@ module.exports = function (props) {
 
   if (props.link) {
     const idCheck = new RegExp(`(${[props.settings.displayReactions ? 'nope' : 'add\\-reaction', 'mark\\-unread', 'delete'].join('|')})$`);
-    
+
     res.props.children[2].props.children = res.props.children[2].props.children.filter((c, j) => {
-      if (c && (props.settings.displayReactions ? true : j !== 0) && c.props?.id ? !idCheck.test(c.props.id) : false) return true; else return false;
+      if (c && (props.settings.displayReactions ? true : j !== 0) &&
+        c.props?.id ? (c.props.id !== 'edit' && !idCheck.test(c.props.id)) : false) return true; else return false;
     });
   }
 

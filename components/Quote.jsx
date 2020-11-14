@@ -49,8 +49,8 @@ module.exports = class RichQuote extends React.Component {
         this.state.errorParams.link = this.state.link;
       }
       else {
-        const { getChannel } = await getModule(['getChannel']);
         const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories');
+        const { getChannel } = await getModule(['getChannel']);
 
         let messageData = { ...originalMessage };
         let hasEmbedSpoilers = false;
@@ -65,7 +65,7 @@ module.exports = class RichQuote extends React.Component {
 
         this.state.content = await parser.parse(
           messageData.content.trim(), true, 
-          { channelId: this.state.thisChannel }
+          { channelId: this.state.parent[1] }
         );
 
         this.state.author = messageData.author;
@@ -241,12 +241,17 @@ module.exports = class RichQuote extends React.Component {
 
     const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
 
-    let channel = this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.thisChannel }) : false;
+    let channel = this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.parent[1] })[0] : false;
 
     
-    /*if (channel) {
-      channel = 
-    }*/
+    if (channel) {
+      const guild = getGuild(this.state.link[0]);
+
+      if (guild && guild.id !== this.props.parent[0]) channel.props.text = (<>
+        <center className='rq-server-title'>{guild.name}</center>
+        <center>{channel.props.text}</center>
+      </>);
+    }
 
     const link = this.state.link,
           searchMsg = this.state.searchStatus,
@@ -300,7 +305,7 @@ module.exports = class RichQuote extends React.Component {
               }
             }}></Button>, 
             !channelHeader ? <Button {...{
-              classes: [ 'channel-jump' ], tooltip: 'Jump to Channel', icon: 'Hash',
+              classes: [ 'channel-jump' ], tooltip: channel.props.text, icon: 'Hash',
               function: !previewQuote ? () => transitionTo(`/channels/${link[0]}/${link[1]}`) : false
             }}></Button> : false
             ].map(e=>(e)) : 

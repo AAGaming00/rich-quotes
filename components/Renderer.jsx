@@ -45,17 +45,21 @@ module.exports = class QuoteRenderer extends React.Component {
       const { getChannel } = await getModule(['getChannel']);
       const parser = await getModule(["parse", "parseTopic"]);
 
+      const thisLink = [document.location.href.split('/')[4], this.props.message.channel_id, this.props.message.id];
+
       for (const {i, type} of targetEntries) {
         let quoteParams = {
           className: `${message} ${cozyMessage} ${groupStart}`,
-    
+
           content: undefined, author: undefined,
-    
+
           message: undefined, channel: undefined, search: undefined,
-          
+
           link: undefined, accessories: undefined, mentionType: 0,
-    
-          settings: this.props.settings, thisChannel: this.props.message.channel_id, isMarkdown: false
+
+          settings: this.props.settings, isMarkdown: false,
+
+          parent: thisLink
         };
 
         let link = [];
