@@ -124,8 +124,8 @@ module.exports = class QuoteRenderer extends React.Component {
 
       if (this.props.message.author.bot && this.props.settings.cullBotQuotes) this.props.message.embeds = [];
 
+      this.setState({...this.props, content, oldContent: this.props.content, loading: false });
     }
-    this.setState({...this.props, content, oldContent: this.props.content, loading: false });
   }
 
   render = () => <>{this.state.content}</>
