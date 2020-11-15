@@ -7,12 +7,10 @@ const RequestError = require('./RequestError');
 const RenderError = require('./RenderError');
 const MessageContextMenu = require('./MoreContextMenu')
 
-const getMsg = require('../utils/getMessage.js');
+const getWithQueue = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
 
 const previewId = '000000000000000000';
-
-let lastFetch = 0;
 
 
 module.exports = class RichQuote extends React.Component {
@@ -29,20 +27,8 @@ module.exports = class RichQuote extends React.Component {
     const parser = await getModule(["parse", "parseTopic"]);
 
     if (this.state.link[0] !== previewId) {
-      const getWithQueue = (() => {
-          let pending = Promise.resolve()
-
-          const run = async ([guildId, channelId, messageId]) => {
-            try { await pending } finally {
-              return getMsg(guildId, channelId, messageId, lastFetch);
-            }
-          }
-          return (link) => (pending = run(link));
-        })(),
-        originalMessage = await getWithQueue(this.state.link);
-
-      lastFetch = Date.now();
-
+      
+      const originalMessage = await getWithQueue(this.state.link);
 
       if (originalMessage.error) {
         this.state.errorParams = originalMessage;

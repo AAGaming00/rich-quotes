@@ -4,11 +4,13 @@ const User = getModule(m => m.prototype && m.prototype.tag, false);
 const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
 const { getMessage } = getModule(['getMessages'], false);
 
-module.exports = async (guildId, channelId, messageId, lastFetch) => {
+let lastFetch = 0;
+
+async function getMsg (guildId, channelId, messageId) {
    let message = getMessage(channelId, messageId);
 
    if (!message) {
-      if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, 2500));
+      if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, Date.now() - lastFetch));
 
       const { getGuild } = await getModule(['getGuild']);
 
@@ -44,10 +46,10 @@ module.exports = async (guildId, channelId, messageId, lastFetch) => {
       await req();
 
       if (rateLimit) {
-         await new Promise(r => setTimeout(r, rateLimit));
-         await req();
+         lastFetch = lastFetch + rateLimit
+         return await getMsgWithQueue([guildId, channelId, messageId]);
       }
-
+      lastFetch = Date.now()
       if (errorData) return errorData;
 
       const msg = data.body[0];
@@ -61,3 +63,16 @@ module.exports = async (guildId, channelId, messageId, lastFetch) => {
    }
    return message;
 }
+
+const getMsgWithQueue = (() => {
+   let pending = Promise.resolve()
+
+   const run = async ([guildId, channelId, messageId]) => {
+     try { await pending } finally {
+       return getMsg(guildId, channelId, messageId);
+     }
+   }
+   return (link) => (pending = run(link));
+ })()
+
+module.exports = getMsgWithQueue
