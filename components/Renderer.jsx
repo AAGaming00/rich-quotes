@@ -7,12 +7,8 @@ module.exports = class QuoteRenderer extends React.Component {
   constructor (props) { super(props); this.state = {
     loading: true} }
 
-  static getDerivedStateFromProps (props, state) {
-    return { ...Object.assign({}, props), ...state };
-  }
-
   async componentDidUpdate () { 
-    if (!_.isEqual(this.props.message.content, this.state.message.content) || this.state.loading) 
+    if (!_.isEqual(this.props.message.content, this.state.message?.content) || this.state.loading) 
       await this.buildQuote();
   }
 
@@ -127,5 +123,5 @@ module.exports = class QuoteRenderer extends React.Component {
     }
   }
 
-  render = () => <>{this.state.content}</>
+  render = () => <>{this.state.content || this.props.content}</>
 };
