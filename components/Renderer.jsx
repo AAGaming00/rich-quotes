@@ -4,8 +4,7 @@ const { getModule, React } = require('powercord/webpack');
 const Quote = require('./Quote');
 
 module.exports = class QuoteRenderer extends React.Component {
-  constructor (props) { super(props); this.state = {
-    loading: true} }
+  constructor (props) { super(props); this.state = { loading: true } }
 
   static getDerivedStateFromProps (props, state) {
     return { ...Object.assign({}, props), ...state };
