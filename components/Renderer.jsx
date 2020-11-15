@@ -5,7 +5,6 @@ const Quote = require('./Quote');
 
 module.exports = class QuoteRenderer extends React.Component {
   constructor (props) { super(props); this.state = {
-    content: [null],
     loading: true} }
 
   static getDerivedStateFromProps (props, state) {
