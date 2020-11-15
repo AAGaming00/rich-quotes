@@ -48,9 +48,9 @@ class RenderError extends React.PureComponent {
       .substring(0, 2000 - 36);
 
     // Jank ass sanity check
-    const badPlugins = ['open-in-spotify']
+    const badPlugins = []
     const hasBad = (() => { let has = false;
-      powercord.pluginManager.getPlugins().forEach((name) => { badPlugins.forEach((bad) => { if (name.includes(bad)) has = true;})}); return has })();
+      powercord.pluginManager.getPlugins().forEach((name) => { badPlugins.forEach((bad) => { if (name.includes(bad)) has = name;})}); return has })();
 
     if (errorString?.length === 2000 - 36) errorString += '...';
 
@@ -59,7 +59,7 @@ class RenderError extends React.PureComponent {
         <div className='rq-error rq-error-render'>
           { hasBad ? 
             <div className={errorText}>
-              You have Open in Spotify installed, it is probably causing the issue, disable the plugin.
+              You have {hasBad} installed, it is probably causing the issue, disable the plugin.
             </div> :
             <div className={errorText}>
               An error occurred while rendering this element. {'\n'}
@@ -69,7 +69,7 @@ class RenderError extends React.PureComponent {
           }
           { hasBad ? 
             <ButtonItem button={'Disable & Reload'} color={Button.Colors.GREEN}
-              onClick={() => { powercord.pluginManager.disable('open-in-spotify'); setTimeout(() => window.location.reload(), 250) }}
+              onClick={() => { powercord.pluginManager.disable(hasBad); setTimeout(() => window.location.reload(), 250) }}
             ></ButtonItem> : 
             <ButtonItem button='Copy Error Message' color={Button.Colors.GREEN}
               onClick={ () => clipboard.copy( `<@${support.author.id}>\n\`\`\`js\n${errorString}\n\`\`\`` ) }
