@@ -2,77 +2,69 @@ const { getModule, http: { get }, constants: { Endpoints } } = require('powercor
 
 const User = getModule(m => m.prototype && m.prototype.tag, false);
 const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
-const { getMessage } = getModule(['getMessages'], false);
+const getCachedMessage = getModule(['getMessages'], false).getMessage;
+const { getGuild } = getModule(['getGuild'], false);
+
+const errorRes = (msg) => { return { error: msg, inGuild: true} };
 
 let lastFetch = 0;
 
-async function getMsg (guildId, channelId, messageId) {
-   let message = getMessage(channelId, messageId);
+async function getMessage([guildId, channelId, messageId], retry = false) {
+   let message = false;
 
+   // Check Discord's local/client cache for message
+   if (!retry) message = getCachedMessage(channelId, messageId);
+
+   // Request message when not present in cache
    if (!message) {
+      // Wait to do request
       if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, Date.now() - lastFetch));
 
-      const { getGuild } = await getModule(['getGuild']);
+      if (!(guildId === '@me' ? true : getGuild(guildId) !== undefined))
+         return { error: 'missing-access', inGuild: false };
 
-      let data;
-      let errorData = false;
-      let rateLimit = false;
+      lastFetch = Date.now();
 
-      const inGuild = guildId === '@me' ? true : getGuild(guildId) !== undefined;
 
-      if (!inGuild) return { error: 'missing-access', inGuild: false };
+      let data, rateLimit;
 
-      const errorRes = (msg) => { return { error: msg, inGuild: true} };
+      // Fetch Message
+      try {data = await get({
+         url: Endpoints.MESSAGES(channelId),
+         query: { limit: 1, around: messageId },
+         retries: 2
+      })} catch (e) {
+         if (!e.text) return errorRes('failed-request');
 
-      async function req() {
-         try {data = await get({
-            url: Endpoints.MESSAGES(channelId),
-            query: { limit: 1, around: messageId },
-            retries: 2
-         })} catch (e) {
-            if (!e.text) return { error: 'failed-request', inGuild: true };
-   
-            const error = JSON.parse(e.text);
-   
-            switch (error.message) {
-               case 'Unknown Channel': { return errorData = errorRes('unknown-channel') };
-               case 'Missing Access': { return errorData = errorRes('missing-access') };
-               case 'You are being rate limited.': { rateLimit = error.retry_after * 1000 } break;
-               default: { return errorData = errorRes('invalid-response') };
-            }
+         const error = JSON.parse(e.text);
+
+         switch (error.message) {
+            case 'Unknown Channel': return errorRes('unknown-channel');
+            case 'Missing Access': return errorRes('missing-access');
+            case 'You are being rate limited.': { rateLimit = error.retry_after * 1000 } break;
+            default: return errorRes('invalid-response');
          }
       }
-      
-      await req();
 
+      // When rate-limited add wait time given by discord to queue delay and re-queue request.
       if (rateLimit) {
-         lastFetch = lastFetch + rateLimit
-         return await getMsgWithQueue([guildId, channelId, messageId]);
+         lastFetch = lastFetch + rateLimit;
+         return await getMessage([guildId, channelId, messageId], true);
       }
-      lastFetch = Date.now()
-      if (errorData) return errorData;
 
       const msg = data.body[0];
 
-      if (!msg.id === messageId) return { error: 'no-match', closest: msg.id, inGuild: true };
+      if (!msg.id === messageId) return { closest: msg.id, ...errorRes('no-match') };
 
       msg.author = new User(msg.author);
       msg.timestamp = new Timestamp(msg.timestamp);
 
       message = msg;
    }
+
+   // @todo Add result of message fetch to client cache
+
    return message;
 }
 
-const getMsgWithQueue = (() => {
-   let pending = Promise.resolve()
-
-   const run = async ([guildId, channelId, messageId]) => {
-     try { await pending } finally {
-       return getMsg(guildId, channelId, messageId);
-     }
-   }
-   return (link) => (pending = run(link));
- })()
-
-module.exports = getMsgWithQueue
+module.exports = getMessage;

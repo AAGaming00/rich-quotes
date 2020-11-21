@@ -1,5 +1,6 @@
 const { getModule, React } = require('powercord/webpack');
 
+const Style = getModule([ 'blockquoteContainer' ], false);
 
 const Quote = require('./Quote');
 
@@ -14,8 +15,6 @@ module.exports = class QuoteRenderer extends React.Component {
   async componentDidMount () { await this.buildQuote() }
 
   async buildQuote () {
-    const { blockquoteContainer } = await getModule([ 'blockquoteContainer' ]);
-
     const content = [...this.props.content];
 
     let targetEntries = [];
@@ -26,8 +25,11 @@ module.exports = class QuoteRenderer extends React.Component {
         /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/.test(e.props.href))
         targetEntries.push({ i: i, type: 0 });
 
-      else if (e.props.className && e.props.className === blockquoteContainer 
-        && content[i + 1]?.props?.children?.props?.className.includes('mention')) targetEntries.push({ i: i, type: 1 });
+      else if (this.props.quotes && e.props.className && e.props.className === Style.blockquoteContainer 
+        && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
+
+        targetEntries.push({ i: i, type: 1 });
+      }
     }}
 
     /* Render Quotes */
@@ -37,23 +39,17 @@ module.exports = class QuoteRenderer extends React.Component {
       const getCurrentUser = await getModule([ 'getCurrentUser' ]);
       const { getUser } = getCurrentUser;
       const { getChannel } = await getModule(['getChannel']);
-      const parser = await getModule(["parse", "parseTopic"]);
-
-      const thisLink = [document.location.href.split('/')[4], this.props.message.channel_id, this.props.message.id];
+      const parser = await getModule(['parse', 'parseTopic']);
 
       for (const {i, type} of targetEntries) {
         let quoteParams = {
           className: `${message} ${cozyMessage} ${groupStart}`,
 
-          content: undefined, author: undefined,
+          parent: [document.location.href.split('/')[4], this.props.message.channel_id, this.props.message.id],
 
-          message: undefined, channel: undefined, search: undefined,
+          mentionType: 0, isMarkdown: false,
 
-          link: undefined, accessories: undefined, mentionType: 0,
-
-          settings: this.props.settings, isMarkdown: false,
-
-          parent: thisLink
+          settings: this.props.settings
         };
 
         let link = [];
@@ -63,19 +59,17 @@ module.exports = class QuoteRenderer extends React.Component {
 
         /* Markup Quote Handler */
         if (type === 1) {
-          const quoteMatch = /(?:> )([\s\S]+?)\n(<@!?(\d+)>)/.exec(this.props.message.content);
-          const author = await getUser(quoteMatch[3]);
+          const author = await getUser(this.props.quotes[0].author);
           const currentUser = await getCurrentUser.getCurrentUser();
           const channel = await getChannel(this.props.message.channel_id) || {id: 'owo'};
-          
-          const raw_content = quoteMatch[1].replace(/\n> /g, '\n').replace(/\n$/g, '').trim();
+
+          const raw_content = this.props.quotes[0].content.trim();
 
           content[i + 1] = null;
           quoteParams.isMarkdown = true;
 
           if (currentUser.id !== author.id) quoteParams.mentionType = 1;
-          else if (!this.props.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`))
-            quoteParams.mentionType = 2;
+          else if (!this.props.broadMention) quoteParams.mentionType = 2;
           else quoteParams.mentionType = 3;
 
           /* Search cache for matching messages */
@@ -92,13 +86,11 @@ module.exports = class QuoteRenderer extends React.Component {
               raw_content, true, { channelId: this.props.message.channel_id }
             );
 
-            quoteParams.message = await new MessageC({ ...quoteMatch });
-            quoteParams.channel = channel;
+            quoteParams.message = await new MessageC({
+              author, id: this.props.message.id, content: raw_content, channel_id: quoteParams.parent[1]
+            });
 
-            // For More button
-            quoteParams.message.id = this.props.message.id;
-            quoteParams.message.author = author;
-            if (!quoteParams.message.content) quoteParams.message.content = raw_content;
+            quoteParams.channel = channel;
     
             quoteParams.author = author;
 
@@ -107,6 +99,8 @@ module.exports = class QuoteRenderer extends React.Component {
               raw: raw_content
             };
           }
+
+          this.props.quotes = this.props.quotes.slice(1);
         }
 
         /* Set for Linked Quotes */

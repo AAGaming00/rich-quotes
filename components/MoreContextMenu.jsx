@@ -7,7 +7,10 @@ module.exports = function (props) {
 
   if (props.isMarkdown) {
     if (!props.link) {
-      const idCheck = new RegExp(`(${['add\\-reaction', 'edit', 'pin', 'mark\\-unread', 'copy\\-link', 'delete'].join('|')})$`);
+      // @todo Fix TTS being garbage
+      const idCheck = new RegExp(`^(${['add\\-reaction', 'edit', 'pin', 'mark\\-unread', 'reply', 'copy\\-link', 'delete', 'tts'].join('|')})$`);
+
+      console.log(res.props.children[2].props.children);
 
       res.props.children[2].props.children = res.props.children[2].props.children.filter((c, j) => {
         if (c && j !== 0 && c.props?.id ? !idCheck.test(c.props.id) : false) return true; else return false;
@@ -33,11 +36,17 @@ module.exports = function (props) {
   }
 
   if (props.link) {
-    const idCheck = new RegExp(`(${[props.settings.displayReactions ? 'nope' : 'add\\-reaction', 'mark\\-unread', 'delete'].join('|')})$`);
+    let idCheck = [ 'edit', 'mark\\-unread', 'delete' ];
+
+    if (!props.settings.displayReactions) idCheck.push('add\\-reaction')
+
+    if (props.parent[1] !== props.link[1]) idCheck.push('reply');
+
+    idCheck = new RegExp(`^(${idCheck.join('|')})$`);
 
     res.props.children[2].props.children = res.props.children[2].props.children.filter((c, j) => {
       if (c && (props.settings.displayReactions ? true : j !== 0) &&
-        c.props?.id ? (c.props.id !== 'edit' && !idCheck.test(c.props.id)) : false) return true; else return false;
+        c.props?.id ? !idCheck.test(c.props.id) : false) return true; else return false;
     });
   }
 

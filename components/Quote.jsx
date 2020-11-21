@@ -7,7 +7,7 @@ const RequestError = require('./RequestError');
 const RenderError = require('./RenderError');
 const MessageContextMenu = require('./MoreContextMenu')
 
-const getWithQueue = require('../utils/getMessage.js');
+const getMessage = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
 
 const previewId = '000000000000000000';
@@ -28,7 +28,7 @@ module.exports = class RichQuote extends React.Component {
 
     if (this.state.link[0] !== previewId) {
       
-      const originalMessage = await getWithQueue(this.state.link);
+      const originalMessage = await getMessage(this.state.link);
 
       if (originalMessage.error) {
         this.state.errorParams = originalMessage;
@@ -65,11 +65,14 @@ module.exports = class RichQuote extends React.Component {
             const fixers = [['description','rawDescription'],['title','rawTitle']];
 
             this.state.message.embeds.forEach((e, i) => fixers.forEach((f) => {
-              if (e[f[0]]) {
-                this.state.message.embeds[i][f[1]] = e[f[0]];
+              const value = e[f[0]];
+
+              if (value) {
+                if (value != '') this.state.message.embeds[i][f[1]] = value;
+
                 delete this.state.message.embeds[i][f[0]];
               }
-            }))
+            }));
           }
 
           this.state.accessories = renderSimpleAccessories({ message: this.state.message, channel: this.state.channel}, hasEmbedSpoilers);
@@ -99,7 +102,7 @@ module.exports = class RichQuote extends React.Component {
 
     const setStatus = (s, link) => this.setState({ searchStatus: s, link });
 
-    // contains code by Bowser65 (Powercord's server, https://discord.com/channels/538759280057122817/539443165455974410/662376605418782730)
+    // contains code by Bowser65 (was on the powercord server pre-nuke)
     function searchAPI (content, author_id, max_id, id, dm, asc) {
       return new Promise((resolve, reject) => {
         const Search = getModule(m => m.prototype && m.prototype.retryLater, false);
@@ -195,13 +198,15 @@ module.exports = class RichQuote extends React.Component {
   openMoreContextMenu(e) {
     const { message, channel } = this.state;
 
-    if (this.state.link[0] !== previewId) contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
-      message, channel, target: {...this,
-        classList: {contains: ()=>{}},
-        tagName: ''
-      }, // hack to prevent emojiUtility errors
+    if (!this.state.link || this.state.link[0] !== previewId) 
+    contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
+      message, channel, link: this.state.link, parent: this.props.parent,
+
+      // hack to prevent emojiUtility errors
+      target: {...this, classList: { contains: () => {} }, tagName: '' },
+
       settings: this.props.settings, isMarkdown: this.state.isMarkdown,
-      link: this.state.link, clearLink: () => this.setState({ link: false, searchStatus: false })
+      clearLink: () => this.setState({ link: false, searchStatus: false })
     }));
   }
 
@@ -223,9 +228,9 @@ module.exports = class RichQuote extends React.Component {
     const MessageTimestamp = getModule([ 'MessageTimestamp' ], false);
     const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
 
-    const MoreIcon = getModuleByDisplayName('OverflowMenuHorizontal', false)
+    const Style = getModule([ 'systemMessageAccessories' ], false);
 
-    const { avatar, clickable, username } = getModule([ 'systemMessageAccessories' ], false);
+    const MoreIcon = getModuleByDisplayName('OverflowMenuHorizontal', false);
 
     let channel = this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.parent[1] })[0] : false;
 
@@ -266,12 +271,12 @@ module.exports = class RichQuote extends React.Component {
     return (<RenderError content={this.props.content}>
       <div id="a11y-hack"><div key={this.state.content} className='rq-inline'><div className={highlightContainer}>
         <div className='rq-header threads-header-hack'>
-          <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${avatar} ${clickable}`}
+          <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${Style.avatar} ${Style.clickable}`}
             src={this.state.author.avatarURL} onClick={(e) => this.openPopout(e)}
             onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
           </img>
           <div className='rq-userTag'>
-            <span className={`rq-username ${mention} ${username} ${clickable}`}
+            <span className={`rq-username ${mention} ${Style.username} ${Style.clickable}`}
               onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
             >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
               link && channelHeader ? <span>
