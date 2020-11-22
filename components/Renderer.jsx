@@ -4,7 +4,9 @@ const Style = getModule([ 'blockquoteContainer' ], false);
 
 const Quote = require('./Quote');
 
-module.exports = class QuoteRenderer extends React.Component {
+const { linkSelector } = require('../utils/vars.js');
+
+module.exports = class RQRenderer extends React.Component {
   constructor (props) { super(props); this.state = { loading: true } }
 
   async componentDidUpdate () { 
@@ -21,9 +23,7 @@ module.exports = class QuoteRenderer extends React.Component {
 
     /* Find Quotes */
     for (const [i, e] of content.entries()) { if (e && e.props) { 
-      if (e.props.href && 
-        /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/.test(e.props.href))
-        targetEntries.push({ i: i, type: 0 });
+      if (e.props.href && linkSelector.test(e.props.href)) targetEntries.push({ i: i, type: 0 });
 
       else if (this.props.quotes && e.props.className && e.props.className === Style.blockquoteContainer 
         && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
@@ -63,7 +63,7 @@ module.exports = class QuoteRenderer extends React.Component {
           const currentUser = await getCurrentUser.getCurrentUser();
           const channel = await getChannel(this.props.message.channel_id) || {id: 'owo'};
 
-          const raw_content = this.props.quotes[0].content.trim();
+          const rawContent = this.props.quotes[0].content.trim();
 
           content[i + 1] = null;
           quoteParams.isMarkdown = true;
@@ -75,7 +75,7 @@ module.exports = class QuoteRenderer extends React.Component {
           /* Search cache for matching messages */
           if (this.props.settings.cacheSearch && window.localStorage.richQuoteCache) 
           for (let cached_message of JSON.parse(window.localStorage.richQuoteCache).searches) if (
-            cached_message.content.includes(raw_content) &&
+            cached_message.content.includes(rawContent) &&
             cached_message.authorId === author.id &&
             cached_message.link[0] === (channel.guild_id || '@me')
           ) link = cached_message.link;
@@ -83,11 +83,11 @@ module.exports = class QuoteRenderer extends React.Component {
           /* Parse and set info when message is not cached/linked */
           if (link.length === 0) {
             quoteParams.content = await parser.parse(
-              raw_content, true, { channelId: this.props.message.channel_id }
+              rawContent, true, { channelId: this.props.message.channel_id }
             );
 
             quoteParams.message = await new MessageC({
-              author, id: this.props.message.id, content: raw_content, channel_id: quoteParams.parent[1]
+              author, id: this.props.message.id, content: rawContent, channel_id: quoteParams.parent[1]
             });
 
             quoteParams.channel = channel;

@@ -202,3 +202,14 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
 .rq-tooltip { height: min-content }
 
 .rq-server-title { font-weight: 600; }
+
+.rq-hide-reply-header>div>h2 { 
+   &>span:first-child {
+      &>span:nth-child(2) { display: none }
+      &>span:nth-child(3) { display: none }
+   }
+   // :concern:
+   &>span:last-child {
+      margin-left: -7px !important;
+   }
+}

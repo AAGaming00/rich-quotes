@@ -9,7 +9,7 @@ const errorRes = (msg) => { return { error: msg, inGuild: true} };
 
 let lastFetch = 0;
 
-async function getMessage([guildId, channelId, messageId], retry = false) {
+module.exports = async function getMessage([guildId, channelId, messageId], retry = false) {
    let message = false;
 
    // Check Discord's local/client cache for message
@@ -66,5 +66,3 @@ async function getMessage([guildId, channelId, messageId], retry = false) {
 
    return message;
 }
-
-module.exports = getMessage;

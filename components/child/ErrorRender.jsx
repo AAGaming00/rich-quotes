@@ -3,7 +3,7 @@ const { clipboard } = getModule([ 'clipboard' ], false);
 const { ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
-class RenderError extends React.PureComponent {
+module.exports = class RQRenderError extends React.PureComponent {
   constructor (props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -82,5 +82,3 @@ class RenderError extends React.PureComponent {
     return this.props.children;
   }
 }
-
-module.exports = RenderError;

@@ -2,13 +2,16 @@ const { React, getModule, contextMenu, getModuleByDisplayName } = require('power
 
 const { Spinner } = require('powercord/components');
 
-const Button = require('./Button');
-const RequestError = require('./RequestError');
-const RenderError = require('./RenderError');
-const MessageContextMenu = require('./MoreContextMenu')
+const Button = require('./child/Button');
+const RequestError = require('./child/ErrorRequest');
+const RenderError = require('./child/ErrorRender');
+const MoreMenu = require('./child/MoreMenu');
+const Renderer = require('./Renderer');
 
 const getMessage = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
+const parseRaw = require('../utils/parseRaw.js');
+const { linkSelector } = require('../utils/vars.js');
 
 const previewId = '000000000000000000';
 
@@ -28,21 +31,20 @@ module.exports = class RichQuote extends React.Component {
 
     if (this.state.link[0] !== previewId) {
       
-      const originalMessage = await getMessage(this.state.link);
+      let messageData = await getMessage(this.state.link);
 
-      if (originalMessage.error) {
-        this.state.errorParams = originalMessage;
+      if (messageData.error) {
+        this.state.errorParams = messageData;
         this.state.errorParams.link = this.state.link;
       }
       else {
         const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories');
         const { getChannel } = await getModule(['getChannel']);
 
-        let messageData = { ...originalMessage };
         let hasEmbedSpoilers = false;
 
         if (this.state.settings.displayEmbeds) embedHandler(messageData, this.state.settings, hasEmbedSpoilers);
-        else { 
+        else {
           messageData.embeds = [];
           messageData.attachments = [];
         }
@@ -150,23 +152,34 @@ module.exports = class RichQuote extends React.Component {
     }
   }
 
+  openMoreMenu(e) {
+    const { message, channel } = this.state;
+
+    if (!this.state.link || this.state.link[0] !== previewId) 
+    contextMenu.openContextMenu(e, () => React.createElement(MoreMenu, {
+      message, channel, link: this.state.link, parent: this.props.parent,
+
+      settings: this.props.settings, isMarkdown: this.state.isMarkdown,
+      clearLink: () => this.setState({ link: false, searchStatus: false }),
+
+      // hack to prevent emojiUtility errors
+      target: {...this, classList: { contains: () => {} }, tagName: '' }
+    }));
+  }
+
   openPopout (event) {
     const UserPopout = getModuleByDisplayName('UserPopout', false);
     const PopoutDispatcher = getModule([ 'openPopout' ], false);
-    const guildId = this.state.channel.guild_id;
-    const userId = this.state.author.id;
 
     // modified from smart typers
     PopoutDispatcher.openPopout(event.target, {
-      closeOnScroll: false,
       containerClass: 'rich-quotes-popout',
       render: (props) => React.createElement(UserPopout, {
         ...props,
-        userId,
-        guildId
+        userId: this.state.author.id,
+        guildId: this.state.channel.guild_id
       }),
-      shadow: false,
-      position: 'right'
+      closeOnScroll: false, shadow: false, position: 'right'
     }, 'quote-user-popout');
   }
 
@@ -195,21 +208,6 @@ module.exports = class RichQuote extends React.Component {
     }));
   }
 
-  openMoreContextMenu(e) {
-    const { message, channel } = this.state;
-
-    if (!this.state.link || this.state.link[0] !== previewId) 
-    contextMenu.openContextMenu(e, () => React.createElement(MessageContextMenu, {
-      message, channel, link: this.state.link, parent: this.props.parent,
-
-      // hack to prevent emojiUtility errors
-      target: {...this, classList: { contains: () => {} }, tagName: '' },
-
-      settings: this.props.settings, isMarkdown: this.state.isMarkdown,
-      clearLink: () => this.setState({ link: false, searchStatus: false })
-    }));
-  }
-
   render () {
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
     else if (this.state.link && !this.state.content) {
@@ -232,9 +230,8 @@ module.exports = class RichQuote extends React.Component {
 
     const MoreIcon = getModuleByDisplayName('OverflowMenuHorizontal', false);
 
-    let channel = this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.parent[1] })[0] : false;
+    let channel = !this.state.isReply && this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.parent[1] })[0] : false;
 
-    
     if (channel) {
       const guild = getGuild(this.state.link[0]);
 
@@ -267,6 +264,20 @@ module.exports = class RichQuote extends React.Component {
     // Nickname handler
     const displayName = this.state.settings.displayNickname ? 
       getName(link ? link[0] : this.state.channel.guild_id, this.state.channel.id, this.state.author) : false;
+    
+    let content = this.state.content;
+
+    /*if (content) {
+      const parsed = parseRaw((' ' + this.state.message.content).slice(1).split('\n'));
+
+      if (parsed.quotes || linkSelector.test(this.state.message.content)) {
+        content = React.createElement(Renderer, {
+          content, message: this.state.message,
+          quotes: parsed.quotes, broadMention: parsed.broadMention,
+          settings: this.props.settings
+        });
+      }
+    }*/
 
     return (<RenderError content={this.props.content}>
       <div id="a11y-hack"><div key={this.state.content} className='rq-inline'><div className={highlightContainer}>
@@ -279,7 +290,7 @@ module.exports = class RichQuote extends React.Component {
             <span className={`rq-username ${mention} ${Style.username} ${Style.clickable}`}
               onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
             >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
-              link && channelHeader ? <span>
+              link && !this.state.isReply && channelHeader ? <span>
                 <span className='rq-infoText'>{`posted in ${this.state.channel.name ? '' : 'a DM'}`}</span>
                 {channel}
               </span> : false }{ quoteTimestamp }
@@ -289,7 +300,7 @@ module.exports = class RichQuote extends React.Component {
         <div className='rq-button-container'>
           { link ? [
             <Button {...{
-              classes: [ 'jump' ], tooltip: 'Jump to Message', icon: 'Reply',
+              classes: [  this.props.isReply ? 'reply' : 'jump' ], tooltip: 'Jump to Message', icon: 'Reply',
               function: () => {
                 if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
                 else document.getElementById('owo-0').scrollIntoViewIfNeeded;
@@ -312,12 +323,12 @@ module.exports = class RichQuote extends React.Component {
             }</Button>
           }
             { this.props.settings.displayMoreBtn ?
-              <Button {...{ classes: [ 'more' ], tooltip: 'More', function: (e) => this.openMoreContextMenu(e) }}><MoreIcon /></Button>
+              <Button {...{ classes: [ 'more' ], tooltip: 'More', function: (e) => this.openMoreMenu(e) }}><MoreIcon /></Button>
             : false }
         </div>
 
         <div className='rq-content'>
-          {this.state.content ? <MessageContent message={this.state.message} content={this.state.content}/> : null}
+          <MessageContent message={this.state.message} content={content}/>
           {this.state.accessories}
         </div>
       </div></div></div>

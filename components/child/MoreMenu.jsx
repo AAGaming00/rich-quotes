@@ -10,8 +10,6 @@ module.exports = function (props) {
       // @todo Fix TTS being garbage
       const idCheck = new RegExp(`^(${['add\\-reaction', 'edit', 'pin', 'mark\\-unread', 'reply', 'copy\\-link', 'delete', 'tts'].join('|')})$`);
 
-      console.log(res.props.children[2].props.children);
-
       res.props.children[2].props.children = res.props.children[2].props.children.filter((c, j) => {
         if (c && j !== 0 && c.props?.id ? !idCheck.test(c.props.id) : false) return true; else return false;
       });

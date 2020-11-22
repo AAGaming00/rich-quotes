@@ -2,16 +2,25 @@ const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
 
-const Style = getModule([ 'mentioned' ], false);
-
-
 const Renderer = require('./components/Renderer');
+
+const Quote = require('./components/Quote');
 
 const Settings = require('./components/Settings');
 
-const { settings, linkSelector, quoteSelector } = require('./utils/vars.js');
+const parseRaw = require('./utils/parseRaw.js');
+
+const { settings, linkSelector } = require('./utils/vars.js');
 
 module.exports = class RichQuotes extends Plugin {
+  getSettings() {
+    let resolved = {};
+  
+    Object.entries(settings.list).forEach(([ key, setting ]) => { resolved[key] = this.settings.get(key, setting.fallback) })
+  
+    return resolved;
+  };
+
   async startPlugin () {
     powercord.api.settings.registerSettings("rich-quotes", {
       label: 'Rich Quotes',
@@ -25,107 +34,82 @@ module.exports = class RichQuotes extends Plugin {
 
     if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
 
+    const Style = await getModule([ 'mentioned' ]);
+
     const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
-    const MessageContent = await getModule(m => m.type && m.type.displayName === 'MessageContent');
+    const ListMessage = (await getModule(m => m.type?.displayName === 'ChannelMessage')); // discord moment :keuch:
     const cmType = ChannelMessage.type;
-    const mcType = MessageContent.type;
+    const lmType = ListMessage.type;
 
-    inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
-      if (res.props.childrenMessageContent) {
-        let quotes;
-        if (quoteSelector.test(args[0].message.content))
-          quotes = this.getQuotes(`${args[0].message.content}`.split('\n'));
-
-        if (quotes || linkSelector.test(args[0].message.content)) {
-          if (quotes && !quotes.broadMention)
-            res.props.className = res.props.className.replace(Style.mentioned, '');
-
-          let MessageC = res.props.childrenMessageContent.props;
-
-          MessageC.content = this.renderQuotes(
-            MessageC.content, args[0].message,
-            quotes?.quotes, quotes?.broadMention
-          );
-
-          MessageC.rq_preventInject = true;
-        }
-      }
-
-      return res;
-    }, false);
+    inject('Rich-Quotes-Channel-Message', ChannelMessage, 'type', (args, res) => this.injectMessage(args[0], res, Style));
     Object.assign(ChannelMessage.type, cmType);
 
-    // For search, pinned, inbox, threads, and other plugin compatibility
-    inject('Rich-Quotes-Message-Content', MessageContent, 'type', (args, res) => {
-      if (!args[0].rq_preventInject) {
-        let quotes;
-        if (quoteSelector.test(args[0].message.content))
-          quotes = this.getQuotes(`${args[0].message.content}`.split('\n'));
-        
-        if (quotes || linkSelector.test(args[0].message.content)) res.props.children = this.renderQuotes(
-          res.props.children[0], args[0].message,
-          quotes?.quotes, quotes?.broadMention
-        );
-      }
-      
-      return res;
-    })
-    Object.assign(MessageContent.type, mcType);
+    // For search, pinned, inbox, threads, etc
+    inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, Style));
+    Object.assign(ListMessage.type, lmType);
   }
 
-  renderQuotes(content, message, quotes, broadMention) {
-    return React.createElement(Renderer, { 
-      content, message, quotes, broadMention,
-      settings: (() => {
-        let resolved = {};
-  
-        Object.entries(settings.list).forEach(([ key, setting ]) => { resolved[key] = this.settings.get(key, setting.fallback) })
-  
-        return resolved;
-      })()
-    });
-  }
+  injectMessage(args, res, Style) {
+    let resContent = res.props.childrenMessageContent;
 
-  /**
-   * Get markdown quotes from message contents
-   * @param {Object[]} raw_contents 
-   */
-  getQuotes(raw_contents) {
-    const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
+    let parsed;
 
-    let quotes = [],
-        broadMention = false;
+    if (resContent) {
+      parsed = parseRaw((' ' + args.message.content).slice(1).split('\n'));
 
-    for (let i in raw_contents) {
-      const raw = `${raw_contents[i]}`;
-    
-      raw_contents[i] = { raw, type: 0 };
+      if (parsed.quotes || linkSelector.test(args.message.content)) {
+        if (parsed.quotes && !parsed.broadMention)
+          res.props.className = res.props.className.replace(Style.mentioned, '');
 
-      if (/^> (.+)/.test(raw)) {
-        raw_contents[i].type = 1;
-
-        if (i != 0 && raw_contents[i-1]?.type === 1)
-          raw_contents[i].quote = [ ...raw_contents[i-1].quote, raw.slice(2) ];
-        else raw_contents[i].quote = [ raw.slice(2) ];
-      }
-
-      if (/^ ?<@!?(\d+)>/.test(raw)) {
-        const id = /^ ?<@!?(\d+)>/.exec(raw)[1];
-
-        if (raw_contents[i-1].type === 1) quotes.push({
-          content: raw_contents[i-1].quote.join('\n').trim(),
-          author: id
+        resContent.props.content = React.createElement(Renderer, { 
+          content: resContent.props.content, message: args.message, 
+          quotes: parsed.quotes, broadMention: parsed.broadMention,
+          settings: this.getSettings()
         });
-        else if (id === currentUser.id) broadMention = true;
       }
     }
 
-    return quotes.length !== 0 ? { quotes, broadMention } : false;
+    if (!res.props.rq_setReply) {
+      let resReply = res.props.childrenRepliedMessage;
+
+      let reply = resReply?.props?.children?.props?.referencedMessage?.message;
+
+      if (!reply) reply = resReply?.props?.referencedMessage?.message;
+
+      if (reply) {
+        res.props.childrenRepliedMessage = null;
+
+        res.props.className = `${res.props.className} rq-hide-reply-header`
+
+        const location = args.message.messageReference;
+
+        const parentLocation = document.location.href.split('/');
+
+        let mentionType = 1;
+
+        if (res.props.className.includes(Style.mentioned)) {
+          if (parsed && !parsed.broadMention) {
+            mentionType = 2;
+            res.props.className = res.props.className.replace(Style.mentioned, '');
+          } else mentionType = 3;
+        }
+
+        resContent.props.content.unshift(React.createElement(Quote, {
+          link: [ location.guild_id, location.channel_id, location.message_id ],
+          parent: [ parentLocation[0], parentLocation[1], args.message.id ],
+          mentionType: mentionType, isReply: true, settings: this.getSettings()
+        }));
+
+        res.props.rq_setReply = true;
+      }
+    }
+
+    return res;
   }
 
   pluginWillUnload () {
     powercord.api.settings.unregisterSettings("rich-quotes");
-    uninject('Rich-Quotes-Message');
-    uninject('Rich-Quotes-Message-Content');
+    uninject('Rich-Quotes-Channel-Message');
+    uninject('Rich-Quotes-List-Message');
   }
 };

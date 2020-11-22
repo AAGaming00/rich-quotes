@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Bowser65
+ * Copyright (c) 2020 Cynthia/Bowser65
  * Licensed under the Open Software License version 3.0
  * 
  * Edited by MulverineX

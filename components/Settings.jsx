@@ -4,7 +4,7 @@ const { FormTitle } = require('powercord/components');
 const { SwitchItem, ButtonItem, Category } = require('powercord/components/settings');
 const buttonColors = require('powercord/components').Button.Colors;
 
-const QuotesPreview = require('./Preview')
+const ChannelPreview = require('./child/ChannelPreview')
 
 const { settings } = require('./../utils/vars.js');
 
@@ -40,7 +40,7 @@ module.exports = class Settings extends React.Component {
       <div>
         <FormTitle>Preview</FormTitle>
 
-        <QuotesPreview key={this.state.reload} {...this.props}/>
+        <ChannelPreview key={this.state.reload} {...this.props}/>
 
 
         <FormTitle className='rq-settingsHeader'>Display</FormTitle>

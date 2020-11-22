@@ -2,7 +2,7 @@ const { getModule, http: { get }, constants: { Endpoints }, React } = require('p
 const { ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
-class ReqError extends React.PureComponent {
+module.exports = class RQRequestError extends React.PureComponent {
   constructor (props) { super(props); this.state = { content: false} }
 
   static getDerivedStateFromProps (props, state) {
@@ -83,5 +83,3 @@ class ReqError extends React.PureComponent {
 
   render() { return (<>{this.state.content}</>); }
 }
-
-module.exports = ReqError;
