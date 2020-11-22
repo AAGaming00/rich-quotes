@@ -96,7 +96,7 @@ module.exports = class RQRenderer extends React.Component {
 
             quoteParams.search = {
               timestamp: this.props.message.id,
-              raw: raw_content
+              raw: rawContent
             };
           }
 
