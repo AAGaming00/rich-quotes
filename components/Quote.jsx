@@ -267,17 +267,18 @@ module.exports = class RichQuote extends React.Component {
     
     let content = this.state.content;
 
-    /*if (content) {
+    if (content) {
       const parsed = parseRaw((' ' + this.state.message.content).slice(1).split('\n'));
 
       if (parsed.quotes || linkSelector.test(this.state.message.content)) {
-        content = React.createElement(Renderer, {
+        content = <Renderer {...{
           content, message: this.state.message,
           quotes: parsed.quotes, broadMention: parsed.broadMention,
           settings: this.props.settings
-        });
+        }} />;
       }
-    }*/
+    }
+    console.log(content);
 
     return (<RenderError content={this.props.content}>
       <div id="a11y-hack"><div key={this.state.content} className='rq-inline'><div className={highlightContainer}>

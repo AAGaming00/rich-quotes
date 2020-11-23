@@ -18,7 +18,7 @@ module.exports = function parseRaw(rawContents) {
       if (/^> (.+)/.test(raw)) {
          rawContents[i].type = 1;
 
-         if (i != 0 && rawContents[i - 1]?.type === 1)
+         if (i != 0 && rawContents[i - 1].type === 1)
             rawContents[i].quote = [...rawContents[i - 1].quote, raw.slice(2)];
          else rawContents[i].quote = [raw.slice(2)];
       }
@@ -26,7 +26,7 @@ module.exports = function parseRaw(rawContents) {
       if (/^ ?<@!?(\d+)>/.test(raw)) {
          const id = /^ ?<@!?(\d+)>/.exec(raw)[1];
 
-         if (rawContents[i - 1].type === 1) quotes.push({
+         if (i != 0 && rawContents[i - 1].type === 1) quotes.push({
             content: rawContents[i - 1].quote.join('\n').trim(),
             author: id
          });

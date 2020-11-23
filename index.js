@@ -45,11 +45,11 @@ module.exports = class RichQuotes extends Plugin {
     Object.assign(ChannelMessage.type, cmType);
 
     // For search, pinned, inbox, threads, etc
-    inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, Style));
+    inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, Style, true));
     Object.assign(ListMessage.type, lmType);
   }
 
-  injectMessage(args, res, Style) {
+  injectMessage(args, res, Style, list = false) {
     let resContent = res.props.childrenMessageContent;
 
     let parsed;
@@ -63,9 +63,11 @@ module.exports = class RichQuotes extends Plugin {
 
         resContent.props.content = React.createElement(Renderer, { 
           content: resContent.props.content, message: args.message, 
-          quotes: parsed.quotes, broadMention: parsed.broadMention,
+          quotes: parsed.quotes, broadMention: list ? !list : parsed.broadMention,
           settings: this.getSettings()
         });
+
+        console.log(resContent.props.content);
       }
     }
 
