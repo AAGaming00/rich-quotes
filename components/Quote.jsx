@@ -15,7 +15,7 @@ const { linkSelector } = require('../utils/vars.js');
 const previewId = '000000000000000000';
 
 
-module.exports = class RichQuote extends React.Component {
+class RichQuote extends React.Component {
   constructor (props) {
     super(props); this.state = { searchStatus: false, errorParams: false };
   }
@@ -209,6 +209,8 @@ module.exports = class RichQuote extends React.Component {
 
   render () {
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
+    else if (this.props.parent && this.props.link ? this.props.parent[2] === this.props.link[2] : false)
+      return (<RequestError {...{ error: 'same-link', inGuild: true, link: this.props.link }}/>);
     else if (this.state.link && !this.state.content) {
         this.linkRes();
 
@@ -267,19 +269,27 @@ module.exports = class RichQuote extends React.Component {
 
     let content = this.state.content;
 
-    // @todo Do something better than this (reply's in quote content)
-    if (this.state.message.messageReference) {
+    const nesting = 1;
+
+    const renderNested = nesting === 0 ? false : (this.props.level <= nesting - 1);
+
+    if (renderNested && this.state.message.messageReference && (typeof content[0] === 'string' || !content[0]?.props?.isReply)) {
       const location = this.state.message.messageReference;
 
-      content.unshift(
-        parse(`https://discord.com/channels/${location.guild_id}/${location.channel_id}/${location.message_id}`, true, { channelId: this.props.parent[1] })[0]
-      );
+      let params = {
+        link: [ location.guild_id, location.channel_id, location.message_id ],
+        parent: link, mentionType: 0, level: (this.props.level + 1), isReply: true,
+        settings: this.props.settings
+      }
+
+      if (this.state.mentionType >= 2) params.mentionType = 3;
+
+      content.unshift(<RichQuote {...params} />);
     }
 
     let rqRender = false;
 
-    // @todo Figure what the fresh hell is happening with recursive quotes
-    if (this.props.level <= 1 && this.state.content[0] !== '') {
+    if (renderNested && this.state.content[0] !== '') {
       const parsed = parseRaw((' ' + this.state.message.content).slice(1).split('\n'));
 
       if (parsed.quotes || linkSelector.test(this.state.message.content)) {
@@ -353,3 +363,5 @@ module.exports = class RichQuote extends React.Component {
     </RenderError>);
   }
 };
+
+module.exports = RichQuote;

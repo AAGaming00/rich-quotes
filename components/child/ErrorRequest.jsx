@@ -72,6 +72,7 @@ module.exports = class RQRequestError extends React.PureComponent {
           onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
         ></ButtonItem>)
       ] : [(<div className={errorText}>Error: Invalid DM</div>)]; break;
+      case 'same-link': errorBody = [(<div className={errorText}>Error: Link goes to this message</div>)]; break;
       case 'failed-request': errorBody = [(<div className={errorText}>Error: Discord API request failed</div>)]; break;
       case 'invalid-response': errorBody = [(<div className={errorText}>Error: Malformed Discord API response</div>)]; break;
     }

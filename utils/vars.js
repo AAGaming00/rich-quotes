@@ -3,7 +3,7 @@ const setting = (title, description, fallback = true) => {
 }
 
 module.exports = {
-   linkSelector: /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/,
+   linkSelector: /https?:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/channels\/(\d{17,19}|@me)\/(\d{17,19})\/(\d{17,19})/,
 
    settings: {
       list: {

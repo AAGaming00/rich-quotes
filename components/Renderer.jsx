@@ -19,16 +19,25 @@ module.exports = class RQRenderer extends React.Component {
   async buildQuote () {
     const content = [...this.props.content];
 
+    const thisLocation = [document.location.href.split('/')[4], this.props.message.channel_id, this.props.message.id];
+
+    let quotes = this.props.quotes;
+
     let targetEntries = [];
 
     /* Find Quotes */
     for (const [i, e] of content.entries()) { if (e && e.props) { 
-      if (e.props.href && linkSelector.test(e.props.href)) targetEntries.push({ i: i, type: 0 });
+      if (e.props.href) {
+        const link = e.props.href.match(linkSelector);
 
-      else if (this.props.quotes && e.props.className && e.props.className === Style.blockquoteContainer 
+        if (link) targetEntries.push({ i: i, value: link.slice(1) });
+      }
+
+      else if (quotes && e.props.className && e.props.className === Style.blockquoteContainer 
         && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
 
-        targetEntries.push({ i: i, type: 1 });
+        targetEntries.push({ i: i, value: quotes[0] });
+        quotes = quotes.slice(1);
       }
     }}
 
@@ -36,40 +45,34 @@ module.exports = class RQRenderer extends React.Component {
     if (targetEntries.length !== 0) {
       const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM);
       const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ]);
-      const getCurrentUser = await getModule([ 'getCurrentUser' ]);
-      const { getUser } = getCurrentUser;
+      const { getCurrentUser, getUser } = await getModule([ 'getCurrentUser' ]);
       const { getChannel } = await getModule(['getChannel']);
       const parser = await getModule(['parse', 'parseTopic']);
 
 
-      for (const {i, type} of targetEntries) {
+      for (const {i, value} of targetEntries) {
         let quoteParams = {
           className: `${message} ${cozyMessage} ${groupStart}`,
 
-          parent: [document.location.href.split('/')[4], this.props.message.channel_id, this.props.message.id],
-
-          level: this.props.level, mentionType: 0, isMarkdown: false,
+          parent: thisLocation, level: this.props.level, mentionType: 0,
 
           settings: this.props.settings
         };
 
-        let link = [];
-
         /* Link Handler */
-        if (type === 0) link = content[i].props.href.split('/').slice(-3);
+        if (Array.isArray(value)) quoteParams.link = value;
 
         /* Markup Quote Handler */
-        if (type === 1) {
-          const author = await getUser(this.props.quotes[0].author);
-          const currentUser = await getCurrentUser.getCurrentUser();
+        if (!quoteParams.link) {
+          const currentUser = (await getCurrentUser()).id;
           const channel = await getChannel(this.props.message.channel_id) || {id: 'owo'};
 
-          const rawContent = this.props.quotes[0].content.trim();
+          const rawContent = value.content.trim();
 
           content[i + 1] = null;
           quoteParams.isMarkdown = true;
 
-          if (currentUser.id !== author.id) quoteParams.mentionType = 1;
+          if (currentUser !== value.author) quoteParams.mentionType = 1;
           else if (!this.props.broadMention) quoteParams.mentionType = 2;
 
           if (this.props.broadMention) quoteParams.mentionType = 3;
@@ -78,12 +81,14 @@ module.exports = class RQRenderer extends React.Component {
           if (this.props.settings.cacheSearch && window.localStorage.richQuoteCache) 
           for (let cached_message of JSON.parse(window.localStorage.richQuoteCache).searches) if (
             cached_message.content.includes(rawContent) &&
-            cached_message.authorId === author.id &&
+            cached_message.authorId === value.author &&
             cached_message.link[0] === (channel.guild_id || '@me')
-          ) link = cached_message.link;
+          ) quoteParams.link = cached_message.link;
 
           /* Parse and set info when message is not cached/linked */
-          if (link.length === 0) {
+          if (!quoteParams.link) {
+            const author = await getUser(value.author);
+
             quoteParams.content = await parser.parse(
               rawContent, true, { channelId: this.props.message.channel_id }
             );
@@ -101,12 +106,7 @@ module.exports = class RQRenderer extends React.Component {
               raw: rawContent
             };
           }
-
-          this.props.quotes = this.props.quotes.slice(1);
         }
-
-        /* Set for Linked Quotes */
-        if (link.length !== 0) quoteParams.link = link;
 
         /* Create Quote */
         content[i] = <Quote {...quoteParams}/>;
