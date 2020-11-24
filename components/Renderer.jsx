@@ -41,13 +41,14 @@ module.exports = class RQRenderer extends React.Component {
       const { getChannel } = await getModule(['getChannel']);
       const parser = await getModule(['parse', 'parseTopic']);
 
+
       for (const {i, type} of targetEntries) {
         let quoteParams = {
           className: `${message} ${cozyMessage} ${groupStart}`,
 
           parent: [document.location.href.split('/')[4], this.props.message.channel_id, this.props.message.id],
 
-          mentionType: 0, isMarkdown: false,
+          level: this.props.level, mentionType: 0, isMarkdown: false,
 
           settings: this.props.settings
         };
@@ -70,7 +71,8 @@ module.exports = class RQRenderer extends React.Component {
 
           if (currentUser.id !== author.id) quoteParams.mentionType = 1;
           else if (!this.props.broadMention) quoteParams.mentionType = 2;
-          else quoteParams.mentionType = 3;
+
+          if (this.props.broadMention) quoteParams.mentionType = 3;
 
           /* Search cache for matching messages */
           if (this.props.settings.cacheSearch && window.localStorage.richQuoteCache) 
@@ -91,7 +93,7 @@ module.exports = class RQRenderer extends React.Component {
             });
 
             quoteParams.channel = channel;
-    
+
             quoteParams.author = author;
 
             quoteParams.search = {

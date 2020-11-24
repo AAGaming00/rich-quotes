@@ -75,7 +75,7 @@ module.exports = class RQRequestError extends React.PureComponent {
       case 'failed-request': errorBody = [(<div className={errorText}>Error: Discord API request failed</div>)]; break;
       case 'invalid-response': errorBody = [(<div className={errorText}>Error: Malformed Discord API response</div>)]; break;
     }
-    
+
     if (!errorBody[1]) errorBody.push(false);
 
     this.setState({ content: (<div className='rq-error rq-error-request'>{errorBody[0]}{errorBody[1]}</div>) });

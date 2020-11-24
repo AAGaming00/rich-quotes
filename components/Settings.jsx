@@ -19,7 +19,7 @@ module.exports = class Settings extends React.Component {
     this.setState({...this.state, reload: Date.now().toString()});
 
     let embedAll = true;
-    
+
     Object.entries(settings.list).slice(settings.embeds[0], settings.embeds[1] + 1).forEach(([type]) => { if (getSetting(type) === false) embedAll = false; });
 
     if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll', defaultOption);

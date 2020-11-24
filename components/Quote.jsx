@@ -6,7 +6,6 @@ const Button = require('./child/Button');
 const RequestError = require('./child/ErrorRequest');
 const RenderError = require('./child/ErrorRender');
 const MoreMenu = require('./child/MoreMenu');
-const Renderer = require('./Renderer');
 
 const getMessage = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
@@ -30,7 +29,7 @@ module.exports = class RichQuote extends React.Component {
     const parser = await getModule(["parse", "parseTopic"]);
 
     if (this.state.link[0] !== previewId) {
-      
+
       let messageData = await getMessage(this.state.link);
 
       if (messageData.error) {
@@ -225,10 +224,13 @@ module.exports = class RichQuote extends React.Component {
 
     const MessageTimestamp = getModule([ 'MessageTimestamp' ], false);
     const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
+    const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
 
     const Style = getModule([ 'systemMessageAccessories' ], false);
 
     const MoreIcon = getModuleByDisplayName('OverflowMenuHorizontal', false);
+
+    const Renderer = require('./Renderer');
 
     let channel = !this.state.isReply && this.state.channel.name && this.state.link ? parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.parent[1] })[0] : false;
 
@@ -259,29 +261,44 @@ module.exports = class RichQuote extends React.Component {
           highlightContainer = this.state.mentionType >= 2 ? 
             `${container} ${this.state.mentionType === 3 ? `${container}-alt` : ''}` : '';
 
-    const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
-
     // Nickname handler
     const displayName = this.state.settings.displayNickname ? 
       getName(link ? link[0] : this.state.channel.guild_id, this.state.channel.id, this.state.author) : false;
-    
+
     let content = this.state.content;
 
-    if (content) {
+    // @todo Do something better than this (reply's in quote content)
+    if (this.state.message.messageReference) {
+      const location = this.state.message.messageReference;
+
+      content.unshift(
+        parse(`https://discord.com/channels/${location.guild_id}/${location.channel_id}/${location.message_id}`, true, { channelId: this.props.parent[1] })[0]
+      );
+    }
+
+    let rqRender = false;
+
+    // @todo Figure what the fresh hell is happening with recursive quotes
+    if (this.props.level <= 1 && this.state.content[0] !== '') {
       const parsed = parseRaw((' ' + this.state.message.content).slice(1).split('\n'));
 
       if (parsed.quotes || linkSelector.test(this.state.message.content)) {
-        content = <Renderer {...{
-          content, message: this.state.message,
-          quotes: parsed.quotes, broadMention: parsed.broadMention,
-          settings: this.props.settings
+        rqRender = <Renderer {...{
+          content, message: this.state.message, quotes: parsed.quotes, broadMention: this.props.mentionType >= 2,
+          parent: this.state.link, level: (this.props.level + 1), settings: this.props.settings
         }} />;
       }
     }
-    console.log(content);
+
+    let nested = '';
+
+    if (this.props.level !== 0) {
+      nested = ' rq-nested';
+      if (this.props.level % 2 === 0) nested += '-alt';
+    }
 
     return (<RenderError content={this.props.content}>
-      <div id="a11y-hack"><div key={this.state.content} className='rq-inline'><div className={highlightContainer}>
+      <div id="a11y-hack"><div key={this.state.content} className={`rq-inline${nested}`}><div className={highlightContainer}>
         <div className='rq-header threads-header-hack'>
           <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${Style.avatar} ${Style.clickable}`}
             src={this.state.author.avatarURL} onClick={(e) => this.openPopout(e)}
@@ -329,8 +346,8 @@ module.exports = class RichQuote extends React.Component {
         </div>
 
         <div className='rq-content'>
-          <MessageContent message={this.state.message} content={content}/>
-          {this.state.accessories}
+          { rqRender || <MessageContent message={this.state.message} content={content}/> }
+          { this.state.accessories }
         </div>
       </div></div></div>
     </RenderError>);

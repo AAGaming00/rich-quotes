@@ -15,9 +15,9 @@ const { settings, linkSelector } = require('./utils/vars.js');
 module.exports = class RichQuotes extends Plugin {
   getSettings() {
     let resolved = {};
-  
+
     Object.entries(settings.list).forEach(([ key, setting ]) => { resolved[key] = this.settings.get(key, setting.fallback) })
-  
+
     return resolved;
   };
 
@@ -63,11 +63,9 @@ module.exports = class RichQuotes extends Plugin {
 
         resContent.props.content = React.createElement(Renderer, { 
           content: resContent.props.content, message: args.message, 
-          quotes: parsed.quotes, broadMention: list ? !list : parsed.broadMention,
-          settings: this.getSettings()
+          quotes: parsed.quotes, broadMention: (list ? !list : parsed.broadMention),
+          level: 0, settings: this.getSettings()
         });
-
-        console.log(resContent.props.content);
       }
     }
 
@@ -99,7 +97,8 @@ module.exports = class RichQuotes extends Plugin {
         resContent.props.content.unshift(React.createElement(Quote, {
           link: [ location.guild_id, location.channel_id, location.message_id ],
           parent: [ parentLocation[0], parentLocation[1], args.message.id ],
-          mentionType: mentionType, isReply: true, settings: this.getSettings()
+          level: 0, mentionType, isReply: true, 
+          settings: this.getSettings()
         }));
 
         res.props.rq_setReply = true;
