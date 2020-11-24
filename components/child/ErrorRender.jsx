@@ -23,7 +23,7 @@ module.exports = class RQRenderError extends React.PureComponent {
 
     const support = { 
       author: { name: 'AAGaming', id: '373833473091436546' },
-      server: { name: 'Powercord', invite: 'nFRHhDk', link: ['538759280057122817','755004260902764646'] } // plugin-support
+      server: { name: 'Powercord', invite: 'gs4ZMbBfCh', link: ['538759280057122817','755004260902764646'] } // plugin-support
     }
 
     const originalContent = this.props.content;
