@@ -251,8 +251,7 @@ class RichQuote extends React.Component {
           channelHeader = this.state.settings.displayChannel;
 
     const quoteTimestamp = link && this.state.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
-      className: 'rq-timestamp',
-      compact: false,
+      className: 'rq-timestamp', compact: false,
       timestamp: new Timestamp(this.state.message.timestamp),
       isOnlyVisibleOnHover: false
     }) : false;

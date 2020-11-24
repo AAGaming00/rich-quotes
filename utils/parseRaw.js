@@ -37,7 +37,7 @@ module.exports = function parseRaw(rawContents) {
             while (matching) {
                let mention = mention_match.next();
 
-               if (!mention.done) mentions_.push({ 
+               if (!mention.done) lineMentions.push({ 
                   id: mention.value[1], 
                   index: mention.value.index,
                   self: mention.value[1] === currentUser.id 
