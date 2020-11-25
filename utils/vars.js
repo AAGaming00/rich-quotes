@@ -12,7 +12,6 @@ module.exports = {
          displayMoreBtn: setting('Display More Button', 'When disabled will not display More button.'),
          displayNickname: setting('Display Nickname', 'When disabled will always show actual username.'),
          displayReactions: setting('Display Reactions', 'When disabled will not display reactions.'),
-         cullBotQuotes: setting('Cull Bot Quotes', 'Removes embeds from bot messages that have an error-free linked quote.'),
 
          displayEmbeds: setting('Display Embeds', 'When disabled will not display images/videos/etc.'),
 
@@ -26,11 +25,28 @@ module.exports = {
 
          embedAll: setting('', ''),
 
+         nestedQuotes: setting('Quote Nesting', 'Control how many levels of nesting is rendered within quotes (0 for none).', 3),
+         
+         replyReplace: setting('Replace Replies', 'When disabled will not replace replies.'),
+
+         replyMode: {
+            strings: {
+               'Reply Display Mode': 'Controls reply display for replacement & inside quotes (nested).',
+
+               'Natural': 'Closest to discord\'s; keeps same parent header & removes header of Rich Quote.',
+               'Middle': 'Removes parent header reply text and makes some minor tweaks to Rich Quote.',
+               'Standard': 'Removes parent header reply text, changes nothing about Rich Quote design, and looks as if it was a link.'
+            },
+            fallback: 0
+         },
+
+         cullBotQuotes: setting('Cull Bot Quotes', 'Removes embeds from bot messages that have an error-free linked quote.'),
+
          cacheSearch: setting('Cache quote searches', 'When disabled quote search will no longer cache results.'),
          partialQuotes: setting('Partial Quotes', 'When disabled full messages will display on cached quotes.'),
          clearCache: setting('Clear Cache', 'When disabled quote search will no longer cache results.')
       },
-      display: [ 0, 7 ],
-      embeds: [ 7, 6 ]
+      display: [ 0, 6 ],
+      embeds: [ 6, 6 ]
    }
 }

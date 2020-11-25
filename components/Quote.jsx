@@ -166,44 +166,35 @@ class RichQuote extends React.Component {
     }));
   }
 
-  openPopout (event) {
+  openPopout (event, userId, guildId) {
     const UserPopout = getModuleByDisplayName('UserPopout', false);
     const PopoutDispatcher = getModule([ 'openPopout' ], false);
 
     // modified from smart typers
     PopoutDispatcher.openPopout(event.target, {
       containerClass: 'rich-quotes-popout',
-      render: (props) => React.createElement(UserPopout, {
-        ...props,
-        userId: this.state.author.id,
-        guildId: this.state.channel.guild_id
-      }),
+      render: (props) => React.createElement(UserPopout, { ...props, userId, guildId }),
       closeOnScroll: false, shadow: false, position: 'right'
     }, 'quote-user-popout');
   }
 
-  openUserContextMenu (event) {
+  openUserContextMenu (event, userId, channelId, guildId) {
     const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
     const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
     const userStore = getModule([ 'getCurrentUser' ], false);
-    const guildId = this.state.channel.guild_id;
-    const userId = this.state.author.id;
 
     if (!guildId) {
       return contextMenu.openContextMenu(event, (props) => React.createElement(GroupDMUserContextMenu, {
         ...props,
         user: userStore.getUser(userId),
-        channel: this.state.channel
+        channel: channelId
       }));
     }
 
     contextMenu.openContextMenu(event, (props) => React.createElement(GuildChannelUserContextMenu, {
       ...props,
-      user: userStore.getUser(userId),
-      guildId,
-      channelId: this.state.channel.id,
-      showMediaItems: false,
-      popoutPosition: 'top'
+      user: userStore.getUser(userId), guildId, channelId,
+      popoutPosition: 'top', showMediaItems: false
     }));
   }
 
@@ -264,26 +255,34 @@ class RichQuote extends React.Component {
 
     // Nickname handler
     const displayName = this.state.settings.displayNickname ? 
-      getName(link ? link[0] : this.state.channel.guild_id, this.state.channel.id, this.state.author) : false;
+      getName(link ? link[0] : this.state.channel.guild_id, this.state.channel.id, this.state.author) : false,
+          displayChannel = link && this.props.settings.displayChannel && link[1] !== document.location.href.split('/')[5];
 
     let content = this.state.content;
 
-    const nesting = 1;
+    const renderNested = this.props.settings.nestedQuotes == 0 ? false : (this.props.level < this.props.settings.nestedQuotes);
 
-    const renderNested = nesting === 0 ? false : (this.props.level <= nesting - 1);
+    let replied = false;
 
-    if (renderNested && this.state.message.messageReference && (typeof content[0] === 'string' || !content[0]?.props?.isReply)) {
-      const location = this.state.message.messageReference;
+    if (this.state.message.messageReference){
+      replied = true;
 
-      let params = {
-        link: [ location.guild_id, location.channel_id, location.message_id ],
-        parent: link, mentionType: 0, level: (this.props.level + 1), isReply: true,
-        settings: this.props.settings
+      if (typeof content[0] === 'string' || !content[0]?.props?.isReply) {
+        if (renderNested) {
+          const location = this.state.message.messageReference;
+
+          let params = {
+            link: [ location.guild_id, location.channel_id, location.message_id ],
+            parent: link, mentionType: 0, level: (this.props.level + 1), isReply: true,
+            settings: this.props.settings
+          }
+
+          if (this.state.mentionType >= 2) params.mentionType = 3;
+
+          content.unshift(<RichQuote {...params} />);
+        }
+        else content.unshift(<em className='rq-nesting-cap' isReply={true}>reply here, reached nesting cap</em>, <br />);
       }
-
-      if (this.state.mentionType >= 2) params.mentionType = 3;
-
-      content.unshift(<RichQuote {...params} />);
     }
 
     let rqRender = false;
@@ -308,21 +307,27 @@ class RichQuote extends React.Component {
 
     return (<RenderError content={this.props.content}>
       <div id="a11y-hack"><div key={this.state.content} className={`rq-inline${nested}`}><div className={highlightContainer}>
-        <div className='rq-header threads-header-hack'>
+        { !(this.props.isReply && this.props.settings.replyMode == 0) ?
+          <div className='rq-header threads-header-hack'>
           <img className={`rq-avatar threads-avatar-hack revert-reply-hack ${Style.avatar} ${Style.clickable}`}
-            src={this.state.author.avatarURL} onClick={(e) => this.openPopout(e)}
-            onContextMenu={(e) => this.openUserContextMenu(e)} aria-hidden="true" alt=" ">
+            src={this.state.author.avatarURL} onClick={(e) => this.openPopout(e, this.state.author.id, this.state.channel.guild_id)}
+            onContextMenu={(e) => this.openUserContextMenu(e, this.state.author.id, this.state.channel.id, this.state.channel.guild_id)} aria-hidden="true" alt=" ">
           </img>
           <div className='rq-userTag'>
             <span className={`rq-username ${mention} ${Style.username} ${Style.clickable}`}
-              onClick={(e) => this.openPopout(e) } onContextMenu={(e) => this.openUserContextMenu(e)}
-            >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>{
-              link && !this.state.isReply && channelHeader ? <span>
-                <span className='rq-infoText'>{`posted in ${this.state.channel.name ? '' : 'a DM'}`}</span>
-                {channel}
-              </span> : false }{ quoteTimestamp }
+              onClick={(e) => this.openPopout(e, this.state.author.id, this.state.channel.guild_id) } onContextMenu={(e) => this.openUserContextMenu(e)}
+            >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span><span>{
+              replied ?
+              <span className='rq-infoText rq-margin'>replied to -user here-</span> : false
+            }{ displayChannel ? <span>
+              <span className='rq-infoText'>{`in ${this.state.channel.name ? '' : 'a DM'}`}</span>
+              {channel}
+            </span> : false }</span>{ quoteTimestamp }
           </div>
-        </div>
+        </div> : replied ? <div className='rq-header threads-header-hack'>
+          <div className='rq-userTag'>
+            <span className='rq-infoText'>replied to -user here-</span>{}</div>
+        </div> : false }
 
         <div className='rq-button-container'>
           { link ? [

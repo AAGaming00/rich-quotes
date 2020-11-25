@@ -1,7 +1,7 @@
 const { React } = require('powercord/webpack');
 
 const { FormTitle } = require('powercord/components');
-const { SwitchItem, ButtonItem, Category } = require('powercord/components/settings');
+const { Category, SwitchItem, RadioGroup, SliderInput, ButtonItem } = require('powercord/components/settings');
 const buttonColors = require('powercord/components').Button.Colors;
 
 const ChannelPreview = require('./child/ChannelPreview')
@@ -13,9 +13,9 @@ module.exports = class Settings extends React.Component {
     super(props); this.state = { reload: false, categoryOpened: false };
   }
 
-  toggleSetting (setting, defaultOption) {
-    const { getSetting } = this.props;
-    this.props.toggleSetting(setting, defaultOption);
+  toggleDisplay (setting, defaultOption) {
+    const { getSetting, toggleSetting } = this.props;
+    toggleSetting(setting, defaultOption);
     this.setState({...this.state, reload: Date.now().toString()});
 
     let embedAll = true;
@@ -34,7 +34,11 @@ module.exports = class Settings extends React.Component {
   }
 
   render () {
-    const { getSetting } = this.props;
+    const { getSetting, toggleSetting, updateSetting } = this.props;
+
+    const embedTypes = Object.entries(settings.list).slice(settings.embeds[0], settings.embeds[0] + settings.embeds[1]);
+
+    const replyStrings = Object.entries(settings.list.replyMode.strings);
 
     return (
       <div>
@@ -48,19 +52,47 @@ module.exports = class Settings extends React.Component {
         {Object.entries(settings.list).slice(settings.display[0], settings.display[1] + 1).map(([ key, setting ], i) =>
           <SwitchItem key={i} note={setting.strings[1]}
             value={getSetting(key, setting.fallback)}
-            onChange={() => this.toggleSetting(key, setting.fallback)}
+            onChange={() => toggleSetting(key, setting.fallback)}
           >{setting.strings[0]}</SwitchItem>
         )}
 
         <Category name='Embed Types' description='Individual toggles for all embed types.' 
           opened={this.state.categoryOpened} onChange={() => this.setState({ categoryOpened: !this.state.categoryOpened })}>
-          {Object.entries(settings.list).slice(settings.embeds[0], settings.embeds[1] + 1).map(([ key, setting ], i) =>
+          {embedTypes.map(([ key, setting ], i) =>
             <SwitchItem key={i} note={setting.strings[1]}
               value={getSetting(key, setting.fallback)}
               onChange={() => this.toggleSetting(key, setting.fallback)}
             >{setting.strings[0]}</SwitchItem>
           )}
         </Category>
+
+        <SliderInput
+          note={settings.list.nestedQuotes.strings[1]}
+          initialValue={ getSetting('nestedQuotes', 3) }
+          minValue={ 0 } maxValue={ 6 }
+          markers={[ 0, 1, 2, 3, 4, 5, 6 ]}
+          stickToMarkers={true}
+          onValueChange={ v => updateSetting('nestedQuotes', v) }
+        >{settings.list.nestedQuotes.strings[0]}</SliderInput>
+
+        <SwitchItem note={settings.list.replyReplace.strings[1]}
+          value={getSetting('replyReplace', true)}
+          onChange={() => this.props.toggleSetting('replyReplace', true)}
+        >{settings.list.replyReplace.strings[0]}</SwitchItem>
+
+        <RadioGroup
+          note={replyStrings[0][1]}
+          value={getSetting('replyMode', 0)}
+          onChange={s => updateSetting('displayMode', s.value)}
+          options={replyStrings.slice(1).map(([name, desc], i) => ({
+            name, desc, value: i
+          }))}
+        >{replyStrings[0][0]}</RadioGroup>
+
+        <SwitchItem note={settings.list.cullBotQuotes.strings[1]}
+          value={getSetting('cullBotQuotes', true)}
+          onChange={() => this.props.toggleSetting('cullBotQuotes', true)}
+        >{settings.list.cullBotQuotes.strings[0]}</SwitchItem>
 
         <FormTitle className='rq-settingsHeader'>Caching</FormTitle>
 

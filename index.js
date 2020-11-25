@@ -54,6 +54,8 @@ module.exports = class RichQuotes extends Plugin {
 
     let parsed;
 
+    const settings = this.getSettings();
+
     if (resContent) {
       parsed = parseRaw((' ' + args.message.content).slice(1).split('\n'));
 
@@ -64,12 +66,12 @@ module.exports = class RichQuotes extends Plugin {
         resContent.props.content = React.createElement(Renderer, { 
           content: resContent.props.content, message: args.message, 
           quotes: parsed.quotes, broadMention: (list ? !list : parsed.broadMention),
-          level: 0, settings: this.getSettings()
+          level: 0, settings
         });
       }
     }
 
-    if (!res.props.rq_setReply) {
+    if (settings.replyReplace && !res.props.rq_setReply) {
       let resReply = res.props.childrenRepliedMessage;
 
       let reply = resReply?.props?.children?.props?.referencedMessage?.message;
@@ -79,7 +81,7 @@ module.exports = class RichQuotes extends Plugin {
       if (reply) {
         res.props.childrenRepliedMessage = null;
 
-        res.props.className = `${res.props.className} rq-hide-reply-header`
+        if (settings.replyMode != 0) res.props.className = `${res.props.className} rq-hide-reply-header`;
 
         const location = args.message.messageReference;
 
@@ -96,9 +98,8 @@ module.exports = class RichQuotes extends Plugin {
 
         resContent.props.content.unshift(React.createElement(Quote, {
           link: [ location.guild_id, location.channel_id, location.message_id ],
-          parent: [ parentLocation[0], parentLocation[1], args.message.id ],
-          level: 0, mentionType, isReply: true, 
-          settings: this.getSettings()
+          parent: [ parentLocation[4], parentLocation[5], args.message.id ],
+          mentionType, level: 0, isReply: true, settings
         }));
 
         res.props.rq_setReply = true;

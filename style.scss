@@ -99,7 +99,10 @@
          .rq-highlight-alt { background: transparent; }
 
          &>.rq-username { line-height: 1.275rem; }
-         &>span>.rq-infoText { color: var(--text-muted); }
+
+         .rq-infoText { color: var(--header-secondary) }
+         
+         .rq-margin { margin-right: 4px }
 
          &>.rq-timestamp { margin-left: 0px; }
       }
@@ -235,3 +238,5 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
       margin-left: -7px !important;
    }
 }
+
+.rq-nesting-cap { color: var(--text-muted) }
