@@ -112,8 +112,6 @@ module.exports = class RQRenderer extends React.Component {
         content[i] = <Quote {...quoteParams}/>;
       };
 
-      if (this.props.message.author.bot && this.props.settings.cullBotQuotes) this.props.message.embeds = [];
-
       this.setState({...this.props, content, oldContent: this.props.content, loading: false });
     }
   }

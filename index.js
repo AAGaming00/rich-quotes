@@ -72,6 +72,8 @@ module.exports = class RichQuotes extends Plugin {
               quotes: parsed.quotes, broadMention: (list ? !list : parsed.broadMention),
               level: 0, settings
             });
+
+            if (args.message.author.bot && settings.cullBotQuotes) args.message.embeds = [];
           }
         } else if (!list && settings.cullQuoteCommands) res = null;
       }
