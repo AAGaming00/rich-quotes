@@ -1,7 +1,5 @@
 const { getModule } = require('powercord/webpack');
 
-const linkSelector = /https?:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/channels\/(\d{17,19}|@me)\/(\d{17,19})\/(\d{17,19})/;
-
 /**
  * Get markdown quotes from message contents
  * @param {String[]} rawContents 
