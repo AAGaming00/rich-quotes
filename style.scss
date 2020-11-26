@@ -5,6 +5,16 @@
    --rq-highlight-container-line: #faa61a;
 }
 
+.rq-avatar {
+   width: 20px !important;
+   height: 20px !important;
+
+   align-self: end !important;
+
+   // Class fixes
+   position: unset !important; left: 0px !important; margin: 0px !important;
+}
+
 .message-2qnXI6.mentioned-xhSam7>div:first-child>div>#a11y-hack>.rq-inline>div {
    background: var(--rq-highlight-container);
    .re-file:before {
@@ -31,8 +41,6 @@
    border-radius: 10px;
    max-width: 500px;
    overflow: hidden;
-   margin-top: 2px;
-   display: grid;
 
    &>div {
       padding: 8px;
@@ -40,7 +48,6 @@
       grid-template-columns: 20px auto;
       grid-template-rows: min-content auto;
       grid-column-gap: 8px;
-      grid-row-gap: 4px;
 
       &.rq-highlight-container {
          background: var(--rq-highlight-container);
@@ -67,20 +74,14 @@
    }
 
    &>div>.rq-header {
+      margin-bottom: 4px;
+
       min-height: 0px !important;
       grid-column: 1 / 2;
       grid-row: 1 / 1;
       display: grid;
       grid-template-columns: auto auto;
       grid-gap: 8px;
-
-      &>.rq-avatar {
-         width: 20px;
-         height: 20px;
-
-         // Class fixes
-         position: unset; left: 0px; margin: 0px;
-      }
 
       &>.rq-userTag {
          display: grid;
@@ -112,7 +113,6 @@
       grid-column: 2;
       grid-row: 2;
       position: unset;
-      margin-top: -3px; // Line height BS hack
 
       &>div {
          margin-left: 0px;
@@ -240,3 +240,18 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
 }
 
 .rq-nesting-cap { color: var(--text-muted) }
+
+.rq-avatar-wrapper {
+   display: grid;
+   margin-left: 2px;
+   margin-right: 3px;
+   align-self: normal;
+}
+
+.username-1A8OIy:last-child {
+   display: inline-grid; 
+   grid-template-columns: min-content min-content;
+   align-items: baseline;
+   white-space: pre;
+   margin-right: 3px;
+}

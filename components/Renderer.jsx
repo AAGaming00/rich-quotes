@@ -4,7 +4,7 @@ const Style = getModule([ 'blockquoteContainer' ], false);
 
 const Quote = require('./Quote');
 
-const { linkSelector } = require('../utils/vars.js');
+const linkSelector = /https?:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/channels\/(\d{17,19}|@me)\/(\d{17,19})\/(\d{17,19})/;
 
 module.exports = class RQRenderer extends React.Component {
   constructor (props) { super(props); this.state = { loading: true } }

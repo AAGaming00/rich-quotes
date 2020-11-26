@@ -1,14 +1,18 @@
 const { getModule } = require('powercord/webpack');
 
+const linkSelector = /https?:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/channels\/(\d{17,19}|@me)\/(\d{17,19})\/(\d{17,19})/;
+
 /**
  * Get markdown quotes from message contents
- * @param {Object[]} rawContents 
+ * @param {String[]} rawContents 
  */
 module.exports = function parseRaw(rawContents) {
    const currentUser = getModule(['getCurrentUser'], false).getCurrentUser();
 
    let quotes = [],
        mentions = [],
+       hasLink = false,
+       isCommand = false,
        broadMention = false;
 
    for (let i in rawContents) {
@@ -29,8 +33,9 @@ module.exports = function parseRaw(rawContents) {
       if (leave.type === 0) {
          let mention_match = raw.matchAll(/(?!\\)<@!?(\d{17,19})>/g);
 
+         let lineMentions = [];
+
          if (mention_match) {
-            let lineMentions = [];
 
             let matching = true;
 
@@ -59,6 +64,17 @@ module.exports = function parseRaw(rawContents) {
 
             if (lineMentions.length !== 0) mentions = mentions.length !== 0 ? [ ...mentions, ...lineMentions ] : lineMentions;
          }
+
+         let urlMatch = raw.match(/https?:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/channels\/(?:\d{17,19}|@me)\/(?:\d{17,19})\/(?:\d{17,19})/);
+
+         const testCommand = lineMentions.length === 0 && rawContents.length === 1;
+
+         if (urlMatch) {
+            hasLink = true;
+
+            if (testCommand && (new RegExp(`^(?:[^\\s]{0,4})quote(?:[^\\s]{0,2})? ${urlMatch[0]}(?:\\s+)?$`)).test(raw)) 
+               isCommand = true;
+         } else if (testCommand && /^(?:[^\s]{0,4})quote(?:[^\s]{0,2})? (?:\d{17,19})(?:\s+)?$/.test(raw)) isCommand = true;
       }
    }
 
@@ -66,5 +82,5 @@ module.exports = function parseRaw(rawContents) {
 
    if (mentions.length !== 0) broadMention = true;
 
-   return { quotes: quotes.length !== 0 ? quotes : false, broadMention };
+   return { quotes: quotes.length !== 0 ? quotes : false, broadMention, hasLink, isCommand };
 }

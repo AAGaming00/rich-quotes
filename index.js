@@ -1,16 +1,18 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
-const { getModule, React } = require('powercord/webpack');
+const { getModule, React, ReactDOM } = require('powercord/webpack');
 
 const Renderer = require('./components/Renderer');
 
 const Quote = require('./components/Quote');
 
+const Avatar = require('./components/child/Avatar');
+
 const Settings = require('./components/Settings');
 
 const parseRaw = require('./utils/parseRaw.js');
 
-const { settings, linkSelector } = require('./utils/vars.js');
+const settings = require('./utils/settings.js');
 
 module.exports = class RichQuotes extends Plugin {
   getSettings() {
@@ -50,59 +52,82 @@ module.exports = class RichQuotes extends Plugin {
   }
 
   injectMessage(args, res, Style, list = false) {
-    let resContent = res.props.childrenMessageContent;
+    if (res) {
+      let resContent = res.props.childrenMessageContent;
 
-    let parsed;
+      let parsed;
 
-    const settings = this.getSettings();
+      const settings = this.getSettings();
 
-    if (resContent) {
-      parsed = parseRaw((' ' + args.message.content).slice(1).split('\n'));
+      if (resContent) {
+        parsed = parseRaw((' ' + args.message.content).slice(1).split('\n'));
 
-      if (parsed.quotes || linkSelector.test(args.message.content)) {
-        if (parsed.quotes && !parsed.broadMention)
-          res.props.className = res.props.className.replace(Style.mentioned, '');
-
-        resContent.props.content = React.createElement(Renderer, { 
-          content: resContent.props.content, message: args.message, 
-          quotes: parsed.quotes, broadMention: (list ? !list : parsed.broadMention),
-          level: 0, settings
-        });
-      }
-    }
-
-    if (settings.replyReplace && !res.props.rq_setReply) {
-      let resReply = res.props.childrenRepliedMessage;
-
-      let reply = resReply?.props?.children?.props?.referencedMessage?.message;
-
-      if (!reply) reply = resReply?.props?.referencedMessage?.message;
-
-      if (reply) {
-        res.props.childrenRepliedMessage = null;
-
-        if (settings.replyMode != 0) res.props.className = `${res.props.className} rq-hide-reply-header`;
-
-        const location = args.message.messageReference;
-
-        const parentLocation = document.location.href.split('/');
-
-        let mentionType = 1;
-
-        if (res.props.className.includes(Style.mentioned)) {
-          if (parsed && !parsed.broadMention) {
-            mentionType = 2;
+        if (!parsed.isCommand) {
+          if (parsed.quotes || parsed.hasLink) {
+            if (parsed.quotes && !parsed.broadMention)
             res.props.className = res.props.className.replace(Style.mentioned, '');
-          } else mentionType = 3;
+
+            resContent.props.content = React.createElement(Renderer, { 
+              content: resContent.props.content, message: args.message, 
+              quotes: parsed.quotes, broadMention: (list ? !list : parsed.broadMention),
+              level: 0, settings
+            });
+          }
+        } else if (!list && settings.cullQuoteCommands) res = null;
+      }
+
+      if (res && settings.replyReplace && !res.props.className.includes('rq-message-reply')) {
+        let resReply = res.props.childrenRepliedMessage;
+
+        let reply = resReply?.props?.children?.props?.referencedMessage?.message;
+
+        if (!reply) reply = resReply?.props?.referencedMessage?.message;
+
+        if (reply) {
+          res.props.childrenRepliedMessage = null;
+
+          if (settings.replyMode == 0) {
+            // :keuch: couldn't attach ref to parent or child
+            let target = document.getElementById(`chat-messages-${args.message.id}`).firstElementChild.childNodes[1].firstElementChild.childNodes[4];
+
+            const avatarImage = React.createElement(Avatar, {
+              user: res.props.childrenHeader.props.referencedMessage.message.author 
+            });
+
+            let container = document.createElement('div');
+
+            container.className = 'rq-avatar-wrapper';
+
+            if (target.childNodes.length === 1) {
+              ReactDOM.render(avatarImage, container);
+              target.prepend(container);
+            }
+          } else res.props.className = `${res.props.className} rq-hide-reply-header`;
+
+          const location = args.message.messageReference;
+
+          const parentLocation = document.location.href.split('/');
+
+          let mentionType = 1;
+
+          if (res.props.className.includes(Style.mentioned)) {
+            if (parsed && !parsed.broadMention) {
+              mentionType = 2;
+              res.props.className = res.props.className.replace(Style.mentioned, '');
+            } else mentionType = 3;
+          }
+
+          const renderedQuote = React.createElement(Quote, {
+            link: [ location.guild_id, location.channel_id, location.message_id ],
+            parent: [ parentLocation[4], parentLocation[5], args.message.id ],
+            mentionType, level: 0, isReply: true, settings
+          });
+
+          if (Array.isArray(resContent.props.content)) resContent.props.content.unshift(renderedQuote);
+          else resContent.props.content.props.content.unshift(renderedQuote);
+
+          res.props.rq_setReply = true;
         }
-
-        resContent.props.content.unshift(React.createElement(Quote, {
-          link: [ location.guild_id, location.channel_id, location.message_id ],
-          parent: [ parentLocation[4], parentLocation[5], args.message.id ],
-          mentionType, level: 0, isReply: true, settings
-        }));
-
-        res.props.rq_setReply = true;
       }
     }
 
