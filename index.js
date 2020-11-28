@@ -36,9 +36,8 @@ module.exports = class RichQuotes extends Plugin {
 
     const cacheSearch = this.settings.get('cacheSearch', true);
 
-    if (!cacheSearch && window.localStorage.richQuoteCache) {
+    if (!cacheSearch && window.localStorage.richQuoteCache) 
       window.localStorage.removeItem('richQuoteCache');
-    }
 
     const Style = await getModule([ 'mentioned' ]);
 
@@ -73,10 +72,9 @@ module.exports = class RichQuotes extends Plugin {
             }
 
             resContent.props.content = React.createElement(Renderer, {
-              content: resContent.props.content,
-              message: args.message,
+              content: resContent.props.content, message: args.message,
               quotes: parsed.quotes,
-              broadMention: (list ? !list : parsed.broadMention),
+              broadMention: (list ? false : parsed.broadMention),
               level: 0,
               settings
             });
@@ -95,17 +93,18 @@ module.exports = class RichQuotes extends Plugin {
 
         let reply = resReply?.props?.children?.props?.referencedMessage?.message;
 
-        if (!reply) {
-          reply = resReply?.props?.referencedMessage?.message;
-        }
+        if (!reply) reply = resReply?.props?.referencedMessage?.message;
 
         if (reply) {
           if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', {
             ref: (e) => {
               if (!e) return;
 
-              const target = getReactInstance(e).sibling.child.child.child.sibling.stateNode.firstElementChild.children[2],
-                    container = document.createElement('div');
+              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.stateNode?.firstElementChild?.children[2];
+
+              if (!target) return;
+
+              const container = document.createElement('div');
 
               container.className = 'rq-avatar-wrapper';
 
@@ -130,25 +129,21 @@ module.exports = class RichQuotes extends Plugin {
             if (parsed && !parsed.broadMention) {
               mentionType = 2;
               res.props.className = res.props.className.replace(Style.mentioned, '');
-            } else {
-              mentionType = 3;
             }
+            else mentionType = 3;
           }
 
           const renderedQuote = React.createElement(Quote, {
             link: [ location.guild_id, location.channel_id, location.message_id ],
             parent: [ parentLocation[4], parentLocation[5], args.message.id ],
-            mentionType,
-            level: 0,
-            isReply: true,
+            mentionType, level: 0, isReply: true,
             settings
           });
 
-          if (Array.isArray(resContent.props.content)) {
+          if (Array.isArray(resContent.props.content))
             resContent.props.content.unshift(renderedQuote);
-          } else {
+          else
             resContent.props.content.props.content.unshift(renderedQuote);
-          }
 
           res.props.rq_setReply = true;
         }

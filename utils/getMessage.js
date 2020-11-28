@@ -54,7 +54,7 @@ module.exports = async function getMessage([guildId, channelId, messageId], retr
 
       const msg = data.body[0];
 
-      if (!msg.id === messageId) return { closest: msg.id, ...errorRes('no-match') };
+      if (msg.id !== messageId) return { closest: msg.id, ...errorRes('no-match') };
 
       msg.author = new User(msg.author);
       msg.timestamp = new Timestamp(msg.timestamp);
