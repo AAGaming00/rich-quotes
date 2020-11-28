@@ -4,9 +4,13 @@ const { FormTitle } = require('powercord/components');
 const { Category, SwitchItem, RadioGroup, SliderInput, ButtonItem } = require('powercord/components/settings');
 const buttonColors = require('powercord/components').Button.Colors;
 
-const ChannelPreview = require('./child/ChannelPreview')
+const ChannelPreview = require('./child/ChannelPreview');
+
+let previewChildren = false;
 
 const settings = require('../utils/settings.js');
+
+const embedTypes = Object.entries(settings.list).slice(settings.embeds[0], settings.embeds[0] + settings.embeds[1]);
 
 module.exports = class Settings extends React.Component {
   constructor(props) {
@@ -14,31 +18,41 @@ module.exports = class Settings extends React.Component {
   }
 
   toggleDisplay (setting, defaultOption) {
-    const { getSetting, toggleSetting } = this.props;
+    const { toggleSetting } = this.props;
+
     toggleSetting(setting, defaultOption);
-    this.setState({...this.state, reload: Date.now().toString()});
+    this.state.reload = Date.now().toString();
+  }
+
+  toggleEmbed (setting, defaultOption) {
+    const { getSetting, toggleSetting } = this.props;
+
+    toggleSetting(setting, defaultOption);
 
     let embedAll = true;
 
-    Object.entries(settings.list).slice(settings.embeds[0], settings.embeds[1] + 1).forEach(([type]) => { if (getSetting(type) === false) embedAll = false; });
+    embedTypes.forEach(([type]) => { if (getSetting(type) === false) embedAll = false; });
 
-    if (getSetting('embedAll') !== embedAll) this.props.toggleSetting('embedAll', defaultOption);
-
+    if (getSetting('embedAll') !== embedAll) toggleSetting('embedAll', defaultOption);
   }
 
-  componentDidMount () { this.componentDidUpdate() }
+  previewRef (e) { previewChildren = e?.children }
 
-  componentDidUpdate () {
-    // @todo Switch preview jump to a ref
-    setTimeout(() => document.getElementById('owo-6').scrollIntoViewIfNeeded(), 100)
+  componentDidMount() { setTimeout(() => previewChildren[6].scrollIntoViewIfNeeded(), 100) }
+
+  componentDidUpdate (t, state) {
+    if (state.reload) {
+      setTimeout(() => previewChildren[6].scrollIntoViewIfNeeded(), 100);
+
+      // this is fine
+      this.state.reload = false;
+    }
   }
 
   render () {
     const { getSetting, toggleSetting, updateSetting } = this.props;
 
-    const display = Object.entries(settings.list).slice(settings.display[0], settings.display[1] + 1);
-
-    const embedTypes = Object.entries(settings.list).slice(settings.embeds[0], settings.embeds[0] + settings.embeds[1]);
+    const display = Object.entries(settings.list).slice(settings.display[0], settings.display[1]);
 
     const replyStrings = Object.entries(settings.list.replyMode.strings);
 
@@ -46,15 +60,14 @@ module.exports = class Settings extends React.Component {
       <div>
         <FormTitle>Preview</FormTitle>
 
-        <ChannelPreview key={this.state.reload} {...this.props}/>
-
+        <ChannelPreview key={this.state.reload} previewRef={this.previewRef} {...this.props}/>
 
         <FormTitle className='rq-settingsHeader'>Display</FormTitle>
 
         {display.map(([ key, setting ], i) =>
           <SwitchItem key={i} note={setting.strings[1]}
             value={getSetting(key, setting.fallback)}
-            onChange={() => toggleSetting(key, setting.fallback)}
+            onChange={() => this.toggleDisplay(key, setting.fallback)}
           >{setting.strings[0]}</SwitchItem>
         )}
 
@@ -63,7 +76,7 @@ module.exports = class Settings extends React.Component {
           {embedTypes.map(([ key, setting ], i) =>
             <SwitchItem key={i} note={setting.strings[1]}
               value={getSetting(key, setting.fallback)}
-              onChange={() => this.toggleSetting(key, setting.fallback)}
+              onChange={() => this.toggleEmbed(key, setting.fallback)}
             >{setting.strings[0]}</SwitchItem>
           )}
         </Category>

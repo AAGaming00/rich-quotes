@@ -330,7 +330,7 @@ class RichQuote extends React.Component {
               }
             }}></Button>, 
             !channelHeader ? <Button {...{
-              classes: [ 'channel-jump' ], tooltip: channel.props.text, icon: 'Hash',
+              classes: [ 'channel-jump' ], tooltip: channel?.props?.text || 'unknown-channel', icon: 'Hash',
               function: !previewQuote ? () => transitionTo(`/channels/${link[0]}/${link[1]}`) : false
             }}></Button> : false
             ].map(e=>(e)) : 
