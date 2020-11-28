@@ -88,14 +88,12 @@ class RichQuote extends React.Component {
       }
     } else {
       // funni preview handler
-      const getCurrentUser = await getModule([ 'getCurrentUser' ]);
-
       this.state.content = await parser.parse(
        'Check out this preview', true, 
         { channelId: previewId }
       );
 
-      this.state.author = await getCurrentUser.getCurrentUser();
+      this.state.author = this.props.currentUser;
 
       this.state.message = await new MessageC({ ...'' });
       this.state.channel = { id: 'owo', name: 'test-channel'};
@@ -268,7 +266,7 @@ class RichQuote extends React.Component {
             link: replyLink, parent: link, 
             mentionType: 0, level: (this.props.level + 1), isReply: true,
             gotAuthor: a => this.setState({ repliedAuthor: a }),
-            settings: this.props.settings
+            currentUser: this.props.currentUser, settings: this.props.settings
           }
 
           if (this.state.mentionType >= 2) params.mentionType = 3;

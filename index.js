@@ -41,20 +41,22 @@ module.exports = class RichQuotes extends Plugin {
 
     const Style = await getModule([ 'mentioned' ]);
 
+    const currentUser = (await getModule(['getCurrentUser'])).getCurrentUser();
+
     const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
     const ListMessage = (await getModule(m => m.type?.displayName === 'ChannelMessage')); // discord moment :keuch:
     const cmType = ChannelMessage.type;
     const lmType = ListMessage.type;
 
-    inject('Rich-Quotes-Channel-Message', ChannelMessage, 'type', (args, res) => this.injectMessage(args[0], res, Style));
+    inject('Rich-Quotes-Channel-Message', ChannelMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style));
     Object.assign(ChannelMessage.type, cmType);
 
     // For search, pinned, inbox, threads, etc
-    inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, Style, true));
+    inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style, true));
     Object.assign(ListMessage.type, lmType);
   }
 
-  injectMessage (args, res, Style, list = false) {
+  injectMessage (args, res, currentUser, Style, list = false) {
     if (res) {
       const resContent = res.props.childrenMessageContent;
 
@@ -63,7 +65,7 @@ module.exports = class RichQuotes extends Plugin {
       const settings = this.getSettings();
 
       if (resContent) {
-        parsed = parseRaw((` ${args.message.content}`).slice(1).split('\n'));
+        parsed = parseRaw((` ${args.message.content}`).slice(1).split('\n'), currentUser);
 
         if (!parsed.isCommand) {
           if (parsed.quotes || parsed.hasLink) {
@@ -76,7 +78,7 @@ module.exports = class RichQuotes extends Plugin {
               quotes: parsed.quotes,
               broadMention: (list ? false : parsed.broadMention),
               level: 0,
-              settings
+              currentUser, settings
             });
 
             if (args.message.author.bot && settings.cullBotQuotes) {
@@ -96,6 +98,30 @@ module.exports = class RichQuotes extends Plugin {
         if (!reply) reply = resReply?.props?.referencedMessage?.message;
 
         if (reply) {
+          const repliedAuthor = res.props.childrenHeader.props.referencedMessage.message;
+
+          let mentionType = 0;
+
+          // @todo Make mentions less gae
+          if (parsed.broadMention) mentionType = 3;
+
+          /*else if (args.message.mentions?.length !== 0) {
+            let mentions = {};
+            let mentionSelf = false;
+
+            if (parsed.mentions) for (let mention of parsed.mentions) {
+              mentions[mention.id] = true;
+              if (mention.self) mentionSelf = true;
+            }
+            
+            for (let mention of args.message.mentions) {
+              if (!mentions[mention]) {
+                mentionType = 1;
+                if (mention == currentUser.id) mentionType = 2;
+              }
+            }
+          }*/
+
           if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', {
             ref: (e) => {
               if (!e) return;
@@ -109,7 +135,7 @@ module.exports = class RichQuotes extends Plugin {
               container.className = 'rq-avatar-wrapper';
 
               const avatarImage = React.createElement(Avatar, {
-                user: res.props.childrenHeader.props.referencedMessage.message.author
+                user: repliedAuthor
               });
 
               if (target.childNodes.length === 1) {
@@ -123,8 +149,6 @@ module.exports = class RichQuotes extends Plugin {
 
           const parentLocation = document.location.href.split('/');
 
-          let mentionType = 1;
-
           if (res.props.className.includes(Style.mentioned)) {
             if (parsed && !parsed.broadMention) {
               mentionType = 2;
@@ -137,7 +161,7 @@ module.exports = class RichQuotes extends Plugin {
             link: [ location.guild_id, location.channel_id, location.message_id ],
             parent: [ parentLocation[4], parentLocation[5], args.message.id ],
             mentionType, level: 0, isReply: true,
-            settings
+            currentUser, settings
           });
 
           if (Array.isArray(resContent.props.content))

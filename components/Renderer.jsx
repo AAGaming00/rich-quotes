@@ -45,7 +45,7 @@ module.exports = class RQRenderer extends React.Component {
     if (targetEntries.length !== 0) {
       const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM);
       const { message, cozyMessage, groupStart } = await getModule([ 'cozyMessage' ]);
-      const { getCurrentUser, getUser } = await getModule([ 'getCurrentUser' ]);
+      const { getUser } = await getModule([ 'getCurrentUser' ]);
       const { getChannel } = await getModule(['getChannel']);
       const parser = await getModule(['parse', 'parseTopic']);
 
@@ -56,7 +56,7 @@ module.exports = class RQRenderer extends React.Component {
 
           parent: thisLocation, level: this.props.level, mentionType: 0,
 
-          settings: this.props.settings
+          currentUser: this.props.currentUser, settings: this.props.settings
         };
 
         /* Link Handler */
@@ -64,7 +64,6 @@ module.exports = class RQRenderer extends React.Component {
 
         /* Markup Quote Handler */
         if (!quoteParams.link) {
-          const currentUser = (await getCurrentUser()).id;
           const channel = await getChannel(this.props.message.channel_id) || {id: 'owo'};
 
           const rawContent = value.content.trim();
@@ -72,7 +71,7 @@ module.exports = class RQRenderer extends React.Component {
           content[i + 1] = null;
           quoteParams.isMarkdown = true;
 
-          if (currentUser !== value.author) quoteParams.mentionType = 1;
+          if (this.props.currentUser.id !== value.author) quoteParams.mentionType = 1;
           else if (!this.props.broadMention) quoteParams.mentionType = 2;
 
           if (this.props.broadMention) quoteParams.mentionType = 3;

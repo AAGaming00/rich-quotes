@@ -1,12 +1,8 @@
-const { getModule } = require('powercord/webpack');
-
 /**
  * Get markdown quotes from message contents
  * @param {String[]} rawContents 
  */
-module.exports = function parseRaw(rawContents) {
-   const currentUser = getModule(['getCurrentUser'], false).getCurrentUser();
-
+module.exports = function parseRaw(rawContents, currentUser) {
    let quotes = [],
        mentions = [],
        hasLink = false,
@@ -38,13 +34,17 @@ module.exports = function parseRaw(rawContents) {
             let matching = true;
 
             while (matching) {
-               let mention = mention_match.next();
+               const mention = mention_match.next();
 
-               if (!mention.done) lineMentions.push({ 
-                  id: mention.value[1], 
-                  index: mention.value.index,
-                  self: mention.value[1] === currentUser.id 
-               }); else matching = false;
+               if (!mention.done) {
+                  const isCurrentUser = mention.value[1] === currentUser.id;
+
+                  lineMentions.push({
+                     id: mention.value[1], 
+                     index: mention.value.index,
+                     countSelf: isCurrentUser, self: isCurrentUser
+                  });
+               } else matching = false;
             }
 
             if (lineMentions.length !== 0 && i != 0) {
@@ -56,7 +56,7 @@ module.exports = function parseRaw(rawContents) {
                      author: mention.id
                   });
 
-                  lineMentions[0].self = false;
+                  lineMentions[0].countSelf = false;
                }
             }
 
@@ -76,9 +76,19 @@ module.exports = function parseRaw(rawContents) {
       }
    }
 
-   if (mentions.length !== 0) mentions = mentions.filter(m => m.self === true);
+   mentions = mentions.length !== 0 ? mentions : false;
 
-   if (mentions.length !== 0) broadMention = true;
+   let selfMentions;
 
-   return { quotes: quotes.length !== 0 ? quotes : false, broadMention, hasLink, isCommand };
+   if (mentions) {
+      selfMentions = mentions.filter(m => m.countSelf === true);
+
+      if (selfMentions.length !== 0) broadMention = true;
+   }
+
+   return { 
+      quotes: quotes.length !== 0 ? quotes : false, 
+      broadMention, hasLink, isCommand,
+      mentions
+   };
 }
