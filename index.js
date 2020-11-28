@@ -39,6 +39,19 @@ module.exports = class RichQuotes extends Plugin {
     if (!cacheSearch && window.localStorage.richQuoteCache) 
       window.localStorage.removeItem('richQuoteCache');
 
+    const ConnectionStore = await getModule(['isTryingToConnect', 'isConnected'])
+    const listener = () => {
+      if (!ConnectionStore.isConnected()) return;
+
+      ConnectionStore.removeChangeListener(listener)
+      this.runInjections();
+    }
+
+    if (ConnectionStore.isConnected()) listener()
+    else ConnectionStore.addChangeListener(listener)
+  }
+
+  async runInjections () {
     const Style = await getModule([ 'mentioned' ]);
 
     const currentUser = (await getModule(['getCurrentUser'])).getCurrentUser();
@@ -101,25 +114,14 @@ module.exports = class RichQuotes extends Plugin {
           const repliedAuthor = res.props.childrenHeader.props.referencedMessage?.message?.author;
           let mentionType = 0;
 
-          // @todo Make mentions less gae
-          if (parsed.broadMention) mentionType = 3;
-
-          /*else if (args.message.mentions?.length !== 0) {
-            let mentions = {};
-            let mentionSelf = false;
-
-            if (parsed.mentions) for (let mention of parsed.mentions) {
-              mentions[mention.id] = true;
-              if (mention.self) mentionSelf = true;
-            }
-            
-            for (let mention of args.message.mentions) {
-              if (!mentions[mention]) {
-                mentionType = 1;
-                if (mention == currentUser.id) mentionType = 2;
-              }
-            }
-          }*/
+          if (res.props.className.includes(Style.mentioned)) {
+            if (parsed) {
+              if (!parsed.broadMention) {
+                mentionType = 2;
+                res.props.className = res.props.className.replace(Style.mentioned, '');
+              } else mentionType = 3;
+            } else mentionType = 2;
+          }
 
           if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', {
             ref: (e) => {
@@ -148,14 +150,6 @@ module.exports = class RichQuotes extends Plugin {
           const location = args.message.messageReference;
 
           const parentLocation = document.location.href.split('/');
-
-          if (res.props.className.includes(Style.mentioned)) {
-            if (parsed && !parsed.broadMention) {
-              mentionType = 2;
-              res.props.className = res.props.className.replace(Style.mentioned, '');
-            }
-            else mentionType = 3;
-          }
 
           const renderedQuote = React.createElement(Quote, {
             link: [ location.guild_id, location.channel_id, location.message_id ],

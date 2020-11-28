@@ -37,7 +37,9 @@ module.exports = class RQRenderer extends React.Component {
         && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
 
         targetEntries.push({ i: i, value: quotes[0] });
-        quotes = quotes.slice(1);
+
+        if (quotes.length > 1) quotes = quotes.slice(1);
+        else quotes = false;
       }
     }}
 
@@ -48,7 +50,6 @@ module.exports = class RQRenderer extends React.Component {
       const { getUser } = await getModule([ 'getCurrentUser' ]);
       const { getChannel } = await getModule(['getChannel']);
       const parser = await getModule(['parse', 'parseTopic']);
-
 
       for (const {i, value} of targetEntries) {
         let quoteParams = {
