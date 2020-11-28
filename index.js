@@ -100,31 +100,25 @@ module.exports = class RichQuotes extends Plugin {
         }
 
         if (reply) {
-          res.props.childrenRepliedMessage = React.createElement('div', {
+          if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', {
             ref: (e) => {
-              if (!e) {
-                return;
+              if (!e) return;
+
+              const target = getReactInstance(e).sibling.child.child.child.sibling.stateNode.firstElementChild.children[2],
+                    container = document.createElement('div');
+
+              container.className = 'rq-avatar-wrapper';
+
+              const avatarImage = React.createElement(Avatar, {
+                user: res.props.childrenHeader.props.referencedMessage.message.author
+              });
+
+              if (target.childNodes.length === 1) {
+                ReactDOM.render(avatarImage, container);
+                target.prepend(container);
               }
-              console.dir(e);
-              const target = getReactInstance(e).sibling.child.child.child.sibling.stateNode;
-
-              if (settings.replyMode == 0) {
-                const avatarImage = React.createElement(Avatar, {
-                  user: res.props.childrenHeader.props.referencedMessage.message.author
-                });
-
-
-                const container = document.createElement('div');
-
-                container.className = 'rq-avatar-wrapper';
-
-                if (target.childNodes.length === 1) {
-                  ReactDOM.render(avatarImage, container);
-                  target.prepend(container);
-                }
-              } else res.props.className = `${res.props.className} rq-hide-reply-header`;
             }
-          });
+          }); else res.props.className = `${res.props.className} rq-hide-reply-header`;
 
           const location = args.message.messageReference;
 
