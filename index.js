@@ -1,6 +1,6 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
-const { getModule, React, ReactDOM } = require('powercord/webpack');
+const { getModule, React } = require('powercord/webpack');
 const { getReactInstance } = require('powercord/util');
 const Renderer = require('./components/Renderer');
 
@@ -98,8 +98,7 @@ module.exports = class RichQuotes extends Plugin {
         if (!reply) reply = resReply?.props?.referencedMessage?.message;
 
         if (reply) {
-          const repliedAuthor = res.props.childrenHeader.props.referencedMessage.message;
-
+          const repliedAuthor = res.props.childrenHeader.props.referencedMessage?.message?.author;
           let mentionType = 0;
 
           // @todo Make mentions less gae
@@ -126,22 +125,23 @@ module.exports = class RichQuotes extends Plugin {
             ref: (e) => {
               if (!e) return;
 
-              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.stateNode?.firstElementChild?.children[2];
-
+              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.child?.child?.sibling?.sibling?.sibling.sibling.child.child.child.child.stateNode;
+              // return
               if (!target) return;
+              if (target.props.children instanceof Array) return
 
-              const container = document.createElement('div');
 
-              container.className = 'rq-avatar-wrapper';
-
-              const avatarImage = React.createElement(Avatar, {
+              const avatarImage = React.createElement('div', {
+                className: 'rq-avatar-wrapper'
+              },
+              React.createElement(Avatar, {
                 user: repliedAuthor
-              });
-
-              if (target.childNodes.length === 1) {
-                ReactDOM.render(avatarImage, container);
-                target.prepend(container);
-              }
+              }));
+              target.props.children = [
+                avatarImage,
+                target.props.children
+              ]
+              target.forceUpdate()
             }
           }); else res.props.className = `${res.props.className} rq-hide-reply-header`;
 
