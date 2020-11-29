@@ -127,7 +127,7 @@ module.exports = class RichQuotes extends Plugin {
             ref: (e) => {
               if (!e) return;
 
-              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.child?.child?.sibling?.sibling?.sibling.sibling.child.child.child.child.stateNode;
+              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.child?.child?.sibling?.sibling?.sibling?.sibling?.child?.child?.child?.child?.stateNode;
               // return
               if (!target) return;
               if (target.props.children instanceof Array) return
