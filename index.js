@@ -1,71 +1,179 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { getModule, React } = require('powercord/webpack');
-const renderer = require('./components/Renderer');
-const settings = require('./components/Settings');
-const linkSelector = /https?:\/\/((canary|ptb)\.)?discord(app)?\.com\/channels\/(\d{17,19}|@me)\/\d{17,19}\/\d{17,19}/;
+const { getReactInstance } = require('powercord/util');
+const Renderer = require('./components/Renderer');
+
+const Quote = require('./components/Quote');
+
+const Avatar = require('./components/child/Avatar');
+
+const Settings = require('./components/Settings');
+
+const parseRaw = require('./utils/parseRaw.js');
+
+const settings = require('./utils/settings.js');
 
 module.exports = class RichQuotes extends Plugin {
+  getSettings () {
+    const resolved = {};
+
+    Object.entries(settings.list).forEach(([ key, setting ]) => {
+      resolved[key] = this.settings.get(key, setting.fallback);
+    });
+
+    return resolved;
+  }
+
   async startPlugin () {
-    powercord.api.settings.registerSettings("rich-quotes", {
+    powercord.api.settings.registerSettings('rich-quotes', {
       label: 'Rich Quotes',
       category: this.entityID,
-      render: settings
+      render: Settings
     });
 
     this.loadStylesheet('./style.scss');
 
+    const cacheSearch = this.settings.get('cacheSearch', true);
+
+    if (!cacheSearch && window.localStorage.richQuoteCache) 
+      window.localStorage.removeItem('richQuoteCache');
+
+    const ConnectionStore = await getModule(['isTryingToConnect', 'isConnected'])
+    const listener = () => {
+      if (!ConnectionStore.isConnected()) return;
+
+      ConnectionStore.removeChangeListener(listener)
+      this.runInjections();
+    }
+
+    if (ConnectionStore.isConnected()) listener()
+    else ConnectionStore.addChangeListener(listener)
+  }
+
+  async runInjections () {
+    const Style = await getModule([ 'mentioned' ]);
+
+    const currentUser = (await getModule(['getCurrentUser'])).getCurrentUser();
+
     const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
-    const oType = ChannelMessage.type;
-    const { mentioned } = await getModule([ 'mentioned' ]);
+    const ListMessage = (await getModule(m => m.type?.displayName === 'ChannelMessage')); // discord moment :keuch:
+    const cmType = ChannelMessage.type;
+    const lmType = ListMessage.type;
 
-    inject('Rich-Quotes-Message', ChannelMessage, 'type', (args, res) => {
-      if (res.props.childrenMessageContent) { 
-        if (
-          (/(?:> )([\s\S]+?)\n(<@!?(\d+)>)/g).test(args[0].message.content) ||
-          linkSelector.test(args[0].message.content)) {
-          const currentUser = getModule([ 'getCurrentUser' ], false).getCurrentUser();
-          const cacheSearch = this.settings.get('cacheSearch', true);
-          
-          if (!cacheSearch && window.localStorage.richQuoteCache) window.localStorage.removeItem('richQuoteCache');
-          const MessageContent = res.props.childrenMessageContent.props;
-          
-          const get = (n, d) => this.settings.get(n, d = true);
+    inject('Rich-Quotes-Channel-Message', ChannelMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style));
+    Object.assign(ChannelMessage.type, cmType);
 
-          MessageContent.content = React.createElement(renderer, {
-            content: MessageContent.content,
-            message: args[0].message,
-            settings: {
-              cacheSearch,
+    // For search, pinned, inbox, threads, etc
+    inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style, true));
+    Object.assign(ListMessage.type, lmType);
+  }
 
-              displayChannel: get('displayChannel'),
-              displayTimestamp: get('displayTimestamp'),
-              displayNickname: get('displayNickname'),
+  injectMessage (args, res, currentUser, Style, list = false) {
+    if (res) {
+      const resContent = res.props.childrenMessageContent;
 
-              displayReactions: get('displayReactions'),
-              displayEmbeds: get('displayEmbeds'),
-              
-              embedImages: get('embedImages'), embedVideos: get('embedVideos'),
-              embedYouTube: get('embedYouTube'), embedAudio: get('embedAudio'),
-              embedFile: get('embedFile'), //embedSpecial: get('embedSpecial'),
-              embedOther: get('embedOther'), embedAll: get('embedAll')
+      let parsed;
+
+      const settings = this.getSettings();
+
+      if (resContent) {
+        parsed = parseRaw((` ${args.message.content}`).slice(1).split('\n'), currentUser);
+
+        if (!parsed.isCommand) {
+          if (parsed.quotes || parsed.hasLink) {
+            if (parsed.quotes && !parsed.broadMention) {
+              res.props.className = res.props.className.replace(Style.mentioned, '');
             }
-          });
-          
-          if (!MessageContent.message.content.replace(`<@!${currentUser.id}`, '').includes(`<@!${currentUser.id}`)) {
-            res.props.className = res.props.className.replace(mentioned, '');
+
+            resContent.props.content = React.createElement(Renderer, {
+              content: resContent.props.content, message: args.message,
+              quotes: parsed.quotes,
+              broadMention: (list ? false : parsed.broadMention),
+              level: 0,
+              currentUser, settings
+            });
+
+            if (args.message.author.bot && settings.cullBotQuotes) {
+              args.message.embeds = [];
+            }
           }
+        } else if (!list && settings.cullQuoteCommands) {
+          res = null;
         }
       }
 
-      return res;
-    }, false);
-    ChannelMessage.type.displayName = 'ChannelMessage';
-    Object.assign(oType, ChannelMessage.type);
+      if (res && settings.replyReplace && !res.props.className.includes('rq-message-reply')) {
+        const resReply = res.props.childrenRepliedMessage;
+
+        let reply = resReply?.props?.children?.props?.referencedMessage?.message;
+
+        if (!reply) reply = resReply?.props?.referencedMessage?.message;
+
+        if (reply) {
+          const repliedAuthor = res.props.childrenHeader.props.referencedMessage?.message?.author;
+          let mentionType = 0;
+
+          if (res.props.className.includes(Style.mentioned)) {
+            if (parsed) {
+              if (!parsed.broadMention) {
+                mentionType = 2;
+                res.props.className = res.props.className.replace(Style.mentioned, '');
+              } else mentionType = 3;
+            } else mentionType = 2;
+          }
+
+          if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', {
+            ref: (e) => {
+              if (!e) return;
+
+              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.child?.child?.sibling?.sibling?.sibling.sibling.child.child.child.child.stateNode;
+              // return
+              if (!target) return;
+              if (target.props.children instanceof Array) return
+
+
+              const avatarImage = React.createElement('div', {
+                className: 'rq-avatar-wrapper'
+              },
+              React.createElement(Avatar, {
+                user: repliedAuthor
+              }));
+              target.props.children = [
+                avatarImage,
+                target.props.children
+              ]
+              target.forceUpdate()
+            }
+          }); else res.props.className = `${res.props.className} rq-hide-reply-header`;
+
+          const location = args.message.messageReference;
+
+          const parentLocation = document.location.href.split('/');
+
+          const renderedQuote = React.createElement(Quote, {
+            link: [ location.guild_id, location.channel_id, location.message_id ],
+            parent: [ parentLocation[4], parentLocation[5], args.message.id ],
+            mentionType, level: 0, isReply: true,
+            currentUser, settings
+          });
+
+          if (Array.isArray(resContent.props.content))
+            resContent.props.content.unshift(renderedQuote);
+          else
+            resContent.props.content.props.content.unshift(renderedQuote);
+
+          res.props.rq_setReply = true;
+        }
+      }
+    }
+
+    return res;
   }
 
   pluginWillUnload () {
-    powercord.api.settings.unregisterSettings("rich-quotes");
-    uninject('Rich-Quotes-Message');
+    powercord.api.settings.unregisterSettings('rich-quotes');
+    uninject('Rich-Quotes-Channel-Message');
+    uninject('Rich-Quotes-List-Message');
   }
 };

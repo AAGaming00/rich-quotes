@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Bowser65
+ * Copyright (c) 2020 Cynthia/Bowser65
  * Licensed under the Open Software License version 3.0
  * 
  * Edited by MulverineX
@@ -28,13 +28,14 @@ const Message = getModule(m => m.prototype && m.prototype.getReaction && m.proto
 const { getCurrentUser } = getModule([ 'getCurrentUser' ], false);
 
 module.exports = React.memo(
-  () => {
+  (props) => {
     // State
     const currentUser = getCurrentUser();
     const colorStaff = React.useMemo(() => `#${ROLE_COLORS[Math.round(Math.random() * 10)].toString(16)}`, []);
     const colorMod = React.useMemo(() => `#${ROLE_COLORS[Math.round(Math.random() * 10)].toString(16)}`, []);
 
-    const conversation = React.useMemo(() => [
+    // @todo Add embeds & reactions to preview
+    const conversation = React.useMemo((props) => [
       [ colorStaff, `Check out this preview` ],
       [ null, `We're previewing the sick new plugin? Heck yeah!` ],
       [ colorMod, `> We're previewing the sick new plugin? Heck yeah!\n<@!${currentUser.id}> Wait, you know about Rich Quotes ${currentUser.username}?` ],
@@ -55,22 +56,20 @@ module.exports = React.memo(
         </HeaderBarContainer>
         <div className={chatContent}>
           <AdvancedScrollerAuto>
-            <div className='group-spacing-16'>
-              {conversation.map((msg, i) => (
-                <ChannelMessage
-                  key={`owo-${i.toString()}`}
-                  channel={channel}
-                  message={new Message({
-                    id: i,
-                    author: currentUser,
-                    colorString: msg[0],
-                    content: msg[1]
-                  })}
-                  id={`owo-${i.toString()}`}
-                  class={'richquotes-preview-message'}
-                  groupId={i}
-                />
-              ))}
+            <div className='group-spacing-16' ref={e => props.previewRef(e)}>
+              {conversation.map((msg, i) => (<ChannelMessage
+                key={`owo-${i.toString()}`}
+                channel={channel}
+                message={new Message({
+                  id: i,
+                  author: currentUser,
+                  colorString: msg[0],
+                  content: msg[1]
+                })}
+                id={`owo-${i.toString()}`}
+                class={'richquotes-preview-message'}
+                groupId={i}
+              />))}
             </div>
           </AdvancedScrollerAuto>
         </div>

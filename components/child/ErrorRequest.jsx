@@ -2,7 +2,7 @@ const { getModule, http: { get }, constants: { Endpoints }, React } = require('p
 const { ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
-class ReqError extends React.PureComponent {
+module.exports = class RQRequestError extends React.PureComponent {
   constructor (props) { super(props); this.state = { content: false} }
 
   static getDerivedStateFromProps (props, state) {
@@ -72,10 +72,11 @@ class ReqError extends React.PureComponent {
           onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
         ></ButtonItem>)
       ] : [(<div className={errorText}>Error: Invalid DM</div>)]; break;
+      case 'same-link': errorBody = [(<div className={errorText}>Error: Link goes to this message</div>)]; break;
       case 'failed-request': errorBody = [(<div className={errorText}>Error: Discord API request failed</div>)]; break;
       case 'invalid-response': errorBody = [(<div className={errorText}>Error: Malformed Discord API response</div>)]; break;
     }
-    
+
     if (!errorBody[1]) errorBody.push(false);
 
     this.setState({ content: (<div className='rq-error rq-error-request'>{errorBody[0]}{errorBody[1]}</div>) });
@@ -83,5 +84,3 @@ class ReqError extends React.PureComponent {
 
   render() { return (<>{this.state.content}</>); }
 }
-
-module.exports = ReqError;

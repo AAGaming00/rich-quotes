@@ -3,7 +3,7 @@ const { clipboard } = getModule([ 'clipboard' ], false);
 const { ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
-class RenderError extends React.PureComponent {
+module.exports = class RQRenderError extends React.PureComponent {
   constructor (props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -16,28 +16,27 @@ class RenderError extends React.PureComponent {
   }
 
   render () {
-    const { getGuilds } = getModule([ 'getGuilds' ], false);
+    const { getGuild } = getModule([ 'getGuild' ], false);
     const parser = getModule(["parse", "parseTopic"], false);
     const errorText = 'rq-error-text colorStandard-2KCXvj';
 
 
     const support = { 
       author: { name: 'AAGaming', id: '373833473091436546' },
-      server: { name: 'Powercord', invite: 'nFRHhDk', link: ['538759280057122817','755004260902764646'] } // plugin-support
+      server: { name: 'Powercord', invite: 'gs4ZMbBfCh', link: ['538759280057122817','755004260902764646'] } // plugin-support
     }
 
     const originalContent = this.props.content;
 
-    const inGuild = (() => { let is = false;
-      Object.keys(getGuilds()).forEach((key) => { if (key == support.server.link[0]) is = true }); return is })();
-    
+    const inGuild = getGuild(support.server.link[0]) !== undefined;
+
     let server_link = (parser.parse(inGuild ?
       `https://${document.location.href.split('/')[2]}/channels/${support.server.link.join('/')}`
       :
       `https://discord.gg/${support.server.invite}`))[0];
 
     server_link.props.children[0] = `${support.server.name} server`;
-    
+
     let errorString = this.state.error?.stack;
 
     errorString = errorString // Clean error string
@@ -47,12 +46,12 @@ class RenderError extends React.PureComponent {
       .split('../../')
       .join('')
       .substring(0, 2000 - 36);
-    
+
     // Jank ass sanity check
-    const badPlugins = ['open-in-spotify']
+    const badPlugins = []
     const hasBad = (() => { let has = false;
-      powercord.pluginManager.getPlugins().forEach((name) => { badPlugins.forEach((bad) => { if (name.includes(bad)) has = true;})}); return has })();
-    
+      powercord.pluginManager.getPlugins().forEach((name) => { badPlugins.forEach((bad) => { if (name.includes(bad)) has = name;})}); return has })();
+
     if (errorString?.length === 2000 - 36) errorString += '...';
 
     if (this.state.hasError) {
@@ -60,7 +59,7 @@ class RenderError extends React.PureComponent {
         <div className='rq-error rq-error-render'>
           { hasBad ? 
             <div className={errorText}>
-              You have Open in Spotify installed, it is probably causing the issue, disable the plugin.
+              You have {hasBad} installed, it is probably causing the issue, disable the plugin.
             </div> :
             <div className={errorText}>
               An error occurred while rendering this element. {'\n'}
@@ -70,7 +69,7 @@ class RenderError extends React.PureComponent {
           }
           { hasBad ? 
             <ButtonItem button={'Disable & Reload'} color={Button.Colors.GREEN}
-              onClick={() => { powercord.pluginManager.disable('open-in-spotify'); setTimeout(() => window.location.reload(), 250) }}
+              onClick={() => { powercord.pluginManager.disable(hasBad); setTimeout(() => window.location.reload(), 250) }}
             ></ButtonItem> : 
             <ButtonItem button='Copy Error Message' color={Button.Colors.GREEN}
               onClick={ () => clipboard.copy( `<@${support.author.id}>\n\`\`\`js\n${errorString}\n\`\`\`` ) }
@@ -83,5 +82,3 @@ class RenderError extends React.PureComponent {
     return this.props.children;
   }
 }
-
-module.exports = RenderError;
