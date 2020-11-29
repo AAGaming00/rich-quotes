@@ -1,6 +1,6 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
-const { getModule, React } = require('powercord/webpack');
+const { getModule, React, FluxDispatcher } = require('powercord/webpack');
 const { getReactInstance } = require('powercord/util');
 const Renderer = require('./components/Renderer');
 
@@ -43,12 +43,19 @@ module.exports = class RichQuotes extends Plugin {
     const listener = () => {
       if (!ConnectionStore.isConnected()) return;
 
-      ConnectionStore.removeChangeListener(listener)
+      ConnectionStore.removeChangeListener(listener);
+
       this.runInjections();
     }
 
-    if (ConnectionStore.isConnected()) listener()
-    else ConnectionStore.addChangeListener(listener)
+    if (ConnectionStore.isConnected()) listener();
+    else ConnectionStore.addChangeListener(listener);
+
+    const { ComponentDispatch } = await getModule([ 'ComponentDispatch' ]);
+
+    FluxDispatcher.subscribe('MESSAGE_UPDATE', (data) => {
+      ComponentDispatch.dispatch(`RICH_QUOTES_MESSAGE_EDIT_${data.id}`);
+    })
   }
 
   async runInjections () {

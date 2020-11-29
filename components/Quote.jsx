@@ -27,6 +27,19 @@ class RichQuote extends React.Component {
     return { ...Object.assign({}, props), ...state };
   }
 
+  componentWillUnmount() {
+    if (this.state.fromCache) {
+      const { ComponentDispatch } = getModule([ 'ComponentDispatch' ], false);
+
+      ComponentDispatch.unsubscribe(`RICH_QUOTES_MESSAGE_EDIT_${this.state.message.id}`, this.handleEdit);
+    }
+  }
+
+  handleEdit(data) {
+    console.log(data)
+    this.linkRes()
+  }
+
   async linkRes() {
     const MessageC = await getModule(m => m.prototype && m.prototype.getReaction && m.prototype.isSystemDM);
     const parser = await getModule(["parse", "parseTopic"]);
@@ -40,6 +53,14 @@ class RichQuote extends React.Component {
         this.state.errorParams.link = this.state.link;
       }
       else {
+        if (messageData.rq_fromCache) {
+          this.state.fromCache = true;
+
+          const { ComponentDispatch } = await getModule([ 'ComponentDispatch' ]);
+
+          ComponentDispatch.subscribe(`RICH_QUOTES_MESSAGE_EDIT_${messageData.id}`, this.handleEdit);
+        }
+
         const { renderSimpleAccessories } = await getModule(m => m?.default?.displayName == 'renderAccessories');
         const { getChannel } = await getModule(['getChannel']);
 
