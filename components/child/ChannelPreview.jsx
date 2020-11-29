@@ -10,7 +10,7 @@ const { AsyncComponent, AdvancedScrollerAuto } = require('powercord/components')
 
 const HeaderBarContainer = AsyncComponent.from(getModuleByDisplayName('HeaderBarContainer'));
 const ChannelText = AsyncComponent.from(getModuleByDisplayName('ChannelText'));
-const ChannelMessage = getModule([ 'MESSAGE_ID_PREFIX' ], false).default;
+const ChannelMessage = AsyncComponent.from(getModule([ 'MESSAGE_ID_PREFIX' ]).then(x => x.default));
 
 const channel = {
   isPrivate: () => false,
@@ -56,9 +56,9 @@ module.exports = React.memo(
         </HeaderBarContainer>
         <div className={chatContent}>
           <AdvancedScrollerAuto>
-            <div className='group-spacing-16' ref={e => props.previewRef(e)}>
+            <div className='group-spacing-16' ref={e => setTimeout(() => e?.parentNode?.scrollTo({top: e?.childNodes[6].offsetHeight + e?.childNodes[6].getBoundingClientRect().height}), 1)}>
               {conversation.map((msg, i) => (<ChannelMessage
-                key={`owo-${i.toString()}`}
+                key={`owo-${i.toString()}-${props.reload}`}
                 channel={channel}
                 message={new Message({
                   id: i,
