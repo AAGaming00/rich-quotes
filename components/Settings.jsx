@@ -17,6 +17,7 @@ module.exports = class Settings extends React.Component {
     super(props); this.state = { reload: false, masterCategoryOpened: false, extraCategoryOpened: false };
   }
 
+
   toggleDisplay (setting, defaultOption) {
     const { toggleSetting } = this.props;
 
@@ -36,19 +37,6 @@ module.exports = class Settings extends React.Component {
     if (getSetting('embedAll') !== embedAll) toggleSetting('embedAll', defaultOption);
   }
 
-  previewRef (e) { previewChildren = e?.children }
-
-  componentDidMount() { setTimeout(() => previewChildren[6].scrollIntoViewIfNeeded(), 100) }
-
-  componentDidUpdate (t, state) {
-    if (state.reload) {
-      setTimeout(() => previewChildren[6].scrollIntoViewIfNeeded(), 100);
-
-      // this is fine
-      this.state.reload = false;
-    }
-  }
-
   render () {
     const { getSetting, toggleSetting, updateSetting } = this.props;
 
@@ -60,7 +48,7 @@ module.exports = class Settings extends React.Component {
       <div>
         <FormTitle>Preview</FormTitle>
 
-        <ChannelPreview key={this.state.reload} previewRef={this.previewRef} {...this.props}/>
+        <ChannelPreview reload={this.state.reload}/>
 
         <FormTitle className='rq-settingsHeader'>Display</FormTitle>
 
