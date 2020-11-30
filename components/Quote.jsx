@@ -8,12 +8,9 @@ const RequestError = require('./child/ErrorRequest');
 const RenderError = require('./child/ErrorRender');
 const MoreMenu = require('./child/MoreMenu');
 
-const { openUserPopout, openUserContextMenu } = require('../utils/userMethods.js');
-
 const getMessage = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
-
-const parseRaw = require('../utils/parseRaw.js');
+const parseRaw = require('../utils/rawParser.js');
 
 const previewId = '000000000000000000';
 
@@ -171,26 +168,60 @@ class RichQuote extends React.Component {
     }));
   }
 
-  render () {
-    if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
-    else if (this.props.parent && this.props.link ? this.props.parent[2] === this.props.link[2] : false)
-      return (<RequestError {...{ error: 'same-link', inGuild: true, link: this.props.link }}/>);
-    else if (this.state.link && !this.state.content) {
-        this.linkRes();
+  openUserPopout (event, userId, guildId) {
+    const UserPopout = getModuleByDisplayName('UserPopout', false);
+    const PopoutDispatcher = getModule([ 'openPopout' ], false);
 
-        return (<div className='rq-preloader'>
-          <Spinner type='pulsingEllipsis' />
-        </div>);
+    // modified from smart typers
+    PopoutDispatcher.openPopout(event.target, {
+      containerClass: 'rich-quotes-popout',
+      render: (props) => React.createElement(UserPopout, { ...props, userId, guildId }),
+      closeOnScroll: false, shadow: false, position: 'right'
+    }, 'quote-user-popout');
+  }
+
+  openUserContextMenu (event, userId, channelId, guildId) {
+    const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
+    const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
+    const userStore = getModule([ 'getCurrentUser' ], false);
+
+    if (!guildId) {
+      return contextMenu.openContextMenu(event, (props) => React.createElement(GroupDMUserContextMenu, {
+          ...props,
+          user: userStore.getUser(userId),
+          channel: channelId
+      }));
     }
 
-    const { transitionTo } = getModule([ 'transitionTo' ], false);
-    const { parse } = getModule(['parse', 'parseTopic'], false);
-    const { getGuild } = getModule(['getGuild'], false);
-    const { getName } = getModule([ 'getName' ], false);
+    contextMenu.openContextMenu(event, (props) => React.createElement(GuildChannelUserContextMenu, {
+      ...props,
+      user: userStore.getUser(userId), guildId, channelId,
+      popoutPosition: 'top', showMediaItems: false
+    }));
+  }
 
-    const MessageTimestamp = getModule([ 'MessageTimestamp' ], false);
-    const Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false);
-    const MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
+  render () {
+    if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
+
+    else if (this.props.parent && this.props.link ? this.props.parent[2] === this.props.link[2] : false)
+      return (<RequestError {...{ error: 'same-link', inGuild: true, link: this.props.link }}/>);
+
+    else if (this.state.link && !this.state.content) {
+      this.linkRes();
+
+      return (<div className='rq-preloader'>
+        <Spinner type='pulsingEllipsis' />
+      </div>);
+    }
+
+    const { transitionTo } = getModule([ 'transitionTo' ], false),
+          { parse } = getModule(['parse', 'parseTopic'], false),
+          { getGuild } = getModule(['getGuild'], false),
+          { getName } = getModule([ 'getName' ], false);
+
+    const MessageTimestamp = getModule([ 'MessageTimestamp' ], false),
+          Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false),
+          MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
 
     const Style = getModule([ 'systemMessageAccessories' ], false);
 
@@ -201,9 +232,10 @@ class RichQuote extends React.Component {
     const link = this.state.link,
           searchMsg = this.state.searchStatus,
           previewQuote = this.state.channel.id === 'owo',
-          channelHeader = this.props.settings.displayChannel;
+          channelHeader = this.props.settings.displayChannel,
+          replyChannel = (!this.state.isReply || this.props.settings.replyMode == 2);
 
-    let channel = link && this.props.settings.displayChannel && link[1] !== document.location.href.split('/')[5] && (!this.state.isReply || this.props.settings.replyMode == 2) ? 
+    let channel = !replyChannel && link && link[1] !== document.location.href.split('/')[5] ? 
       parse(`<#${this.state.link[1]}>`, true, { channelId: this.props.parent[1] })[0] : false;
 
     if (channel) {
@@ -216,56 +248,50 @@ class RichQuote extends React.Component {
     }
 
     const quoteTimestamp = link && this.props.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
-      className: 'rq-timestamp', compact: false,
-      timestamp: new Timestamp(this.state.message.timestamp),
-      isOnlyVisibleOnHover: false
-    }) : false;
-
-    const highlightAlter = this.state.mentionType >= 2 ? 'rq-highlight-alt' : '',
+            className: 'rq-timestamp', compact: false,
+            timestamp: new Timestamp(this.state.message.timestamp),
+            isOnlyVisibleOnHover: false
+          }) : false,
+          highlightAlter = this.state.mentionType >= 2 ? 'rq-highlight-alt' : '',
           mention = this.state.mentionType !== 0 ? `rq-highlight ${highlightAlter}` : '',
           container = 'rq-highlight-container',
           highlightContainer = this.state.mentionType >= 2 ? 
-            `${container} ${this.state.mentionType === 3 ? `${container}-alt` : ''}` : '';
-
-    // Nickname handler
-    const displayName = this.props.settings.displayNickname ? 
+            `${container} ${this.state.mentionType === 3 ? `${container}-alt` : ''}` : '',
+          displayName = this.props.settings.displayNickname ? 
             getName(this.state.channel.guild_id, this.state.channel.id, this.state.author)
-            : this.state.author.name;
+            : this.state.author.name,
+          renderNested = this.props.settings.nestedQuotes == 0 ? false : (this.props.level < this.props.settings.nestedQuotes);
 
-    let content = this.state.content;
+    let content = this.state.content,
+        replied = false,
+        repliedAuthor = false;
 
-    const renderNested = this.props.settings.nestedQuotes == 0 ? false : (this.props.level < this.props.settings.nestedQuotes);
-
-    let replied = false;
-
-    let repliedAuthor = false;
-
-    if (this.state.message.messageReference){
-      const location = this.state.message.messageReference;
-
-      const replyLink = [ location.guild_id, location.channel_id, location.message_id ];
-
+    if (this.state.message.messageReference) {
       replied = true;
 
-      if (this.state.repliedAuthor) {
-        const repliedAuthorName = this.props.settings.displayNickname ? 
-          getName(this.state.channel.guild_id, this.state.channel.id, this.state.repliedAuthor)
-          : this.state.repliedAuthor.name;
-
-        repliedAuthor = (<span className={`rq-username rq-margin ${Style.username} ${Style.clickable}`}
-          onClick={(e) => openUserPopout(e, this.state.repliedAuthor.id, this.state.channel.guild_id) } 
-          onContextMenu={(e) => openUserContextMenu(e, this.state.repliedAuthor.id, this.state.channel.id, this.state.channel.guild_id)}
-        >{`${repliedAuthorName}`}</span>);
-      }
+      if (this.state.repliedAuthor) repliedAuthor = (<span className='rq-author'
+          onClick={e => this.openUserPopout(e, this.state.repliedAuthor.id, this.state.channel.guild_id) } 
+          onContextMenu={e => this.openUserContextMenu(e, this.state.repliedAuthor.id, this.state.channel.id, this.state.channel.guild_id)}
+        >
+        <Avatar style={Style} user={this.state.repliedAuthor} />
+        <span className={`rq-username rq-margin ${Style.username} ${Style.clickable}`}>{
+          this.props.settings.displayNickname ? 
+            getName(this.state.channel.guild_id, this.state.channel.id, this.state.repliedAuthor)
+            : this.state.repliedAuthor.name
+        }</span>
+      </span>);
 
       if (!content) content = [];
 
       if (content.length === 0 || !content[0]?.props?.isReply) {
         if (renderNested) {
+          const location = this.state.message.messageReference;
+
           let params = {
-            link: replyLink, parent: link, 
-            mentionType: 0, level: (this.props.level + 1), isReply: true,
-            gotAuthor: a => this.setState({ repliedAuthor: a }),
+            link: [ location.guild_id, location.channel_id, location.message_id ], 
+            parent: link, 
+            mentionType: 0, level: (this.props.level + 1), isReply: true, 
+            gotAuthor: a => this.setState({ repliedAuthor: a }), 
             currentUser: this.props.currentUser, settings: this.props.settings
           }
 
@@ -282,12 +308,10 @@ class RichQuote extends React.Component {
     if (renderNested && this.state.content[0] !== '' && this.props.currentUser) {
       const parsed = parseRaw((' ' + this.state.message.content).slice(1).split('\n'), this.props.currentUser);
 
-      if (parsed.quotes || parsed.hasLink) {
-        rqRender = <Renderer {...{
-          content, message: this.state.message, quotes: parsed.quotes, broadMention: this.props.mentionType >= 2,
-          parent: this.state.link, level: (this.props.level + 1), settings: this.props.settings
-        }} />;
-      }
+      if (parsed.quotes || parsed.hasLink) rqRender = <Renderer {...{
+        content, message: this.state.message, quotes: parsed.quotes, broadMention: this.props.mentionType >= 2,
+        parent: this.state.link, level: (this.props.level + 1), settings: this.props.settings
+      }} />;
     }
 
     let nested = '';
@@ -298,42 +322,54 @@ class RichQuote extends React.Component {
     }
 
     return (<RenderError content={this.props.content}>
-      <div id="a11y-hack"><div key={this.state.content} className={`rq-inline${nested}`}><div className={highlightContainer}>
+      <div id="a11y-hack"><div 
+        key={this.state.content} className={`rq-inline${nested}`} 
+        onContextMenu={e => this.openMoreMenu(e)}
+      ><div className={highlightContainer}>{
 
-        { !(this.props.isReply && this.props.settings.replyMode == 0) ? 
+        !(this.props.isReply && this.props.settings.replyMode == 0) ? 
         <div className='rq-header threads-header-hack'>
-          <Avatar user={this.state.author} context={this.state.channel}/>
           <div className='rq-userTag'>
-            <span className={`rq-username ${mention} ${Style.username} ${Style.clickable}`}
-              onClick={(e) => openUserPopout(e, this.state.author.id, this.state.channel.guild_id) } 
-              onContextMenu={(e) => openUserContextMenu(e, this.state.author.id, this.state.channel.id, this.state.channel.guild_id)}
-            >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span><span>{
+            <span className='rq-author rq-author-main'
+              onClick={e => this.openUserPopout(e, this.state.author.id, this.state.channel.guild_id) } 
+              onContextMenu={e => this.openUserContextMenu(e, this.state.author.id, this.state.channel.id, this.state.channel.guild_id)}
+            >
+              <Avatar style={Style} user={this.state.author} />
+              <span className={`rq-username ${mention} ${Style.username} ${Style.clickable}`}
+              >{`${this.state.mentionType !== 0 ? '@' : ''}${displayName}`}</span>
+            </span><span>{
               replied && repliedAuthor && this.props.settings.replyMode == 0 ? <span>
                 <span className='rq-infoText rq-margin'>replied to</span>{repliedAuthor}
-            </span> : false }{ channel ? <span>
-              <span className='rq-infoText'>{`in ${this.state.channel.name ? '' : 'a DM'}`}</span>
-              {channel}
-            </span> : false }</span>{ quoteTimestamp }
+              </span> : false }{
+              channelHeader && channel ? <span>
+                <span className='rq-infoText'>{`in ${this.state.channel.name ? '' : 'a DM'}`}</span>
+                {channel}
+              </span> : false
+            }</span>
+            { quoteTimestamp }
           </div>
         </div> : repliedAuthor ? <div className='rq-header threads-header-hack'>
           <div className='rq-userTag'>
-            <span className='rq-infoText'>replied to</span><Avatar user={this.state.repliedAuthor} context={this.state.channel} />{repliedAuthor}</div>
-        </div> : <div /> }
+            <span className='rq-infoText'>replied to</span>{repliedAuthor}
+          </div>
+        </div> : <div />
 
-        <div className='rq-button-container'>
-          { link ? [
+        }<div className='rq-button-container'>{
+          link ? [
             <Button {...{
-              classes: [ this.props.isReply && this.props.settings.replyMode != 2 ? 'reply' : 'jump' ], tooltip: 'Jump to Message', icon: 'Reply',
+              classes: [ this.props.isReply && this.props.settings.replyMode != 2 ? 'reply' : 'jump' ], 
+              icon: 'Reply', tooltip: 'Jump to Message',
               function: () => {
                 if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
                 else document.getElementById('owo-0').scrollIntoViewIfNeeded;
               }
             }}></Button>, 
-            !channelHeader ? <Button {...{
-              classes: [ 'channel-jump' ], tooltip: channel?.props?.text || 'unknown-channel', icon: 'Hash',
+            !channelHeader && !replyChannel ? <Button {...{
+              classes: [ 'channel-jump' ], icon: 'Hash',
+              tooltip: channel?.props?.text || 'unknown-channel',
               function: !previewQuote ? () => transitionTo(`/channels/${link[0]}/${link[1]}`) : false
             }}></Button> : false
-            ].map(e=>(e)) : 
+          ].map(e=>(e)) :
             <Button {...{
               classes: [ 'search' ], icon: !searchMsg ? 'Search' : false,
               tooltip: !searchMsg ? 
@@ -341,14 +377,16 @@ class RichQuote extends React.Component {
                 'Message search loading...' :
                 'Could not find matching message',
               function: !(searchMsg || previewQuote) ? async () => this.searchRes() : false
-            }}>{ searchMsg === 'loading' ?
-              <Spinner className='rq-loading-icon' type='pulsingEllipsis'/> : <div className='rq-error-icon'>!</div>
+            }}>{
+              searchMsg === 'loading' ? <Spinner className='rq-loading-icon' type='pulsingEllipsis'/> :
+              <div className='rq-error-icon'>!</div>
             }</Button>
-          }
-            { this.props.settings.displayMoreBtn && (!this.props.isReply || this.props.settings.reply_displayMoreBtn) ?
-              <Button {...{ classes: [ 'more' ], tooltip: 'More', function: (e) => this.openMoreMenu(e) }}><MoreIcon /></Button>
-            : false }
-        </div>
+          }{
+          this.props.settings.displayMoreBtn && (!this.props.isReply || this.props.settings.reply_displayMoreBtn) ?
+
+            <Button {...{ classes: [ 'more' ], tooltip: 'More', function: e => this.openMoreMenu(e) }}><MoreIcon /></Button>
+          : false
+        }</div>
 
         <div className='rq-content'>
           { rqRender || <MessageContent message={this.state.message} content={content}/> }

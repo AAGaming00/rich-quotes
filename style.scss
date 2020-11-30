@@ -255,3 +255,12 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
    white-space: pre;
    margin-right: 3px;
 }
+
+.rq-author {
+   display: grid;
+   grid-template-columns: min-content min-content;
+   align-items: baseline;
+   grid-column-gap: 4px;
+}
+
+.rq-author-main { grid-column-gap: 8px }
