@@ -280,7 +280,6 @@ class RichQuote extends React.Component {
     let rqRender = false;
 
     if (renderNested && this.state.content[0] !== '' && this.props.currentUser) {
-      console.log(this.props.currentUser)
       const parsed = parseRaw((' ' + this.state.message.content).slice(1).split('\n'), this.props.currentUser);
 
       if (parsed.quotes || parsed.hasLink) {

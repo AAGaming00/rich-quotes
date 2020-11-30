@@ -82,9 +82,8 @@ module.exports = class RichQuotes extends Plugin {
 
         if (!parsed.isCommand) {
           if (parsed.quotes || parsed.hasLink) {
-            if (parsed.quotes && !parsed.broadMention) {
+            if (parsed.quotes && !parsed.broadMention) 
               res.props.className = res.props.className.replace(Style.mentioned, '');
-            }
 
             resContent.props.content = React.createElement(Renderer, {
               content: resContent.props.content, message: args.message,
@@ -98,12 +97,10 @@ module.exports = class RichQuotes extends Plugin {
               args.message.embeds = [];
             }
           }
-        } else if (!list && settings.cullQuoteCommands) {
-          res = null;
-        }
+        } else if (!list && settings.cullQuoteCommands) res = null;
       }
 
-      if (res && settings.replyReplace && !res.props.className.includes('rq-message-reply')) {
+      if (res && settings.replyReplace && !res.props.rq_setReply) {
         const resReply = res.props.childrenRepliedMessage;
 
         let reply = resReply?.props?.children?.props?.referencedMessage?.message;
@@ -145,15 +142,16 @@ module.exports = class RichQuotes extends Plugin {
               ]
               target.forceUpdate()
             }
-          }); else res.props.className = `${res.props.className} rq-hide-reply-header`;
+          }); else {
+            res.props.childrenRepliedMessage = null;
+            res.props.className = `${res.props.className} rq-hide-reply-header`;
+          }
 
           const location = args.message.messageReference;
 
-          const parentLocation = document.location.href.split('/');
-
           const renderedQuote = React.createElement(Quote, {
             link: [ location.guild_id, location.channel_id, location.message_id ],
-            parent: [ parentLocation[4], parentLocation[5], args.message.id ],
+            parent: [ ...document.location.href.split('/').slice(4,6), args.message.id ],
             mentionType, level: 0, isReply: true,
             currentUser, settings
           });
