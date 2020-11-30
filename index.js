@@ -10,7 +10,8 @@ const Avatar = require('./components/child/Avatar');
 
 const Settings = require('./components/Settings');
 
-const parseRaw = require('./utils/parseRaw.js');
+const parseRaw = require('./utils/rawParser.js');
+const traverseTree = require('./utils/treeTraverser.js');
 
 const settings = require('./utils/settings.js');
 
@@ -108,7 +109,6 @@ module.exports = class RichQuotes extends Plugin {
         if (!reply) reply = resReply?.props?.referencedMessage?.message;
 
         if (reply) {
-          const repliedAuthor = res.props.childrenHeader.props.referencedMessage?.message?.author;
           let mentionType = 0;
 
           if (res.props.className.includes(Style.mentioned)) {
@@ -120,29 +120,28 @@ module.exports = class RichQuotes extends Plugin {
             } else mentionType = 2;
           }
 
-          if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', {
-            ref: (e) => {
-              if (!e) return;
+          if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', { ref: (e) => {
+            if (!e) return;
 
-              const target = getReactInstance(e)?.sibling?.child?.child?.child?.sibling?.child?.child?.sibling?.sibling?.sibling?.sibling?.child?.child?.child?.child?.stateNode;
-              // return
-              if (!target) return;
-              if (target.props.children instanceof Array) return
+            const target = traverseTree(
+              getReactInstance(e),
+              ['sibling', ['child', 3], 'sibling', ['child', 2], ['sibling', 4], ['child', 4], 'stateNode']
+            );
 
+            if (!target) return;
+            if (target.props.children instanceof Array) return
 
-              const avatarImage = React.createElement('div', {
-                className: 'rq-avatar-wrapper'
-              },
+            const avatarImage = React.createElement('div', { className: 'rq-avatar-wrapper' }, 
               React.createElement(Avatar, {
-                user: repliedAuthor
-              }));
-              target.props.children = [
-                avatarImage,
-                target.props.children
-              ]
-              target.forceUpdate()
-            }
-          }); else {
+                style: getModule([ 'systemMessageAccessories' ], false),
+                user: res.props.childrenHeader.props.referencedMessage?.message?.author
+              })
+            );
+
+            target.props.children = [ avatarImage, target.props.children ];
+
+            target.forceUpdate()
+          }}); else {
             res.props.childrenRepliedMessage = null;
             res.props.className = `${res.props.className} rq-hide-reply-header`;
           }
