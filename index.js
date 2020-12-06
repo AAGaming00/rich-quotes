@@ -1,12 +1,12 @@
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
-const { getModule, React } = require('powercord/webpack');
+const { getModule, React, ReactDOM } = require('powercord/webpack');
 const { getReactInstance } = require('powercord/util');
 const Renderer = require('./components/Renderer');
 
 const Quote = require('./components/Quote');
 
-const Avatar = require('./components/child/Avatar');
+const ReplyHeader = require('./components/child/ReplyHeader');
 
 const Settings = require('./components/Settings');
 
@@ -37,7 +37,7 @@ module.exports = class RichQuotes extends Plugin {
 
     const cacheSearch = this.settings.get('cacheSearch', true);
 
-    if (!cacheSearch && window.localStorage.richQuoteCache) 
+    if (!cacheSearch && window.localStorage.richQuoteCache)
       window.localStorage.removeItem('richQuoteCache');
 
     const ConnectionStore = await getModule(['isTryingToConnect', 'isConnected'])
@@ -83,7 +83,7 @@ module.exports = class RichQuotes extends Plugin {
 
         if (!parsed.isCommand) {
           if (parsed.quotes || parsed.hasLink) {
-            if (parsed.quotes && !parsed.broadMention) 
+            if (parsed.quotes && !parsed.broadMention)
               res.props.className = res.props.className.replace(Style.mentioned, '');
 
             resContent.props.content = React.createElement(Renderer, {
@@ -120,31 +120,27 @@ module.exports = class RichQuotes extends Plugin {
             } else mentionType = 2;
           }
 
-          if (settings.replyMode == 0) res.props.childrenRepliedMessage = React.createElement('div', { ref: (e) => {
+          res.props.childrenRepliedMessage = settings.replyMode != 0 ? null : React.createElement('div', { ref: e => {
             if (!e) return;
-
             const target = traverseTree(
               getReactInstance(e),
-              ['sibling', ['child', 3], 'sibling', ['child', 2], ['sibling', 4], ['child', 4], 'stateNode']
+              ['sibling', ['child', 3], 'sibling', 'child', 'stateNode']
             );
 
             if (!target) return;
-            if (target.props.children instanceof Array) return
+            if (target.__rqHasInjected) return;
 
-            const avatarImage = React.createElement('div', { className: 'rq-avatar-wrapper' }, 
-              React.createElement(Avatar, {
-                style: getModule([ 'systemMessageAccessories' ], false),
-                user: res.props.childrenHeader.props.referencedMessage?.message?.author
-              })
-            );
+            const container = document.createElement('span');
 
-            target.props.children = [ avatarImage, target.props.children ];
+            ReactDOM.render(React.createElement(ReplyHeader, {
+              author: reply.author, channel: args.channel
+            }), container);
 
-            target.forceUpdate()
-          }}); else {
-            res.props.childrenRepliedMessage = null;
-            res.props.className = `${res.props.className} rq-hide-reply-header`;
-          }
+            target.appendChild(container);
+            target.__rqHasInjected = true;
+
+            e.remove();
+          }});
 
           const location = args.message.messageReference;
 

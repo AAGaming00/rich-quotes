@@ -8,6 +8,8 @@ const RequestError = require('./child/ErrorRequest');
 const RenderError = require('./child/ErrorRender');
 const MoreMenu = require('./child/MoreMenu');
 
+const { openUserPopout, openUserContextMenu } = require('../utils/userMethods.js');
+
 const getMessage = require('../utils/getMessage.js');
 const embedHandler = require('../utils/embedHandler.js');
 const parseRaw = require('../utils/rawParser.js');
@@ -168,38 +170,6 @@ class RichQuote extends React.Component {
     }));
   }
 
-  openUserPopout (event, userId, guildId) {
-    const UserPopout = getModuleByDisplayName('UserPopout', false);
-    const PopoutDispatcher = getModule([ 'openPopout' ], false);
-
-    // modified from smart typers
-    PopoutDispatcher.openPopout(event.target, {
-      containerClass: 'rich-quotes-popout',
-      render: (props) => React.createElement(UserPopout, { ...props, userId, guildId }),
-      closeOnScroll: false, shadow: false, position: 'right'
-    }, 'quote-user-popout');
-  }
-
-  openUserContextMenu (event, userId, channelId, guildId) {
-    const GroupDMUserContextMenu = getModuleByDisplayName('GroupDMUserContextMenu', false);
-    const GuildChannelUserContextMenu = getModuleByDisplayName('GuildChannelUserContextMenu', false);
-    const userStore = getModule([ 'getCurrentUser' ], false);
-
-    if (!guildId) {
-      return contextMenu.openContextMenu(event, (props) => React.createElement(GroupDMUserContextMenu, {
-          ...props,
-          user: userStore.getUser(userId),
-          channel: channelId
-      }));
-    }
-
-    contextMenu.openContextMenu(event, (props) => React.createElement(GuildChannelUserContextMenu, {
-      ...props,
-      user: userStore.getUser(userId), guildId, channelId,
-      popoutPosition: 'top', showMediaItems: false
-    }));
-  }
-
   render () {
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
 
@@ -270,8 +240,8 @@ class RichQuote extends React.Component {
       replied = true;
 
       if (this.state.repliedAuthor) repliedAuthor = (<span className='rq-author'
-          onClick={e => this.openUserPopout(e, this.state.repliedAuthor.id, this.state.channel.guild_id) } 
-          onContextMenu={e => this.openUserContextMenu(e, this.state.repliedAuthor.id, this.state.channel.id, this.state.channel.guild_id)}
+          onClick={e => openUserPopout(e, this.state.repliedAuthor.id, this.state.channel.guild_id) } 
+          onContextMenu={e => openUserContextMenu(e, this.state.repliedAuthor.id, this.state.channel.id, this.state.channel.guild_id)}
         >
         <Avatar style={Style} user={this.state.repliedAuthor} />
         <span className={`rq-username rq-margin ${Style.username} ${Style.clickable}`}>{
@@ -331,8 +301,8 @@ class RichQuote extends React.Component {
         <div className='rq-header threads-header-hack'>
           <div className='rq-userTag'>
             <span className='rq-author rq-author-main'
-              onClick={e => this.openUserPopout(e, this.state.author.id, this.state.channel.guild_id) } 
-              onContextMenu={e => this.openUserContextMenu(e, this.state.author.id, this.state.channel.id, this.state.channel.guild_id)}
+              onClick={e => openUserPopout(e, this.state.author.id, this.state.channel.guild_id) } 
+              onContextMenu={e => openUserContextMenu(e, this.state.author.id, this.state.channel.id, this.state.channel.guild_id)}
             >
               <Avatar style={Style} user={this.state.author} />
               <span className={`rq-username ${mention} ${Style.username} ${Style.clickable}`}
