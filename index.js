@@ -6,7 +6,7 @@ const Renderer = require('./components/Renderer');
 
 const Quote = require('./components/Quote');
 
-const Avatar = require('./components/child/Avatar');
+const ReplyHeader = require('./components/child/ReplyHeader');
 
 const Settings = require('./components/Settings');
 
@@ -120,40 +120,27 @@ module.exports = class RichQuotes extends Plugin {
             } else mentionType = 2;
           }
 
-          if (settings.replyMode == 0 && !res.props.rq_setReply) res.props.childrenRepliedMessage = React.createElement('div', { ref: (e) => {
-            // if (!e) return;
-            // const target = traverseTree(
-            //   getReactInstance(e),
-            //   ['sibling', ['child', 3], 'sibling', 'child', 'stateNode']
-            // );
-            // if (!target) return;
-            // if (target.__rqHasInjected) return
-            // console.log(res, getReactInstance(e), target)
+          res.props.childrenRepliedMessage = settings.replyMode != 0 ? null : React.createElement('div', { ref: e => {
+            if (!e) return;
+            const target = traverseTree(
+              getReactInstance(e),
+              ['sibling', ['child', 3], 'sibling', 'child', 'stateNode']
+            );
 
-            // const rqHeaderContainer = document.createElement('div')
+            if (!target) return;
+            if (target.__rqHasInjected) return;
 
-            // const avatarImage = React.createElement('div', { className: 'rq-avatar-wrapper' },
-            //   React.createElement(Avatar, {
-            //     style: getModule([ 'systemMessageAccessories' ], false),
-            //     user: reply?.author
-            //   })
-            // );
+            const container = document.createElement('span');
 
-            // const replyHeaderText = React.createElement('span', { className: 'rq-reply-header-span' },
-            //   'test'
-            // );
+            ReactDOM.render(React.createElement(ReplyHeader, {
+              author: reply.author, channel: args.channel
+            }), container);
 
-            // const replyHeader = React.createElement(React.Fragment, null, [
-            //   avatarImage, replyHeaderText
-            // ])
-            // ReactDOM.render(replyHeader, rqHeaderContainer);
-            // target.appendChild(rqHeaderContainer)
-            // target.__rqHasInjected = true
-            // e.remove()
-          }}); else {
-            res.props.childrenRepliedMessage = null;
-            res.props.className = `${res.props.className} rq-hide-reply-header`;
-          }
+            target.appendChild(container);
+            target.__rqHasInjected = true;
+
+            e.remove();
+          }});
 
           const location = args.message.messageReference;
 

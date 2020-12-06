@@ -35,9 +35,9 @@ module.exports = {
          strings: {
             'Reply Display Mode': 'Controls reply display for replacement & inside quotes (nested).',
 
-            'Natural': 'Closest to discord\'s; keeps same parent header & removes header of Rich Quote.',
-            'Middle': 'Removes parent header reply text and makes some minor tweaks to Rich Quote.',
-            'Standard': 'Removes parent header reply text, changes nothing about Rich Quote design, and looks as if it was a link.'
+            'Classic': "Reimagined old design; adds in reply header and removes the header from the Quote.",
+            'Middle': 'Makes minor tweaks to quote.',
+            'Standard': 'Looks just like a link.'
          },
          fallback: 0
       },
