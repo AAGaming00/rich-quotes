@@ -57,13 +57,14 @@ module.exports = class RichQuotes extends Plugin {
 
     const currentUser = (await getModule(['getCurrentUser'])).getCurrentUser();
 
-    const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
+    //const ChannelMessage = (await getModule([ 'MESSAGE_ID_PREFIX' ])).default;
     const ListMessage = (await getModule(m => m.type?.displayName === 'ChannelMessage')); // discord moment :keuch:
-    const cmType = ChannelMessage.type;
+
+    //const cmType = ChannelMessage.type;
     const lmType = ListMessage.type;
 
-    inject('Rich-Quotes-Channel-Message', ChannelMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style));
-    Object.assign(ChannelMessage.type, cmType);
+    /*inject('Rich-Quotes-Channel-Message', ChannelMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style));
+    Object.assign(ChannelMessage.type, cmType);*/
 
     // For search, pinned, inbox, threads, etc
     inject('Rich-Quotes-List-Message', ListMessage, 'type', (args, res) => this.injectMessage(args[0], res, currentUser, Style, true));
