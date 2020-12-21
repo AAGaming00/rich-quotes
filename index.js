@@ -57,7 +57,7 @@ module.exports = class RichQuotes extends Plugin {
 
     const currentUser = (await getModule(['getCurrentUser'])).getCurrentUser();
 
-    const ChannelMessage = await getModule(m => m.type && (m.__powercordOriginal_type || m.type).toString().indexOf('useContextMenuMessage') !== -1);
+    const ChannelMessage = await getModule(m => m.type && (m.__powercordOriginal_type || m.type).toString().indexOf('useContextMenuMessage') !== -1, true);
     const ListMessage = (await getModule(m => m.type?.displayName === 'ChannelMessage')); // discord moment :keuch:
 
     const cmType = ChannelMessage.type;
