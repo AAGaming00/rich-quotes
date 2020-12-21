@@ -10,7 +10,7 @@ const { AsyncComponent, AdvancedScrollerAuto } = require('powercord/components')
 
 const HeaderBarContainer = AsyncComponent.from(getModuleByDisplayName('HeaderBarContainer'));
 const ChannelText = AsyncComponent.from(getModuleByDisplayName('ChannelText'));
-const ChannelMessage = AsyncComponent.from(getModule([ 'MESSAGE_ID_PREFIX' ]).then(x => x.default));
+const ChannelMessage = AsyncComponent.from(getModule(m => m.type && (m.__powercordOriginal_type || m.type).toString().indexOf('useContextMenuMessage') !== -1, true).then(m => m.type));
 
 const channel = {
   isPrivate: () => false,
