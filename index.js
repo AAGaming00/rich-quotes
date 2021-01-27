@@ -122,7 +122,7 @@ module.exports = class RichQuotes extends Plugin {
             } else mentionType = 2;
           }
 
-          res.props.childrenRepliedMessage = settings.replyMode != 0 ? null : React.createElement('div', { ref: e => {
+          res.props.childrenRepliedMessage = /* settings.replyMode != 0 */ true ? null : React.createElement('div', { ref: e => {
             if (!e) return;
             const target = traverseTree(
               getReactInstance(e),
