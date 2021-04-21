@@ -46,9 +46,9 @@ module.exports = class Settings extends React.Component {
 
     return (
       <div>
-        <FormTitle>Preview</FormTitle>
+        <FormTitle>Preview (broken, bug AA)</FormTitle>
 
-        <ChannelPreview reload={this.state.reload}/>
+        {/*<ChannelPreview reload={this.state.reload}/>*/}
 
         <FormTitle className='rq-settingsHeader'>Display</FormTitle>
 
