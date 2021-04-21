@@ -189,7 +189,7 @@ class RichQuote extends React.Component {
           { getGuild } = getModule(['getGuild'], false),
           { getName } = getModule([ 'getName' ], false);
 
-    const MessageTimestamp = getModule([ 'MessageTimestamp' ], false),
+    const MessageTimestamp = require('powercord/webpack').getModuleByDisplayName('MessageTimestamp', false),
           Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false),
           MessageContent = getModule(m => m.type && m.type.displayName === 'MessageContent', false);
 
@@ -217,7 +217,7 @@ class RichQuote extends React.Component {
       </>);
     }
 
-    const quoteTimestamp = link && this.props.settings.displayTimestamp ? new MessageTimestamp.MessageTimestamp({
+    const quoteTimestamp = link && this.props.settings.displayTimestamp ? new MessageTimestamp({
             className: 'rq-timestamp', compact: false,
             timestamp: new Timestamp(this.state.message.timestamp),
             isOnlyVisibleOnHover: false

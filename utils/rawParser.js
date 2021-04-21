@@ -63,7 +63,7 @@ module.exports = function parseRaw(rawContents, currentUser) {
             if (lineMentions.length !== 0) mentions = mentions.length !== 0 ? [ ...mentions, ...lineMentions ] : lineMentions;
          }
 
-         let urlMatch = raw.match(/https?:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/channels\/(?:\d{17,19}|@me)\/(?:\d{17,19})\/(?:\d{17,19})/);
+         let urlMatch = raw.match(/https?:\/\/(?:[a-z0-9]+\.)*?discord(?:app)?\.com\/channels\/(?:\d{17,19}|@me)\/(?:\d{17,19})\/(?:\d{17,19})/);
 
          const testCommand = lineMentions.length === 0 && rawContents.length === 1;
 
