@@ -38,7 +38,8 @@ const ChannelMessage = getModule([ 'getElementFromMessageId' ], false).default;
 const channel = {
   isPrivate: () => false,
   isSystemDM: () => false,
-  getGuildId: () => 'owo'
+  getGuildId: () => 'owo',
+  isArchivedThread: () => {}
 };
 
 // Classes
