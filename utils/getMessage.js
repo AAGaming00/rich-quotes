@@ -7,18 +7,25 @@ const { getGuild } = getModule(['getGuild'], false);
 
 const errorRes = (msg) => { return { error: msg, inGuild: true} };
 
+let store = {};
+let store_length = 0;
+let store_times = {};
+
 let lastFetch = 0;
 
 module.exports = async function getMessage([guildId, channelId, messageId], retry = false) {
    let message = false;
 
-   // Check Discord's local/client cache for message
+   // Check Discord's client cache for message
    if (!retry) message = getCachedMessage(channelId, messageId);
 
-   // Prevent polution
+   // Prevent pollution
    if (message) message = global._.cloneDeep(message);
 
-   // Request message when not present in cache
+   // Check our client cache for message & prevent pollution
+   else if (store[`${channelId}/${messageId}`]) message = global._.cloneDeep(store[`${channelId}/${messageId}`]);
+
+   // Request message when present in neither cache
    else {
       // Wait to do request
       if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, Date.now() - lastFetch));
@@ -62,6 +69,21 @@ module.exports = async function getMessage([guildId, channelId, messageId], retr
       msg.author = new User(msg.author);
       msg.timestamp = new Timestamp(msg.timestamp);
 
+      // Add Message to our client cache
+      store[`${channelId}/${messageId}`] = msg;
+      store_times[`${channelId}/${messageId}`] = Date.now();
+      store_length++;
+
+      // Prevent Memory leak in our cache
+      if (store_length === 21) {
+         const remove_msg = Object.entries(Object.assign({}, store_times)).sort((a, b) => a[1] - b[1])[0][0];
+
+         delete store[remove_msg];
+         delete store_times[remove_msg];
+         store_length--;
+      }
+
+      // Use local variable to prevent pollution
       message = msg;
    }
 
