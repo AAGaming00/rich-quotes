@@ -15,27 +15,17 @@
    position: unset !important; left: 0px !important; margin: 0px !important;
 }
 
-.message-2qnXI6.mentioned-xhSam7>div:first-child>div>#a11y-hack>.rq-inline>div {
-   background: var(--rq-highlight-container);
-   .re-file:before {
-      content: '';
-      width: 50px;
-      height: 50px;
-      background: red;
-   }
-}
-
 #a11y-hack{.rq-inline {
    background: var(--background-secondary);
    
-   &:not(.rq-nested)>div>div.rq-content>div>div.attachment-33OFj0 { background: var(--background-tertiary) }
+   &:not(.rq-nested)>div>div.rq-content>div div.attachment-33OFj0,.embedFull-2tM8-- { background: var(--background-tertiary) }
 
    .re-file { background: var(--background-tertiary); }
 
    &.rq-nested {
       background: var(--background-tertiary);
 
-      .re-file { background: var(--background-secondary) }
+      .re-file,.embedFull-2tM8-- { background: var(--background-secondary) !important; }
    }
 
    border-radius: 10px;
@@ -203,12 +193,16 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
 
 .rq-error {
    background: var(--background-secondary);
-   padding: 1rem;
    border-radius: .5rem;
    width: 24rem;
    margin-bottom: .5rem;
 
-   &>.powercord-settings-item {
+   &>div {
+      padding: 1rem;
+      border-radius: .5rem;
+   }
+
+   .powercord-settings-item {
       margin: 0px !important;
       width: min-content;
       height: min-content;
@@ -223,6 +217,16 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
       }
   }
 }
+
+.message-2qnXI6.mentioned-xhSam7 { .rq-highlight-container,.rq-error-highlight,.grid-1nZz7S {
+   background: var(--rq-highlight-container);
+   .re-file:before {
+      content: '';
+      width: 50px;
+      height: 50px;
+      background: red;
+   }
+}}
 
 .rq-tooltip { height: min-content }
 

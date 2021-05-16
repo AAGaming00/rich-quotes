@@ -15,8 +15,11 @@ module.exports = async function getMessage([guildId, channelId, messageId], retr
    // Check Discord's local/client cache for message
    if (!retry) message = getCachedMessage(channelId, messageId);
 
+   // Prevent polution
+   if (message) message = global._.cloneDeep(message);
+
    // Request message when not present in cache
-   if (!message) {
+   else {
       // Wait to do request
       if (lastFetch > Date.now() - 2500) await new Promise(r => setTimeout(r, Date.now() - lastFetch));
 

@@ -79,7 +79,7 @@ module.exports = class RQRequestError extends React.PureComponent {
 
     if (!errorBody[1]) errorBody.push(false);
 
-    this.setState({ content: (<div className='rq-error rq-error-request'>{errorBody[0]}{errorBody[1]}</div>) });
+    this.setState({ content: (<div className='rq-error rq-error-request'><div className="rq-error-highlight">{errorBody[0]}{errorBody[1]}</div></div>) });
   }
 
   render() { return (<>{this.state.content}</>); }

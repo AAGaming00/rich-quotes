@@ -26,15 +26,14 @@ module.exports = class RQRenderer extends React.Component {
     let targetEntries = [];
 
     /* Find Quotes */
-    for (const [i, e] of content.entries()) { if (e && e.props) { 
+    for (const [i, e] of content.entries()) { if (e && e.props) {
       if (e.props.href) {
         const link = e.props.href.match(linkSelector);
 
         if (link) targetEntries.push({ i: i, value: link.slice(1) });
       }
-
       else if (quotes && e.props.className && e.props.className === Style.blockquoteContainer 
-        && content[i + 1]?.props?.children?.props?.className.includes('mention')) {
+        && content[i + 1]?.props?.className === 'mention') {
 
         targetEntries.push({ i: i, value: quotes[0] });
 
@@ -57,7 +56,7 @@ module.exports = class RQRenderer extends React.Component {
 
           parent: thisLocation, level: this.props.level, mentionType: 0,
 
-          currentUser: this.props.currentUser, settings: this.props.settings
+          currentUser: (await getModule(['getCurrentUser'])).getCurrentUser(), settings: this.props.settings
         };
 
         /* Link Handler */
@@ -72,7 +71,7 @@ module.exports = class RQRenderer extends React.Component {
           content[i + 1] = null;
           quoteParams.isMarkdown = true;
 
-          if (this.props.currentUser.id !== value.author) quoteParams.mentionType = 1;
+          if (quoteParams.currentUser.id !== value.author) quoteParams.mentionType = 1;
           else if (!this.props.broadMention) quoteParams.mentionType = 2;
 
           if (this.props.broadMention) quoteParams.mentionType = 3;

@@ -64,6 +64,8 @@ class RichQuote extends React.Component {
         this.state.message = await new MessageC({ ...messageData });
         this.state.channel = await getChannel(messageData.channel_id);
 
+        console.log(this.props.isReply, this.props.mentionType);
+
         if (this.props.settings.displayEmbeds && (!this.props.isReply || this.props.settings.reply_displayEmbeds)
           && (this.state.message.embeds?.length !== 0 || this.state.message.attachments?.length !== 0)) {
 
