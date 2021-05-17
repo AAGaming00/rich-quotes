@@ -183,6 +183,10 @@ class RichQuote extends React.Component {
   }
   /* deepscan-enable */
 
+  hideSelf() {
+    this.setState({ hidden: true });
+  }
+
   render () {
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
 
@@ -325,7 +329,7 @@ class RichQuote extends React.Component {
 
     return (<RenderError content={this.props.content}>
       <div id="a11y-hack"><div 
-        key={this.state.content} className={`rq-inline${nested}`} 
+        key={this.state.content} className={`rq-inline${nested}${ this.state.hidden ? ' rq-hidden' : '' }`} 
         onContextMenu={e => this.openMoreMenu(e)}
       ><div className={highlightContainer}>{
 
@@ -393,7 +397,9 @@ class RichQuote extends React.Component {
         <div className='rq-content'>
           { rqRender || <MessageContent message={this.state.message} content={content}/> }
           { renderAccessories ? this.state.accessories : false }
+          
         </div>
+        <div className='rq-hide' onClick={e => this.hideSelf()}></div>
       </div></div></div>
     </RenderError>);
   }

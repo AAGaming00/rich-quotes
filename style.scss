@@ -165,6 +165,13 @@
          &.rq-channel-jump > svg { width: 12px; height: 12px }
       }
    }
+
+   .rq-hide {
+      display: none;
+   }
+   &:hover .rq-hide {
+      display: flex;
+   }
 }}
 
 #rich-quotes-preview {
@@ -271,4 +278,16 @@ main.contentColumn-2hrIYH .rq-settingsHeader { margin-bottom: .8rem; }
       text-shadow: 0px 0px 5px var(--text-muted);
       text-decoration: underline;
    }
+}
+.rq-hide {
+   justify-self: right;
+   width: 14px;
+   height: 14px;
+   cursor: pointer;
+   margin-top: .25rem;
+   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' aria-hidden='false' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23b6b6b6' d='M18.4 4L12 10.4L5.6 4L4 5.6L10.4 12L4 18.4L5.6 20L12 13.6L18.4 20L20 18.4L13.6 12L20 5.6L18.4 4Z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.rq-hidden {
+   display: none;
 }
