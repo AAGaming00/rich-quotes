@@ -82,7 +82,20 @@ module.exports = class RQRenderer extends React.Component {
             cached_message.content.includes(rawContent) &&
             cached_message.authorId === value.author &&
             cached_message.link[0] === (channel.guild_id || '@me')
-          ) quoteParams.link = cached_message.link;
+          ) {
+            if (this.props.settings.partialQuotes && cached_message.content !== rawContent) {
+              quoteParams.original = {
+                content: await parser.parse(rawContent, true, { channelId: this.props.message.channel_id }),
+                top: cached_message.content.slice(0, rawContent.length - 1) === rawContent,
+                end: cached_message.content.slice(cached_message.content.length - rawContent.length - 1, cached_message.content.length - 1) === rawContent
+              }
+              if (!quoteParams.original.top) quoteParams.original.with_top = parser.parse(cached_message.content.split(rawContent)[0] + rawContent, true, { channelId: this.props.message.channel_id });
+              
+              if (!quoteParams.original.end) quoteParams.original.with_end = parser.parse(rawContent + cached_message.content.split(rawContent)[1], true, { channelId: this.props.message.channel_id });
+            }
+
+            quoteParams.link = cached_message.link;
+          }
 
           /* Parse and set info when message is not cached/linked */
           if (!quoteParams.link) {

@@ -87,7 +87,5 @@ module.exports = async function getMessage([guildId, channelId, messageId], retr
       message = msg;
    }
 
-   // @todo Add result of message fetch to client cache
-
    return message;
 }

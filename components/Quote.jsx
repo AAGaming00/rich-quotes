@@ -16,7 +16,6 @@ const parseRaw = require('../utils/rawParser.js');
 
 const previewId = '000000000000000000';
 
-
 class RichQuote extends React.Component {
   constructor (props) {
     super(props); this.state = { searchStatus: false, errorParams: false };
@@ -170,6 +169,20 @@ class RichQuote extends React.Component {
     }));
   }
 
+  /* deepscan-disable */ // haha dumb
+  expandTop() {
+    this.state.original.top = true;
+    this.state.with_top = true;
+    this.setState(this.state);
+  }
+
+  expandEnd() {
+    this.state.original.end = true;
+    this.state.with_end = true;
+    this.setState(this.state);
+  }
+  /* deepscan-enable */
+
   render () {
     if (this.state.errorParams) return (<RequestError {...this.state.errorParams}/>);
 
@@ -201,7 +214,7 @@ class RichQuote extends React.Component {
 
     const link = this.state.link,
           searchMsg = this.state.searchStatus,
-          previewQuote = this.state.channel.id === 'owo',
+          previewQuote = this.state.channel?.id === 'owo',
           channelHeader = this.props.settings.displayChannel,
           replyChannel = (!this.state.isReply || this.props.settings.replyMode == 2);
 
@@ -232,11 +245,30 @@ class RichQuote extends React.Component {
             : this.state.author.name,
           renderNested = this.props.settings.nestedQuotes == 0 ? false : (this.props.level < this.props.settings.nestedQuotes);
 
-    let content = this.state.content,
+    let content = global._.cloneDeep(this.state.content),
         replied = false,
-        repliedAuthor = false;
+        repliedAuthor = false,
+        renderReply = true,
+        renderAccessories = true;
+    
+    if (this.props.settings.partialQuotes && this.state.original) {
 
-    if (this.state.message.messageReference) {
+      if (this.state.with_top && this.state.with_end) content = global._.cloneDeep(this.state.content);
+      else if (this.state.with_top) content = this.state.original.with_top;
+      else if (this.state.with_end) content = this.state.original.with_end; 
+      else content = this.state.original.content;
+
+      if (!this.state.original.top) { 
+        renderReply = false;
+        content.unshift(<span className='rq-partial top' onClick={e => this.expandTop()}>…</span>);
+      }
+      if (!this.state.original.end) {
+        renderAccessories = false;
+        content.push(<span className='rq-partial end' onClick={e => this.expandEnd()}>…</span>);
+      }
+    }
+
+    if (this.state.message.messageReference && renderReply) {
       replied = true;
 
       if (this.state.repliedAuthor) repliedAuthor = (<span className='rq-author'
@@ -360,7 +392,7 @@ class RichQuote extends React.Component {
 
         <div className='rq-content'>
           { rqRender || <MessageContent message={this.state.message} content={content}/> }
-          { this.state.accessories }
+          { renderAccessories ? this.state.accessories : false }
         </div>
       </div></div></div>
     </RenderError>);

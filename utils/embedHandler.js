@@ -28,7 +28,6 @@ module.exports = (messageData, settings, hasEmbedSpoilers) => {
             return keepEmbed;
          });
 
-         // @todo Move this to filter?
          if (colorFixes.length !== 0) colorFixes.forEach((e, i) => { if (messageData.embeds[i]) messageData.embeds[i].color = '#00000000' });
       }
 
