@@ -46,9 +46,9 @@ module.exports = class Settings extends React.Component {
 
     return (
       <div>
-        <FormTitle>Preview (broken, bug AA)</FormTitle>
+        <FormTitle>Preview</FormTitle>
 
-        {/*<ChannelPreview reload={this.state.reload}/>*/}
+        <ChannelPreview reload={this.state.reload}/>
 
         <FormTitle className='rq-settingsHeader'>Display</FormTitle>
 
@@ -125,10 +125,10 @@ module.exports = class Settings extends React.Component {
           onChange={() => toggleSetting('cacheSearch', true)}
         >{settings.list.cacheSearch.strings[0]}</SwitchItem>
 
-        {/*<SwitchItem note={settingStrings.partialQuotes[1]}
+        <SwitchItem note={settings.list.partialQuotes.strings[1]}
           value={getSetting('partialQuotes', true)}
           onChange={() => this.toggleSetting('partialQuotes', true)}
-        >{settingStrings.partialQuotes[0]}</SwitchItem>*/}
+        >{settings.list.partialQuotes.strings[0]}</SwitchItem>
 
         <ButtonItem
           onClick={() => window.localStorage.removeItem('richQuoteCache')}

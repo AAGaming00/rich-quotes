@@ -56,7 +56,7 @@ module.exports = class RQRenderError extends React.PureComponent {
 
     if (this.state.hasError) {
       return (<>
-        <div className='rq-error rq-error-render'>
+        <div className='rq-error rq-error-render'><div className="rq-error-highlight">
           { hasBad ? 
             <div className={errorText}>
               You have {hasBad} installed, it is probably causing the issue, disable the plugin.
@@ -75,7 +75,7 @@ module.exports = class RQRenderError extends React.PureComponent {
               onClick={ () => clipboard.copy( `<@${support.author.id}>\n\`\`\`js\n${errorString}\n\`\`\`` ) }
             ></ButtonItem>
           }
-        </div>
+        </div></div>
         {originalContent}
       </>);
     }

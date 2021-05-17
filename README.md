@@ -2,6 +2,8 @@
 
 > Abraham Lincoln - Everything on the internet is true.
 
+> Sun tzu - Stop making quotes I've never said.
+
 Discord client plugin for Powercord that makes quotes and message links more wealthy.
 
 
