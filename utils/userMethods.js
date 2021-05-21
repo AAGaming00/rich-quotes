@@ -6,6 +6,7 @@ module.exports = {
       const PopoutDispatcher = getModule([ 'openPopout' ], false);
 
       // modified from smart typers
+      console.log(PopoutDispatcher, UserPopout)
       PopoutDispatcher.openPopout(event.target, {
          containerClass: 'rich-quotes-popout',
          render: (props) => React.createElement(UserPopout, { ...props, userId, guildId }),
@@ -22,7 +23,7 @@ module.exports = {
          return contextMenu.openContextMenu(event, (props) => React.createElement(GroupDMUserContextMenu, {
             ...props,
             user: userStore.getUser(userId),
-            channel: channelId
+            channel: {isManaged: () => {}, id: channelId}
          }));
       }
 
