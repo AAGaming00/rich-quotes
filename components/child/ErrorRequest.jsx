@@ -13,43 +13,35 @@ module.exports = class RQRequestError extends React.PureComponent {
 
   async buildError () {
     const { getGuild } = await getModule([ 'getGuild' ]);
+    const { joinGuild } = await getModule([ 'joinGuild' ]);
+    const { transitionTo } = await getModule([ 'transitionTo' ]);
 
-    const linkGuild = this.props.link[0];
+    const guild_id = this.props.link[0];
 
     const errorText = 'rq-error-text colorStandard-2KCXvj';
-    const isCurrentGuild = window.location.href.split('/')[4] === linkGuild;
+    const isCurrentGuild = window.location.href.split('/')[4] === guild_id;
 
     let errorBody = [];
 
     switch (this.props.error) {
       case 'missing-access': {
         if (this.props.inGuild) errorBody = [
-          (<div className={errorText}>{`Error: Missing access to channel on ${isCurrentGuild ? 'this server.' : `${getGuild(linkGuild).name} server.`}`}</div>),
+          (<div className={errorText}>{`Error: Missing access to channel on ${isCurrentGuild ? 'this server.' : `${getGuild(guild_id).name} server.`}`}</div>),
           isCurrentGuild ? false : 
           (<ButtonItem button='Go to Server' color={Button.Colors.GREEN}
-            onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
+            onClick={() => transitionTo(`/channels/${guild_id}`) }
           ></ButtonItem>)
         ];
-        else if (linkGuild !== '@me') {
+        else if (guild_id !== '@me') {
           let missingGuild = false;
           try {
-            missingGuild = await get({ url: Endpoints.GUILD_PREVIEW(linkGuild), retries: 1 });
+            missingGuild = await get({ url: Endpoints.GUILD_PREVIEW(guild_id), retries: 1 });
           } catch (e) {}
 
           if (missingGuild) {
             errorBody = [
               (<div className={errorText}>{`Error: Not on the ${missingGuild.body.name} server`}</div>),
-              // @todo Find session_id so we can give join button
-
-              /*(<ButtonItem button={`Join ${missingGuild.body.name}`} color={Button.Colors.GREEN}
-                onClick={async () => {
-                  const invite = await get({ url: Endpoints.GUILD_VANITY_URL(linkGuild) });
-
-                  console.log(invite);
-
-                  require('powercord/utils').gotoOrJoinServer('MINECRAFT');
-                }}
-              ></ButtonItem>)*/
+              (<ButtonItem button={`Join ${missingGuild.body.name}`} color={Button.Colors.GREEN} onClick={() => joinGuild(guild_id)}></ButtonItem>)
             ]
           } else errorBody = [(<div className={errorText}>Error: Private/Deleted server</div>)];
         }
@@ -58,18 +50,14 @@ module.exports = class RQRequestError extends React.PureComponent {
       case 'no-match': errorBody = [
         (<div className={errorText}>Error: Message deleted or invalid ID</div>),
         (<ButtonItem button={`Jump to Closest`} color={Button.Colors.GREEN}
-          onClick={() => {
-            const link = [this.props.link[0], this.props.link[1], this.props.closest];
-
-            getModule([ 'transitionTo' ], false).transitionTo(`/channels/${link.join('/')}`);
-          }}
+          onClick={() => transitionTo(`/channels/${[this.props.link[0], this.props.link[1], this.props.closest].join('/')}`) }
         ></ButtonItem>)
       ]; break;
-      case 'unknown-channel': errorBody = linkGuild !== '@me' ? [
+      case 'unknown-channel': errorBody = guild_id !== '@me' ? [
         (<div className={errorText}>{`Error: Channel missing or deleted on ${isCurrentGuild ? 'this server.' : 'another server.'}`}</div>),
         isCurrentGuild ? false : 
         (<ButtonItem button='Go to Server' color={Button.Colors.GREEN}
-          onClick={() => { getModule([ 'transitionTo' ], false).transitionTo(`/channels/${linkGuild}`) }}
+          onClick={() => transitionTo(`/channels/${guild_id}`) }
         ></ButtonItem>)
       ] : [(<div className={errorText}>Error: Invalid DM</div>)]; break;
       case 'same-link': errorBody = [(<div className={errorText}>Error: Link goes to this message</div>)]; break;
