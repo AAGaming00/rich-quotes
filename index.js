@@ -73,7 +73,10 @@ module.exports = class RichQuotes extends Plugin {
     Object.assign(ListMessage.type, lmType);
   }
 
-  injectMessage (args, res, currentUser, Style, list = false) {
+  injectMessage (args, _res, currentUser, Style, list = false) {
+  
+    const res = _res?.type?.displayName === 'BackgroundFlash' ? _res?.props?.children : _res;
+
     if (res) {
       const resContent = res.props.childrenMessageContent;
 
@@ -101,10 +104,10 @@ module.exports = class RichQuotes extends Plugin {
               args.message.embeds = [];
             }
           }
-        } else if (!list && settings.cullQuoteCommands) res = null;
+        } else if (!list && settings.cullQuoteCommands) _res = null;
       }
 
-      if (res && settings.replyReplace && !res.props.rq_setReply) {
+      if (settings.replyReplace && !res.props.rq_setReply) {
         const resReply = res.props.childrenRepliedMessage;
 
         let reply = resReply?.props?.children?.props?.referencedMessage?.message;
@@ -165,7 +168,7 @@ module.exports = class RichQuotes extends Plugin {
       }
     }
 
-    return res;
+    return _res;
   }
 
   startObserver () {

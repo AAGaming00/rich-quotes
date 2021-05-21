@@ -163,6 +163,7 @@ class RichQuote extends React.Component {
 
       settings: this.props.settings, isMarkdown: this.state.isMarkdown,
       clearLink: () => this.setState({ link: false, searchStatus: false }),
+      hideSelf: () => this.hideSelf(),
 
       // hack to prevent emojiUtility errors
       target: {...this, classList: { contains: () => {} }, tagName: '' }
@@ -399,7 +400,7 @@ class RichQuote extends React.Component {
           { renderAccessories ? this.state.accessories : false }
           
         </div>
-        <div className='rq-hide' onClick={e => this.hideSelf()}></div>
+        { false /*<div className='rq-hide' onClick={e => this.hideSelf()}></div> hahaha in more menu because layout broken*/ }
       </div></div></div>
     </RenderError>);
   }

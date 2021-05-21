@@ -6,7 +6,7 @@ module.exports = {
       const PopoutDispatcher = getModule([ 'openPopout' ], false);
 
       // modified from smart typers
-      console.log(PopoutDispatcher, UserPopout)
+      console.log(event, userId, guildId);
       PopoutDispatcher.openPopout(event.target, {
          containerClass: 'rich-quotes-popout',
          render: (props) => React.createElement(UserPopout, { ...props, userId, guildId }),
