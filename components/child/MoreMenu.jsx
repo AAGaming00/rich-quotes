@@ -36,7 +36,7 @@ module.exports = function (props) {
   if (props.link) {
     let idCheck = [ 'edit', 'mark\\-unread', 'delete' ];
 
-    if (!props.settings.displayReactions) idCheck.push('add\\-reaction')
+    if (!props.settings.displayReactions) idCheck.push('add\\-reaction');
 
     if (props.parent[1] !== props.link[1]) idCheck.push('reply');
 
@@ -47,6 +47,13 @@ module.exports = function (props) {
         c.props?.id ? !idCheck.test(c.props.id) : false) return true; else return false;
     });
   }
+
+  res.props.children.push(React.createElement(MenuGroup, { children: [ React.createElement(MenuItem, {
+    id: 'hide-quote',
+    disabled: false,
+    label: 'Hide Quote',
+    action: () => props.hideSelf()
+  })]}));
 
   return res;
 };

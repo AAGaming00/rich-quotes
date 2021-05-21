@@ -45,6 +45,7 @@ module.exports = class RichQuotes extends Plugin {
       if (!ConnectionStore.isConnected()) return;
 
       ConnectionStore.removeChangeListener(listener)
+      this.startObserver();
       this.runInjections();
     }
 
@@ -72,7 +73,10 @@ module.exports = class RichQuotes extends Plugin {
     Object.assign(ListMessage.type, lmType);
   }
 
-  injectMessage (args, res, currentUser, Style, list = false) {
+  injectMessage (args, _res, currentUser, Style, list = false) {
+  
+    const res = _res?.type?.displayName === 'BackgroundFlash' ? _res?.props?.children : _res;
+
     if (res) {
       const resContent = res.props.childrenMessageContent;
 
@@ -100,10 +104,10 @@ module.exports = class RichQuotes extends Plugin {
               args.message.embeds = [];
             }
           }
-        } else if (!list && settings.cullQuoteCommands) res = null;
+        } else if (!list && settings.cullQuoteCommands) _res = null;
       }
 
-      if (res && settings.replyReplace && !res.props.rq_setReply) {
+      if (settings.replyReplace && !res.props.rq_setReply) {
         const resReply = res.props.childrenRepliedMessage;
 
         let reply = resReply?.props?.children?.props?.referencedMessage?.message;
@@ -122,7 +126,7 @@ module.exports = class RichQuotes extends Plugin {
             } else mentionType = 2;
           }
 
-          res.props.childrenRepliedMessage = /* settings.replyMode != 0 */ true ? null : React.createElement('div', { ref: e => {
+          res.props.childrenRepliedMessage = settings.replyMode != 0 ? null : React.createElement('div', { ref: e => {
             if (!e) return;
             const target = traverseTree(
               getReactInstance(e),
@@ -140,6 +144,7 @@ module.exports = class RichQuotes extends Plugin {
 
             target.appendChild(container);
             target.__rqHasInjected = true;
+            container.setAttribute("rq-injected", "")
 
             e.remove();
           }});
@@ -163,12 +168,36 @@ module.exports = class RichQuotes extends Plugin {
       }
     }
 
-    return res;
+    return _res;
+  }
+
+  startObserver () {
+    this.observer = new MutationObserver((m) => {
+      m.forEach(mutation => {
+        const nodes = mutation.removedNodes;
+        if (nodes.length > 0) {
+          nodes.forEach(node => {
+            if (node.tagName === "MAIN") {
+              node.querySelectorAll("[rq-injected]").forEach(el => {
+                ReactDOM.unmountComponentAtNode(el);
+              })
+            }
+          });
+        }
+      });
+    });
+
+    this.observer.observe(document.body, {
+      subtree: true,
+      childList: true
+    }); // TODO: disconnect when reply mode isnt 0
   }
 
   pluginWillUnload () {
     powercord.api.settings.unregisterSettings('rich-quotes');
     uninject('Rich-Quotes-Channel-Message');
     uninject('Rich-Quotes-List-Message');
+    this.observer.disconnect();
+    this.observer = null;
   }
 };
