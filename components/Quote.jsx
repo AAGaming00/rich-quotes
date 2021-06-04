@@ -295,7 +295,7 @@ class RichQuote extends React.Component {
           const location = this.state.message?.messageReference;
 
           let params = {
-            link: [ location.guild_id, location.channel_id, location.message_id ], 
+            link: [ this.state.link[0], location.channel_id, location.message_id ], 
             parent: link, 
             mentionType: 0, level: (this.props.level + 1), isReply: true, 
             gotAuthor: a => this.setState({ repliedAuthor: a }), 
