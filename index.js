@@ -152,7 +152,7 @@ module.exports = class RichQuotes extends Plugin {
           const location = args.message.messageReference;
 
           const renderedQuote = React.createElement(Quote, {
-            link: [ location.guild_id, location.channel_id, location.message_id ],
+            link: [ window.location.href.split('/')[4], location.channel_id, location.message_id ],
             parent: [ ...document.location.href.split('/').slice(4,6), args.message.id ],
             mentionType, level: 0, isReply: true,
             currentUser, settings
