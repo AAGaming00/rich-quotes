@@ -2,6 +2,8 @@ const { getModule, http: { get }, constants: { Endpoints }, React } = require('p
 const { ButtonItem } = require('powercord/components/settings');
 const { Button } = require('powercord/components');
 
+const guildCache = {}
+
 module.exports = class RQRequestError extends React.PureComponent {
   constructor (props) { super(props); this.state = { content: false} }
 
@@ -15,11 +17,16 @@ module.exports = class RQRequestError extends React.PureComponent {
     const { getGuild } = await getModule([ 'getGuild' ]);
     const { joinGuild } = await getModule([ 'joinGuild' ]);
     const { transitionTo } = await getModule([ 'transitionTo' ]);
+    const { parse } = await getModule(["parse", "parseTopic"]);
 
     const guild_id = this.props.link[0];
 
     const errorText = 'rq-error-text colorStandard-2KCXvj';
     const isCurrentGuild = window.location.href.split('/')[4] === guild_id;
+
+    const snowflakeToUnix = (s) => Number((BigInt(s) >> 22n) + 1420070400000n);
+
+    const prefix = ['Server Created', 'Channel Created', 'Message Sent'];
 
     let errorBody = [];
 
@@ -30,20 +37,28 @@ module.exports = class RQRequestError extends React.PureComponent {
           isCurrentGuild ? false : 
           (<ButtonItem button='Go to Server' color={Button.Colors.GREEN}
             onClick={() => transitionTo(`/channels/${guild_id}`) }
-          ></ButtonItem>)
+          ></ButtonItem>), (<br />),
+          parse(this.props.link.slice(1).map((s, i) => `${prefix[i+1]}: <t:${snowflakeToUnix(s)}:f>`).join('\n'))
         ];
         else if (guild_id !== '@me') {
           let missingGuild = false;
-          try {
+
+          if (guildCache[guild_id] === undefined) try {
             missingGuild = await get({ url: Endpoints.GUILD_PREVIEW(guild_id), retries: 1 });
           } catch (e) {}
+
+          guildCache[guild_id] = missingGuild;
 
           if (missingGuild) {
             errorBody = [
               (<div className={errorText}>{`Error: Not on the ${missingGuild.body.name} server`}</div>),
-              (<ButtonItem button={`Join ${missingGuild.body.name}`} color={Button.Colors.GREEN} onClick={() => joinGuild(guild_id)}></ButtonItem>)
+              (<ButtonItem button={`Join ${missingGuild.body.name}`} color={Button.Colors.GREEN} onClick={() => joinGuild(guild_id)}></ButtonItem>), (<br />),
+              parse(`${prefix[2]}: <t:${snowflakeToUnix(this.props.link[2])}:f>`)
             ]
-          } else errorBody = [(<div className={errorText}>Error: Private/Deleted server</div>)];
+          } else errorBody = [
+            (<div className={errorText}>Error: Private/Deleted server</div>), (<br />),
+            parse(this.props.link.map((s, i) => `${prefix[i]}: <t:${snowflakeToUnix(s)}:f>`).join('\n'))
+          ];
         }
         else errorBody = [(<div className={errorText}>Error: Other user's DM</div>)];
       } break;
@@ -65,9 +80,9 @@ module.exports = class RQRequestError extends React.PureComponent {
       case 'invalid-response': errorBody = [(<div className={errorText}>Error: Malformed Discord API response</div>)]; break;
     }
 
-    if (!errorBody[1]) errorBody.push(false);
-
-    this.setState({ content: (<div className='rq-error rq-error-request'><div className="rq-error-highlight">{errorBody[0]}{errorBody[1]}</div></div>) });
+    this.setState({ content: (<div className='rq-error rq-error-request'>
+      <div className="rq-error-highlight">{ errorBody.map(e => e) }</div>
+    </div>) });
   }
 
   render() { return (<>{this.state.content}</>); }
