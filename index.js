@@ -128,10 +128,13 @@ module.exports = class RichQuotes extends Plugin {
 
           res.props.childrenRepliedMessage = settings.replyMode != 0 ? null : React.createElement('div', { ref: e => {
             if (!e) return;
+            const instance = e.__reactFiber$;
+
             const target = traverseTree(
-              getReactInstance(e),
+              instance,
               ['sibling', ['child', 3], 'sibling', 'child', 'stateNode']
             );
+            console.log(target);
 
             if (!target) return;
             if (target.__rqHasInjected) return;

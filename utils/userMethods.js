@@ -2,11 +2,10 @@ const { React, getModule, contextMenu, getModuleByDisplayName } = require('power
 
 module.exports = {
    openUserPopout: function(event, userId, guildId) {
-      const UserPopout = getModuleByDisplayName('UserPopoutContainer', false);
+      const UserPopout = getModule(m => m.type?.displayName === 'UserPopoutContainer', false);
       const PopoutDispatcher = getModule([ 'openPopout' ], false);
 
       // modified from smart typers
-      console.log(event, userId, guildId);
       PopoutDispatcher.openPopout(event.target, {
          containerClass: 'rich-quotes-popout',
          render: (props) => React.createElement(UserPopout, { ...props, userId, guildId }),

@@ -24,7 +24,7 @@ module.exports = class RQRequestError extends React.PureComponent {
     const errorText = 'rq-error-text colorStandard-2KCXvj';
     const isCurrentGuild = window.location.href.split('/')[4] === guild_id;
 
-    const snowflakeToUnix = (s) => Number((BigInt(s) >> 22n) + 1420070400000n);
+    const snowflakeToUnix = (s) => Math.floor(((s / 4194304 + 1420070400000) / 1000) | 0);
 
     const prefix = ['Server Created', 'Channel Created', 'Message Sent'];
 

@@ -368,7 +368,7 @@ class RichQuote extends React.Component {
               icon: 'Reply', tooltip: 'Jump to Message',
               function: () => {
                 if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
-                else document.getElementById('owo-0').scrollIntoViewIfNeeded();
+                else document.getElementById('owo-0').scrollIntoViewIfNeeded;
               }
             }}></Button>, 
             !channelHeader && !replyChannel ? <Button {...{
