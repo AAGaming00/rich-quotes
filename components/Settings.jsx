@@ -98,7 +98,7 @@ module.exports = class Settings extends React.Component {
 
         <RadioGroup
           note={replyStrings[0][1]}
-          value={getSetting('replyMode', 1)}
+          value={getSetting('replyMode', 0)}
           onChange={s => updateSetting('replyMode', s.value)}
           options={replyStrings.slice(1).map(([name, desc], i) => ({
             name, desc, value: i

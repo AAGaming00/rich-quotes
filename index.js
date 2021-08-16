@@ -128,8 +128,10 @@ module.exports = class RichQuotes extends Plugin {
 
           res.props.childrenRepliedMessage = settings.replyMode != 0 ? null : React.createElement('div', { ref: e => {
             if (!e) return;
+            const instance = e.__reactFiber$;
+
             const target = traverseTree(
-              getReactInstance(e),
+              instance,
               ['sibling', ['child', 3], 'sibling', 'child', 'stateNode']
             );
 
@@ -139,7 +141,7 @@ module.exports = class RichQuotes extends Plugin {
             const container = document.createElement('span');
 
             ReactDOM.render(React.createElement(ReplyHeader, {
-              author: reply.author, channel: args.channel
+              author: reply.author, channel: args.channel, settings: settings
             }), container);
 
             target.appendChild(container);

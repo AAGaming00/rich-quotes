@@ -35,7 +35,7 @@ module.exports = {
          strings: {
             'Reply Display Mode': 'Controls reply display for replacement & inside quotes (nested).',
 
-            'Classic (broken, crashing)': "Reimagined old design; adds in reply header and removes the header from the Quote.",
+            'Classic': "Reimagined old design; adds in reply header and removes the header from the Quote.",
             'Middle': 'Makes minor tweaks to quote.',
             'Standard': 'Looks just like a link.'
          },
