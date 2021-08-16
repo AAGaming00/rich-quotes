@@ -134,7 +134,6 @@ module.exports = class RichQuotes extends Plugin {
               instance,
               ['sibling', ['child', 3], 'sibling', 'child', 'stateNode']
             );
-            console.log(target);
 
             if (!target) return;
             if (target.__rqHasInjected) return;

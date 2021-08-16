@@ -63,18 +63,18 @@ class RichQuote extends React.Component {
         this.state.message = await new MessageC({ ...messageData });
         this.state.channel = await getChannel(messageData.channel_id);
 
-        if (this.props.settings.displayEmbeds && (!this.props.isReply || this.props.settings.reply_displayEmbeds)
-          && (this.state.message?.embeds?.length !== 0 || this.state.message?.attachments?.length !== 0)) {
+        if (this.state.message && this.props.settings.displayEmbeds && (!this.props.isReply || this.props.settings.reply_displayEmbeds)
+          && (this.state.message.embeds?.length !== 0 || this.state.message.attachments?.length !== 0)) {
 
-          if (this.state.message?.embeds?.length !== 0) {
+          if (this.state.message.embeds?.length !== 0) {
             // @todo Attempt to find a function Discord has to normalize embed key's
             const fixers = [['description','rawDescription'],['title','rawTitle']];
 
-            this.state.message?.embeds.forEach((e, i) => fixers.forEach((f) => {
+            this.state.message.embeds.forEach((e, i) => fixers.forEach((f) => {
               const value = e[f[0]];
 
               if (value) {
-                if (value != '') this.state.message?.embeds[i][f[1]] = value;
+                if (value != '') this.state.message.embeds[i][f[1]] = value;
 
                 delete this.state.message?.embeds[i][f[0]];
               }
@@ -237,7 +237,7 @@ class RichQuote extends React.Component {
 
     const quoteTimestamp = this.state.message && link && this.props.settings.displayTimestamp ? new MessageTimestamp({
             className: 'rq-timestamp', compact: false,
-            timestamp: new Timestamp(this.state.message?.timestamp),
+            timestamp: new Timestamp(this.state.message.timestamp),
             isOnlyVisibleOnHover: false
           }) : false,
           highlightAlter = this.state.mentionType >= 2 ? 'rq-highlight-alt' : '',
@@ -292,7 +292,7 @@ class RichQuote extends React.Component {
 
       if (content.length === 0 || !content[0]?.props?.isReply) {
         if (renderNested) {
-          const location = this.state.message?.messageReference;
+          const location = this.state.message.messageReference;
 
           let params = {
             link: [ this.state.link[0], location.channel_id, location.message_id ], 
@@ -396,7 +396,7 @@ class RichQuote extends React.Component {
         }</div>
 
         <div className='rq-content'>
-          { rqRender || <MessageContent message={this.state.message} content={content}/> }
+          { rqRender || (this.state.message ? <MessageContent message={this.state.message} content={content}/> : false) }
           { renderAccessories ? this.state.accessories : false }
           
         </div>
