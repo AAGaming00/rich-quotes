@@ -16,7 +16,7 @@ module.exports = function ({ author, channel, settings }) {
     >
       <Avatar style={Style} user={author} />
       <span className={`rq-username rq-margin ${Style.username} ${Style.clickable}`}>{
-        settings.displayNickname ? getNickname(channel.guild_id, channel.id, author) : author.username
+        settings.displayNickname ? getNickname(channel.guild_id, channel.id, author) || author.username : author.username
       }</span>
     </span>
   </span>);
