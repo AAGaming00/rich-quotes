@@ -158,16 +158,16 @@ class RichQuote extends React.Component {
     const { message, channel } = this.state;
 
     if (!this.state.link || this.state.link[0] !== previewId) 
-    contextMenu.openContextMenu(e, () => React.createElement(MoreMenu, {
-      message, channel, link: this.state.link, parent: this.props.parent,
+      contextMenu.openContextMenu(e, () => React.createElement(MoreMenu, {
+        message, channel, link: this.state.link, parent: this.props.parent,
 
-      settings: this.props.settings, isMarkdown: this.state.isMarkdown,
-      clearLink: () => this.setState({ link: false, searchStatus: false }),
-      hideSelf: () => this.hideSelf(),
+        settings: this.props.settings, isMarkdown: this.state.isMarkdown,
+        clearLink: () => this.setState({ link: false, searchStatus: false }),
+        hideSelf: () => this.hideSelf(),
 
-      // hack to prevent emojiUtility errors
-      target: {...this, classList: { contains: () => {} }, tagName: '' }
-    }));
+        // hack to prevent emojiUtility errors
+        target: {...this, classList: { contains: () => {} }, tagName: '' }
+      }));
   }
 
   /* deepscan-disable */ // haha dumb
@@ -368,7 +368,7 @@ class RichQuote extends React.Component {
               icon: 'Reply', tooltip: 'Jump to Message',
               function: () => {
                 if (!previewQuote) transitionTo(`/channels/${link.join('/')}`);
-                else document.getElementById('owo-0').scrollIntoViewIfNeeded;
+                else document.getElementById('owo-0').scrollIntoViewIfNeeded();
               }
             }}></Button>, 
             !channelHeader && !replyChannel ? <Button {...{

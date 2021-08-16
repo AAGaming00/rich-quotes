@@ -2,7 +2,7 @@ const { React, getModule, contextMenu, getModuleByDisplayName } = require('power
 
 module.exports = {
    openUserPopout: function(event, userId, guildId) {
-      const UserPopout = getModuleByDisplayName('ConnectedUserPopout', false);
+      const UserPopout = getModuleByDisplayName('UserPopoutContainer', false);
       const PopoutDispatcher = getModule([ 'openPopout' ], false);
 
       // modified from smart typers
