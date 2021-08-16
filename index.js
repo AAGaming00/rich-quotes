@@ -141,7 +141,7 @@ module.exports = class RichQuotes extends Plugin {
             const container = document.createElement('span');
 
             ReactDOM.render(React.createElement(ReplyHeader, {
-              author: reply.author, channel: args.channel
+              author: reply.author, channel: args.channel, settings: settings
             }), container);
 
             target.appendChild(container);

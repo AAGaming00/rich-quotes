@@ -205,7 +205,7 @@ class RichQuote extends React.Component {
     const { transitionTo } = getModule([ 'transitionTo' ], false),
           { parse } = getModule(['parse', 'parseTopic'], false),
           { getGuild } = getModule(['getGuild'], false),
-          { getName } = getModule([ 'getName' ], false);
+          { getNickname } = getModule([ 'getName' ], false);
 
     const MessageTimestamp = require('powercord/webpack').getModuleByDisplayName('MessageTimestamp', false),
           Timestamp = getModule(m => m.prototype && m.prototype.toDate && m.prototype.month, false),
@@ -246,7 +246,7 @@ class RichQuote extends React.Component {
           highlightContainer = this.state.mentionType >= 2 ? 
             `${container} ${this.state.mentionType === 3 ? `${container}-alt` : ''}` : '',
           displayName = this.props.settings.displayNickname ? 
-            getName(this.state.channel?.guild_id, this.state.channel?.id, this.state.author)
+            getNickname(this.state.channel?.guild_id, this.state.channel?.id, this.state.author)
             : this.state.author.name,
           renderNested = this.props.settings.nestedQuotes == 0 ? false : (this.props.level < this.props.settings.nestedQuotes);
 
@@ -283,7 +283,7 @@ class RichQuote extends React.Component {
         <Avatar style={Style} user={this.state.repliedAuthor} />
         <span className={`rq-username rq-margin ${Style.username} ${Style.clickable}`}>{
           this.props.settings.displayNickname ? 
-            getName(this.state.channel.guild_id, this.state.channel.id, this.state.repliedAuthor)
+            getNickname(this.state.channel.guild_id, this.state.channel.id, this.state.repliedAuthor)
             : this.state.repliedAuthor.name
         }</span>
       </span>);
