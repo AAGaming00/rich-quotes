@@ -246,8 +246,8 @@ class RichQuote extends React.Component {
           highlightContainer = this.state.mentionType >= 2 ? 
             `${container} ${this.state.mentionType === 3 ? `${container}-alt` : ''}` : '',
           displayName = this.props.settings.displayNickname ? 
-            getNickname(this.state.channel?.guild_id, this.state.channel?.id, this.state.author)
-            : this.state.author.name,
+            getNickname(this.state.channel?.guild_id, this.state.channel?.id, this.state.author) || this.state.author.username
+            : this.state.author.username,
           renderNested = this.props.settings.nestedQuotes == 0 ? false : (this.props.level < this.props.settings.nestedQuotes);
 
     let content = global._.cloneDeep(this.state.content),
@@ -283,8 +283,8 @@ class RichQuote extends React.Component {
         <Avatar style={Style} user={this.state.repliedAuthor} />
         <span className={`rq-username rq-margin ${Style.username} ${Style.clickable}`}>{
           this.props.settings.displayNickname ? 
-            getNickname(this.state.channel.guild_id, this.state.channel.id, this.state.repliedAuthor)
-            : this.state.repliedAuthor.name
+            getNickname(this.state.channel.guild_id, this.state.channel.id, this.state.repliedAuthor) || this.state.repliedAuthor.username
+            : this.state.repliedAuthor.username
         }</span>
       </span>);
 
